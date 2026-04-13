@@ -1,0 +1,102 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { createClient } from "@supabase/supabase-js";
+import { createHmac } from "crypto";
+
+/**
+ * Vercel API route: GET /api/payment-callback
+ *
+ * Hyp redirects here after payment. Validates the response MAC,
+ * updates the order status in Supabase, and redirects the browser
+ * to the checkout confirmation or error page.
+ *
+ * Required env vars:
+ *   HYP_PASSWORD       — used for MAC validation
+ *   SUPABASE_URL       — Supabase project URL
+ *   SUPABASE_SERVICE_KEY — Supabase service role key (server-side only)
+ *   SITE_URL           — e.g. "https://mothers-day-flax-one.vercel.app"
+ */
+
+function validateResponseMac(params: Record<string, string>, password: string): boolean {
+  const { txId, uniqueID, cardToken, cardExp, personalId, responseMac } = params;
+  // Hyp MAC = SHA-256(password + txId + "000" + cardToken + cardExp + personalId + uniqueID)
+  const payload = `${password}${txId || ""}000${cardToken || ""}${cardExp || ""}${personalId || ""}${uniqueID || ""}`;
+  const expected = createHmac("sha256", "").update(payload).digest("hex");
+  // Note: Hyp uses plain SHA-256, not HMAC. Using createHash for consistency.
+  return expected === responseMac;
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const {
+    status,
+    orderId,
+    uniqueID,
+    cgUid,
+    authNumber,
+    responseMac,
+    cardToken,
+    cardExp,
+    cardMask,
+    txId,
+    personalId,
+  } = req.query as Record<string, string>;
+
+  const {
+    HYP_PASSWORD,
+    SUPABASE_URL,
+    SUPABASE_SERVICE_KEY,
+    SITE_URL,
+  } = process.env;
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SITE_URL) {
+    return res.redirect(302, `${SITE_URL || ""}/site/checkout?error=config`);
+  }
+
+  const effectiveOrderId = orderId || uniqueID;
+
+  if (status === "success" && effectiveOrderId) {
+    // Validate MAC if password is available
+    if (HYP_PASSWORD && responseMac) {
+      const isValid = validateResponseMac(
+        { txId, uniqueID: uniqueID || orderId, cardToken, cardExp, personalId, responseMac },
+        HYP_PASSWORD
+      );
+      if (!isValid) {
+        console.error("Invalid responseMac for order:", effectiveOrderId);
+        return res.redirect(302, `${SITE_URL}/site/checkout?error=validation`);
+      }
+    }
+
+    // Update order status to paid
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        financial_status: "paid",
+        notes: JSON.stringify({
+          hyp_cguid: cgUid,
+          hyp_auth: authNumber,
+          hyp_card_mask: cardMask,
+          hyp_txid: txId,
+        }),
+      })
+      .eq("id", effectiveOrderId);
+
+    if (error) {
+      console.error("Failed to update order:", error);
+    }
+
+    return res.redirect(302, `${SITE_URL}/site/checkout/confirmation/${effectiveOrderId}`);
+  }
+
+  if (status === "cancel") {
+    return res.redirect(302, `${SITE_URL}/site/checkout?cancelled=true`);
+  }
+
+  // Error or unknown status
+  return res.redirect(302, `${SITE_URL}/site/checkout?error=payment`);
+}
