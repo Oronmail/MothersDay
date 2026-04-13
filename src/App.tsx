@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 
@@ -36,6 +37,19 @@ const CheckoutConfirmation = lazy(() => import("./pages/CheckoutConfirmation"));
 const AdminLoginPage = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
 
+// Track SPA route changes in Google Analytics
+function GaRouteTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'page_view', {
+        page_path: location.pathname + location.search,
+      });
+    }
+  }, [location]);
+  return null;
+}
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -59,6 +73,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <GaRouteTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
