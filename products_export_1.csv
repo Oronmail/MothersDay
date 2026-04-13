@@ -1,0 +1,298 @@
+Handle,Title,Body (HTML),Vendor,Product Category,Type,Tags,Published,Option1 Name,Option1 Value,Option1 Linked To,Option2 Name,Option2 Value,Option2 Linked To,Option3 Name,Option3 Value,Option3 Linked To,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Unit Price Total Measure,Unit Price Total Measure Unit,Unit Price Base Measure,Unit Price Base Measure Unit,Variant Barcode,Image Src,Image Position,Image Alt Text,Gift Card,SEO Title,SEO Description,Page Quantity (product.metafields.custom.page_quantity),Page size (product.metafields.custom.page_size),page weight (product.metafields.custom.page_weight),Color (product.metafields.shopify.color-pattern),Page size (product.metafields.shopify.page-size),Paper type (product.metafields.shopify.paper-type),Variant Image,Variant Weight Unit,Variant Tax Code,Cost per item,Status
+מארז-מחברות-1,מארז מחברות,"<p><strong>שני גדלים. לכל מחשבה</strong></p>
+<p>המארז כולל 4 מחברות. 2 מכל גודל</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,100,deny,manual,67.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_600x750_54099ef4-2a58-4402-9592-a76d0a74d50e.png?v=1770752628,1,"",false,,,,,,,,,,kg,,,draft
+מארז-מחברות-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_600x750_cec634c2-ce7d-4670-bcee-edc2181790c1.png?v=1770752628,2,"",,,,,,,,,,,,,,
+מארז-מחברות-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/ba95362efcce05e203f008c02b7e0485.png?v=1770752628,3,"",,,,,,,,,,,,,,
+מארז-מחברות-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_d2862523-23ee-4aba-99c6-1496e1f1cff9.png?v=1770738258,4,"",,,,,,,,,,,,,,
+מארז-מחברות-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/600x750.png?v=1770720490,5,"",,,,,,,,,,,,,,
+מארז-מחברות-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,6,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,מארז בלוקים,"<p><strong>שלושה גדלים. לכל משימה</strong></p>
+<p>המארז כולל 3 בלוקים. אחד מכל גודל</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,115.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_7ad4029f-43e7-4cf0-93f1-3c2c85cf94a5.jpg?v=1770563851,1,"",false,,,,,,,,,,kg,,,draft
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_7f32bdfe-06a4-4cac-9300-781ebedf219f.jpg?v=1770563944,2,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/6f5faabd2ade8f5a565a25155e2d60db.png?v=1770752288,3,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_c7872c18-04a7-4cc4-9ce8-46ecc7183ac5.png?v=1770735566,4,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_1493d0ed-54b6-43b9-9de3-2e13d07ef0a0.jpg?v=1771313896,5,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_8824c653-af2b-426c-b739-1971ef7b70d7.jpg?v=1771313640,6,"",,,,,,,,,,,,,,
+מארז-בלוקים-2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_5ce933fb-ef1a-41bd-8782-4348946fd945.jpg?v=1771313562,7,"",,,,,,,,,,,,,,
+מארז-תכנון-1,מארז תכנון,"<p><strong>פיתרון שלם בבית</strong></p>
+<p>תכנון שבועי |תכנון ארוחות |תכנון קניות וסידורים</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,180.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5455.jpg?v=1771313966,1,"",false,,,,,,,,,,kg,,,draft
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5457-Edit.jpg?v=1771313966,2,"",,,,,,,,,,,,,,
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5455_de8e060c-be27-4c2f-b05c-d80e13d94688.jpg?v=1771313966,3,"",,,,,,,,,,,,,,
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5517-Edit.jpg?v=1771313966,4,"",,,,,,,,,,,,,,
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0229_e542a252-fd09-413c-8b0a-b5b4e71ef240.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_60eacef0-4dba-46af-a35d-6b712eb5e435.jpg?v=1771313966,6,"",,,,,,,,,,,,,,
+מארז-תכנון-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,7,"",,,,,,,,,,,,,,
+מארז-פודרה-1,מארז פודרה,"<p><strong>פיתרון שלם בפינת העבודה</strong></p>
+<p>לוח שבועי |מחברת בינונית |בלוק בינוני</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,50.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0276-Edit_82bccc41-9495-471b-afe9-f37ef099057e.jpg?v=1770564062,1,"",false,,,,,,,,,,kg,,,draft
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_860c28c0-aa00-4ce3-b711-7f64d677c637.png?v=1770720280,2,"",,,,,,,,,,,,,,
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_946b9b8f-e5d8-4026-95e3-67a99198ecc5.png?v=1770735249,3,"",,,,,,,,,,,,,,
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_c7872c18-04a7-4cc4-9ce8-46ecc7183ac5.png?v=1770735566,4,"",,,,,,,,,,,,,,
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,6,"",,,,,,,,,,,,,,
+מארז-פודרה-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_8824c653-af2b-426c-b739-1971ef7b70d7.jpg?v=1771313640,7,"",,,,,,,,,,,,,,
+מארז-יין-1,מארז אבן,"<p><strong>פיתרון שלם בתיק</strong></p>
+<p>ֿתכנון קניות וסידורים | מחברת קטנה | בלוק קטן</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,180.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1.1.png?v=1770738258,1,"",false,,,,,,,,,,kg,,,draft
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/f6eb517d7b5513838f5a514be9778cd0.png?v=1770738258,2,"",,,,,,,,,,,,,,
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_4c4525a8-3a8e-4c18-86a0-8f863fba239e.png?v=1770738258,3,"",,,,,,,,,,,,,,
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_d2862523-23ee-4aba-99c6-1496e1f1cff9.png?v=1770738258,4,"",,,,,,,,,,,,,,
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,6,"",,,,,,,,,,,,,,
+מארז-יין-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_5ce933fb-ef1a-41bd-8782-4348946fd945.jpg?v=1771313562,7,"",,,,,,,,,,,,,,
+מארז-אבן-1,מארז יין,"<p><strong>פיתרון שלם במטבח</strong></p>
+<p>תכנון ארוחות |בלוק גדול</p>",MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,107.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_c9ec1959-3e7a-49de-865e-aa159b3c86d9.png?v=1770720351,1,"",false,,,,,,,,,,kg,,,draft
+מארז-אבן-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_b3090ad2-1d12-4f29-af8c-224a3fb3ecd7.png?v=1770720359,2,"",,,,,,,,,,,,,,
+מארז-אבן-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_89e4d16a-694a-4d81-b1d0-e9ec4064e278.png?v=1770735386,3,"",,,,,,,,,,,,,,
+מארז-אבן-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_45f88787-4ed3-4e58-bc20-05cfc7bf916e.png?v=1770735557,4,"",,,,,,,,,,,,,,
+מארז-אבן-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_60eacef0-4dba-46af-a35d-6b712eb5e435.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-אבן-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_1493d0ed-54b6-43b9-9de3-2e13d07ef0a0.jpg?v=1771313896,6,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,מארז בלוקים,"<p><strong>שלושה גדלים. לכל משימה</strong></p>
+<p><meta charset=""utf-8"">בלוק קטן |בלוק בינוני |בלוק גדול</p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_7ad4029f-43e7-4cf0-93f1-3c2c85cf94a5.jpg?v=1770563851,1,"",false,,,,,,,,,,kg,,,active
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_7f32bdfe-06a4-4cac-9300-781ebedf219f.jpg?v=1770563944,2,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_46babbe8-ab29-40e5-8fdd-bd72e803eef0.jpg?v=1770826979,3,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_afc87196-c3a1-4e3d-a7b2-6a14ec38a49b.jpg?v=1770826909,4,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_3688235c-f892-4a7b-9d27-79908c6d7e63.jpg?v=1770827030,5,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_b2367541-3ffd-462e-93af-5190af2ef5d5.jpg?v=1770827111,6,"",,,,,,,,,,,,,,
+מארז-בלוקים-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_66e8b6be-b39a-499f-a169-0a6517efdd83.jpg?v=1770827006,7,"",,,,,,,,,,,,,,
+מארז-מחברות,מארז מחברות,"<p><strong>שני גדלים. לכל מחשבה</strong></p>
+<p><meta charset=""utf-8"">מחברת שורות קטנה2x | מחברת שורות בינונית 2x</p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5449.jpg?v=1771313161,1,"",false,,,,,,,,,,kg,,,active
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5450-Edit.jpg?v=1771313161,2,"",,,,,,,,,,,,,,
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5449_994e5506-bea3-4b07-83c2-fd2861e383ed.jpg?v=1771313161,3,"",,,,,,,,,,,,,,
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5476.jpg?v=1771314549,4,"",,,,,,,,,,,,,,
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5447-Edit_2fd885cf-5dc0-4fdc-8bfd-136f1a19a7e3.jpg?v=1771313640,5,"",,,,,,,,,,,,,,
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,6,"",,,,,,,,,,,,,,
+מארז-מחברות,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5450-Edit_298d6432-5898-4c83-b2c9-53a9cea03cc0.jpg?v=1771314594,7,"",,,,,,,,,,,,,,
+מארז-תכנון,מארז תכנון,"<p><meta charset=""utf-8""><strong>פיתרון שלם בבית</strong></p>
+<p>תכנון שבועי |תכנון ארוחות |תכנון קניות וסידורים</p>
+<p> </p>
+<p> </p>
+<p><br></p>
+<p> </p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5455.jpg?v=1771313966,1,"",false,,,,,,,,,,kg,,,active
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5457-Edit.jpg?v=1771313966,2,"",,,,,,,,,,,,,,
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5455_de8e060c-be27-4c2f-b05c-d80e13d94688.jpg?v=1771313966,3,"",,,,,,,,,,,,,,
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5517-Edit.jpg?v=1771313966,4,"",,,,,,,,,,,,,,
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_60eacef0-4dba-46af-a35d-6b712eb5e435.jpg?v=1771313966,6,"",,,,,,,,,,,,,,
+מארז-תכנון,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0229_e542a252-fd09-413c-8b0a-b5b4e71ef240.jpg?v=1771313966,7,"",,,,,,,,,,,,,,
+מארז-יין,מארז יין,"<p><strong>פיתרון שלם במטבח</strong></p>
+<p>תכנון ארוחות |בלוק גדול</p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5466-Edit_c03141f0-d547-4506-bf57-3475b723d9ff.jpg?v=1771313896,1,"",false,,,,,,,,,,kg,,,active
+מארז-יין,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5469-Edit.jpg?v=1771313896,2,"",,,,,,,,,,,,,,
+מארז-יין,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5468-Edit.jpg?v=1771313896,3,"",,,,,,,,,,,,,,
+מארז-יין,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5499-Edit.jpg?v=1771313896,4,"",,,,,,,,,,,,,,
+מארז-יין,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_60eacef0-4dba-46af-a35d-6b712eb5e435.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-יין,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_1493d0ed-54b6-43b9-9de3-2e13d07ef0a0.jpg?v=1771313896,6,"",,,,,,,,,,,,,,
+מארז-פודרה,מארז פודרה,"<p><strong>פיתרון שלם בפינת העבודה</strong></p>
+<p>תכנון שבועי |מחברת בינונית |בלוק בינוני</p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0276-Edit_82bccc41-9495-471b-afe9-f37ef099057e.jpg?v=1770564062,1,"",false,,,,,,,,,,kg,,,active
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5470-Edit.jpg?v=1771313640,2,"",,,,,,,,,,,,,,
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5473-Edit.jpg?v=1771313640,3,"",,,,,,,,,,,,,,
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5497-Edit.jpg?v=1771313640,4,"",,,,,,,,,,,,,,
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0229_e542a252-fd09-413c-8b0a-b5b4e71ef240.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5447-Edit_2fd885cf-5dc0-4fdc-8bfd-136f1a19a7e3.jpg?v=1771313640,6,"",,,,,,,,,,,,,,
+מארז-פודרה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_8824c653-af2b-426c-b739-1971ef7b70d7.jpg?v=1771313640,7,"",,,,,,,,,,,,,,
+מארז-אבן,מארז אבן,"<p><strong>פיתרון שלם בתיק</strong></p>
+<p>ֿתכנון קניות וסידורים | מחברת קטנה | בלוק קטן</p>",MothersDay,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,0,deny,manual,0.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5459-Edit.jpg?v=1771313562,1,"",false,,,,,,,,,,kg,,,active
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5462.jpg?v=1771313562,2,"",,,,,,,,,,,,,,
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5462_91b8822b-52b2-4651-92d7-c01b3f793b71.jpg?v=1771313562,3,"",,,,,,,,,,,,,,
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5493-Edit.jpg?v=1771313562,4,"",,,,,,,,,,,,,,
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,5,"",,,,,,,,,,,,,,
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,6,"",,,,,,,,,,,,,,
+מארז-אבן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_5ce933fb-ef1a-41bd-8782-4348946fd945.jpg?v=1771313562,7,"",,,,,,,,,,,,,,
+מחברת-שורות-קטנה,מחברת שורות קטנה,"<p>מוצר משלים למוצרי התכנון</p>
+<p>מחברת לכתיבה חופשית</p>
+<p>באותו עיצוב אחיד שהופך את המחברות לאקססוריז של שולחן העבודה</p>
+<p>המחברת מתאימה לסיכומים, תובנות, רעיונות, יצירות, פרוייקטים ועוד</p>
+<p> </p>
+<p>מחברת שורות </p>
+<p>כריכה רכה תפורה</p>
+<p>גודל A5</p>
+<p>30 דפים</p>
+<p>נייר 90 גרם</p>",90gr / 30P / A5,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,Title,Default Title,,,,,,,,,0.0,shopify,200,deny,manual,32.00,,true,false,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit.jpg?v=1771313562,1,"",false,,,30 דפים,A5,120 גודל,stone,,,,kg,,,active
+מחברת-שורות-קטנה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0234-Edit.jpg?v=1770564027,2,"",,,,,,,,,,,,,,
+מחברת-שורות-קטנה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0243-Edit.jpg?v=1770826018,3,"",,,,,,,,,,,,,,
+מחברת-שורות-קטנה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0232-Edit_7ef9cdcd-d763-48e7-b05e-bfcc12f95e84.jpg?v=1770826768,4,"",,,,,,,,,,,,,,
+מחברת-שורות-קטנה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5448-Edit_afd4325f-8218-479e-ab86-61549a6f9198.jpg?v=1771313447,5,"",,,,,,,,,,,,,,
+בלוק-תכנון-קטן,בלוק תכנון קטן,"<p>בלוק נייר חלק </p>
+<p>לכתיבה ותכנון חופשי.</p>
+<p>מתאים לרשימות, להודעות ותזכורות</p>
+<p>מגיע בשלושה גדלים בהתאם לכל צורך.</p>
+<p>משתלב בעיצוב של שאר מוצרי התכנון.</p>
+<p> </p>
+<p><meta charset=""utf-8"">גודל A6</p>
+<p>50 דפים</p>
+<p>עובי נייר 120 גרם</p>
+<p>גב קרטון</p>",120gr / 50P / A6,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,25.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_5ce933fb-ef1a-41bd-8782-4348946fd945.jpg?v=1771313562,1,"",false,,,50 דפים,A6,120 גרם,stone,,,,kg,,,active
+בלוק-תכנון-קטן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0220-Edit_c92490ef-e5c0-49d9-a809-64afe37f4eb4.jpg?v=1770563795,2,"",,,,,,,,,,,,,,
+בלוק-תכנון-קטן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_afc87196-c3a1-4e3d-a7b2-6a14ec38a49b.jpg?v=1770826909,3,"",,,,,,,,,,,,,,
+בלוק-תכנון-קטן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_46babbe8-ab29-40e5-8fdd-bd72e803eef0.jpg?v=1770826979,4,"",,,,,,,,,,,,,,
+בלוק-תכנון-קטן,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0214-Edit-3_f7ec7dd0-773f-44ed-93d4-96fd2f98da44.jpg?v=1770827169,5,"",,,,,,,,,,,,,,
+p8,לוח משפחתי ומסגרת עץ מגנטית,"<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">תכנון שבועי משפחתי</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">בלוח המשפחתי תוכלי לעדכן אירועים שבועיים מיוחדים של בני הבית, החל ממבחן בביס ו״חולצה לבנה״ ועד חוגים ועיסוקים של בני הבית אחר הצהריים.</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">מעבר לאירועי השבוע,</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">בבלוח המשפחתי יש מקום לכתוב תזכורות,</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">משימות בית שבשגרה ואפילו נושאים לשיחה</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">כל בני הבית שותפים לכתיבה בלוח המשפחתי</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">הלוח המשפחתי שומר את כל בני הבית מעודכנים ומעורבים באירועי השבוע (גם את סבא וסבתא כשבאים לבקר).</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">ובכך</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מאפשר להעביר לילדים בצורה מסודרת וברורה את מהלך השבוע</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">- מעודד מעורבות בחיי בני המשפחה ובמשימות הבית</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מלמד ניהול וארגון זמן ומשימות ע״י דוגמא אישית</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מעודד אחריות</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-כלי להנחלת ערכים</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-כלי להנחלת הרגלים ושגרה</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מאפשר תשתית לתיאום ציפיות עם הילדים לגבי משימות בשגרה.</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">העיצוב שלו נעים ומשתלב עם הבית, כך שאפשר, ואף רצוי לתלות אותו בקום מרכזי, שזמין לכולם, כמו המטבח או פינת האוכל</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>",120gr / 15P / 50X70,Uncategorized,"","",true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,220.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0257_b9196d1c-a063-4f90-8864-842f466e640a.jpg?v=1770564095,1,"",false,,,15 דפים,50X70,120 גרם,,,,,kg,,,active
+p8,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0265-Edit_11a3d282-732a-40ad-9d64-0be840d79637.jpg?v=1770564103,2,"",,,,,,,,,,,,,,
+p8,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0257_e7d7df52-5dcc-4f3b-8eee-4b55e7e157f3.jpg?v=1770564128,3,"",,,,,,,,,,,,,,
+p8,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0263-Edit_39e73277-8b85-4bd8-8780-fb27326d167b.jpg?v=1770564136,4,"",,,,,,,,,,,,,,
+מארז-בלוקים,מארז בלוקים,,יום האם,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,120.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_43bf36b6-75af-4a5f-ac32-f5ea18179948.png?v=1764199384,1,"",false,,,,,,,,,,kg,,,draft
+מארז-בלוקים,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/4_cd3aa64e-2219-4d14-8d55-474428d123a4.png?v=1764199384,2,"",,,,,,,,,,,,,,
+מארז-בלוקים,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_a18aa490-2339-450a-91a8-415aa423bbb5.png?v=1764199385,3,"",,,,,,,,,,,,,,
+מארז-בלוקים,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_45cbb317-fa69-4864-a9f6-8696f0430ede.png?v=1764199385,4,"",,,,,,,,,,,,,,
+מארז-אימהות,מארז אימהות,,MothersDay,Uncategorized,"","",false,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,490.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0296.jpg?v=1764188360,1,"",false,,,,,,,,,,kg,,,draft
+p6,בלוק תכנון,"<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">בלוק נייר חלק לכתיבה ותכנון חופשי.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">נייר עבה ונוח לכתיבה.</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">מגיע בשלושה גדלים בהתאם לכל צורך, החל מכתיבה חופשית, רשימות וכתיבת הודעות ותזכורות</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">משתלב בעיצוב של שאר מוצרי התכנון</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>",120gr / 50 / A4-A6,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,false,גודל,A4,,,,,,,,,0.0,shopify,200,deny,manual,40.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_2fc3a626-79b3-403a-9d26-11e34c5eaf38.png?v=1764620864,1,"",false,,,30 דפים,A4/A5/A6,120 גרם,,,,,kg,,,draft
+p6,,,,,,,,,A5,,,,,,,,,0.0,shopify,200,deny,manual,30.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_8bf88852-600a-44cf-8122-36be42b16643.png?v=1764620864,2,"",,,,,,,,,,,kg,,,
+p6,,,,,,,,,A6,,,,,,,,,0.0,shopify,200,deny,manual,25.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_ae31d543-a3b9-4c48-adc1-bc013a7ce6cc.png?v=1764620864,3,"",,,,,,,,,,,kg,,,
+p6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/4_c8d76b93-6c63-4eb1-8e71-5ed907db1141.png?v=1764620864,4,"",,,,,,,,,,,,,,
+p6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/5_380303a9-4f49-47be-be20-b25ca656d13e.png?v=1764620864,5,"",,,,,,,,,,,,,,
+בלוק-תכנון-בינוני,בלוק תכנון בינוני,"<p>בלוק נייר חלק </p>
+<p>לכתיבה ותכנון חופשי.</p>
+<p>מתאים לרשימות, להודעות ותזכורות</p>
+<p>מגיע בשלושה גדלים בהתאם לכל צורך.</p>
+<p>משתלב בעיצוב של שאר מוצרי התכנון.</p>
+<p> </p>
+<p><meta charset=""utf-8"">גודל A5</p>
+<p>50 דפים</p>
+<p>עובי נייר 120 גרם</p>
+<p>גב קרטון</p>",120gr / 50P / A5,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,40.00,,true,true,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_8824c653-af2b-426c-b739-1971ef7b70d7.jpg?v=1771313640,1,"",false,,,50 דפים,A5,120 גרם,powder,,,,kg,,,active
+בלוק-תכנון-בינוני,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_7ad4029f-43e7-4cf0-93f1-3c2c85cf94a5.jpg?v=1770563851,2,"",,,,,,,,,,,,,,
+בלוק-תכנון-בינוני,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_afc87196-c3a1-4e3d-a7b2-6a14ec38a49b.jpg?v=1770826909,3,"",,,,,,,,,,,,,,
+בלוק-תכנון-בינוני,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_46babbe8-ab29-40e5-8fdd-bd72e803eef0.jpg?v=1770826979,4,"",,,,,,,,,,,,,,
+בלוק-תכנון-בינוני,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0217-Edit-2_b2367541-3ffd-462e-93af-5190af2ef5d5.jpg?v=1770827111,5,"",,,,,,,,,,,,,,
+מחברת-שורות-גדולה,מחברת שורות בינונית,"<p>מוצר משלים למוצרי התכנון</p>
+<p>מחברת לכתיבה חופשית</p>
+<p>באותו עיצוב אחיד שהופך את המחברות לאקססוריז של שולחן העבודה</p>
+<p>המחברת מתאימה לסיכומים, תובנות, רעיונות, יצירות, פרוייקטים ועוד</p>
+<p> </p>
+<p>מחברת שורות </p>
+<p>כריכה רכה תפורה</p>
+<p>25.5X19 ס״מ</p>
+<p>40 דפים</p>
+<p>נייר 90 גרם</p>",90gr / 30P / A4,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,Title,Default Title,,,,,,,,,0.0,shopify,200,deny,manual,35.00,,true,false,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5447-Edit.jpg?v=1771313242,1,"",false,,,40 דפים,B5+,120 גודל,powder,,,,kg,,,active
+מחברת-שורות-גדולה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5448-Edit.jpg?v=1771313249,2,"",,,,,,,,,,,,,,
+מחברת-שורות-גדולה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5447-Edit_91ba937b-86cf-4e33-a9ec-3a997d483494.jpg?v=1771313300,3,"",,,,,,,,,,,,,,
+מחברת-שורות-גדולה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5477-Edit.jpg?v=1771313347,4,"",,,,,,,,,,,,,,
+מחברת-שורות-גדולה,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5449_b80f3345-9337-4410-b269-37e7d6aed657.jpg?v=1771313390,5,"",,,,,,,,,,,,,,
+p2,לוח משפחתי,"<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">בלוח המשפחתי תוכלי לעדכן אירועים שבועיים מיוחדים של בני הבית, החל ממבחן בבי״ס, ״חולצה לבנה״ ועד חוגים ועיסוקים של בני הבית אחר הצהריים.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">מעבר לאירועי השבוע, </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">בבלוח המשפחתי יש מקום לכתוב תזכורות,</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">משימות בית שבשגרה ואפילו נושאים לשיחה.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""></span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">כל בני הבית שותפים לכתיבה בלוח המשפחתי.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">הלוח המשפחתי שומר את כל בני הבית מעודכנים ומעורבים באירועי השבוע (גם את סבא וסבתא כשבאים לבקר).</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">ובכך:</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מאפשר להעביר לילדים בצורה מסודרת וברורה את מהלך השבוע</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">- מעודד מעורבות בחיי בני המשפחה ובמשימות הבית</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מלמד ניהול וארגון זמן ומשימות ע״י דוגמא אישית</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מעודד אחריות</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-כלי להנחלת ערכים</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-כלי להנחלת הרגלים ושגרה</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">-מאפשר תשתית לתיאום ציפיות עם הילדים לגבי משימות בשגרה.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">העיצוב שלו נעים ומשתלב עם הבית, כך שאפשר, ואף רצוי לתלות אותו בקום מרכזי, שזמין לכולם, כמו המטבח או פינת האוכל</span></p>",120gr / 50P / A4,Uncategorized,"",מוצרי תכנון לאימהות,true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,180.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0257_27b8a0de-e459-49c6-9751-a3159da42c8f.jpg?v=1770189799,1,"",false,,,15 דפים,50X70,120 גרם,,,,,kg,,,active
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0265-Edit_4e4619c1-b991-4acc-819b-fb85ad2111e3.jpg?v=1770819692,2,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0257_01e8bab0-f601-43bb-bbbe-a0dd19de2b68.jpg?v=1771916989,3,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0257_849f5aa3-d4c8-4f14-8a18-ac5ac619a4ae.jpg?v=1771916989,4,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0263-Edit.jpg?v=1771916989,5,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0265-Edit_2c0a158a-d29b-47fd-901f-fa8d26b51ff6.jpg?v=1771917254,6,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_bac8a610-f59b-4e5c-9b3d-6e7bddc7c864.png?v=1771916989,7,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_76479ed3-931e-4108-a89b-9410324970de.png?v=1771916989,8,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_019388f8-8824-4b7d-b1a9-7bc61bd874d8.png?v=1771916989,9,"",,,,,,,,,,,,,,
+p2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/4_d7b9feed-82cc-4195-bd4b-ef218c00ba2e.png?v=1771916989,10,"",,,,,,,,,,,,,,
+p1,מחברת יום האם לניהול משימות קבועות,"<p><img><meta charset=""utf-8""></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">המחברת של יום האם עוזרת לך לעשות סדר בכל המשימות הקבועות בחייך כאמא.</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">במחברת תמצאי חלוקה לתחומים: אני, משפחה, זוגיות, ילדים, בית ופרויקטים</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">ובעזרת שאלות מנחות וכלים פרקטיים, תדייקי את השגרה שלך, היומית והשבועית,</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">ותוכלי לתכנן גם את הלוח השבועי המשפחתי וגם את הלוח האישי שלך.</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">ההיכרות עם המשימות הקבועות שלך מאפשרת לך לנהל טוב יותר את המשימות המשתנות,</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">להיות גמישה יותר, לקבל החלטות בצורה בטוחה ואפילו להיות ספונטנית</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""> </p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">המטרה היא לא לקבע לו״ז</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">אלא להרגיש שאת בשליטה ומוכנה לכל תרחיש</span></p>
+<p class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">שאת מנהלת את המשימות, ולא הן אותך</span></p>",120gr / 30P / 25X20,Uncategorized,"",מוצרי תכנון לאימהות,true,Title,Default Title,,,,,,,,,0.0,shopify,200,deny,manual,160.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0245_0eb3690f-49fa-420f-9c8a-0e63b25999e8.jpg?v=1770563335,1,"",false,,,30 דפים,A4,120 גרם,,,,,kg,,,active
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0250_689801ae-05e2-430a-9ba0-6a8096acc6b0.jpg?v=1770563335,2,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0248-Edit.jpg?v=1770563335,3,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0253-Edit.jpg?v=1770563335,4,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2k_4dab523b-b755-466e-a8d0-33a7b3bc6028.jpg?v=1771416874,5,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0288-Edit.jpg?v=1771416874,6,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0299-Edit.jpg?v=1771416874,7,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0296-Edit.jpg?v=1771416874,8,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0284-Edit_395eef4d-08a4-40c8-8ef3-45bb980e42dd.jpg?v=1771416874,9,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/1_0577012b-82d2-47b1-a837-2f074eee292b.png?v=1771416874,10,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/2_6072f921-1438-42c1-b184-8020a9d3e2a8.png?v=1771416874,11,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/3_f58cb6c4-fc21-45fd-96b6-6cd9bd25f6b3.png?v=1771416874,12,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/4_9a35bffc-fddc-44e2-8443-86dde006efd6.png?v=1771416874,13,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/5_c35738c8-68b5-4d53-8f86-9ac465ff8a82.png?v=1771416874,14,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/6_facafc7c-0525-49c1-a606-bd0a7740b7e6.png?v=1771416874,15,"",,,,,,,,,,,,,,
+p1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/9.png?v=1771416874,16,"",,,,,,,,,,,,,,
+p3,תכנון ארוחות משפחתי שבועי,"<p>לוח תכנון ארוחות שבועי וגמיש, </p>
+<p>בלי כותרות קבועות, כדי שתוכלי להתאים את התכנון בדיוק לצרכים של המשפחה שלך.</p>
+<p>מתאים לחלוקת ארוחות (בוקר/צהרים/ערב) או (צהרים/ נשנוש בריא/ערב)</p>
+<p>וגם לארגון קופסאות אוכל לילדים למשל (בר/ עומר/ רז) </p>",120gr / 50P / A4,"Office Supplies > Filing & Organization > Calendars, Organizers & Planners > Organizers","",מוצרי תכנון שבועיים,true,Title,Default Title,,,,,,,,,0.0,shopify,200,deny,manual,65.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_60eacef0-4dba-46af-a35d-6b712eb5e435.jpg?v=1771313966,1,"",false,,,50 דפים,A4,120 גרם,wine,,,,kg,,,active
+p3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0301_a14f2c0f-37e0-40c9-ba2a-e78c1a69d9cb.jpg?v=1770563557,2,"",,,,,,,,,,,,,,
+p3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0225_c8615baf-9047-42b7-a915-a2d9b7c2d491.jpg?v=1771316643,3,"",,,,,,,,,,,,,,
+p3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0301_84cdbfc5-530d-4ef1-aeec-84ad7cb9142e.jpg?v=1771316643,4,"",,,,,,,,,,,,,,
+p3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0223-Edit_5c0b72ec-c2f3-4f97-aa30-242026609720.jpg?v=1771316643,5,"",,,,,,,,,,,,,,
+p5,רשימת קניות / סידורים,"<div dir=""rtl"" style=""text-align: right;"">
+<p>רשימת קניות וסידורים</p>
+<p>,מחולקת לקטגוריות, עושה סדר וחוסכת זמן</p>
+<p>.נוחה לשימוש לרשימת קניות לסופר- כל פריט נרשם במקומו בהתאם לסידור המדפים או סוגי המוצרים</p>
+<p>.נוחה לשימוש בסידורים מחוץ לבית בהתאם לחנות או האזור</p>
+</div>",120gr / 50P / A5,"Office Supplies > Filing & Organization > Calendars, Organizers & Planners > Organizers",מוצרי תכנון שבועיים,מוצרי תכנון שבועיים,true,Title,Default Title,,,,,,,,,0.0,shopify,200,deny,manual,50.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_2f6a9083-f2d3-4249-a41e-6f1774fb09fa.jpg?v=1771313966,1,"",false,,,30 דפים,A4,120 גרם,stone,,,,kg,,,active
+p5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0259_6bba9606-dae9-49bb-a760-158cc68b5223.jpg?v=1770563734,2,"",,,,,,,,,,,,,,
+p5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0231_20e7c628-f555-4196-a12c-7654ab56b806.jpg?v=1770825871,3,"",,,,,,,,,,,,,,
+p5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0279-Edit_eb4cdc54-b60b-4ac5-ac61-1fc95e0c1f6a.jpg?v=1770825871,4,"",,,,,,,,,,,,,,
+p5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0259_dfaf4cf1-b1ce-4f37-a72c-98567a545802.jpg?v=1770825857,5,"",,,,,,,,,,,,,,
+p7,מארז מחברות,"<p>מוצר משלים למוצרי התכנון</p>
+<p>מחברת לכתיבה חופשית</p>
+<p>באותו עיצוב אחיד שהופך את המחברות לאקססוריז של שולחן העבודה</p>
+<p>המחברת מתאימה לסיכומים, תובנות, רעיונות, יצירות, פרוייקטים ועוד</p>
+<p> </p>
+<p>מחברת שורות </p>
+<p>כריכה רכה תפורה</p>
+<p>30 דפים</p>
+<p>נייר 90 גרם</p>",90gr / 30P / A5,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,גודל,A4,,,,,,,,,0.0,shopify,200,deny,manual,35.00,,true,false,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5449.jpg?v=1771313161,1,"",false,,,30 דפים,A4/A5/A6,120 גרם,,,,,kg,,,active
+p7,,,,,,,,,A5,,,,,,,,,0.0,shopify,200,deny,manual,32.00,,true,false,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5450-Edit.jpg?v=1771313161,2,"",,,,,,,,,,,kg,,,
+p7,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0243-Edit_ca4ecb15-c91c-4fe5-af22-96d12faac37e.jpg?v=1771313161,3,"",,,,,,,,,,,,,,
+p7,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/S2A5449_994e5506-bea3-4b07-83c2-fd2861e383ed.jpg?v=1771313161,4,"",,,,,,,,,,,,,,
+p4,לוח שבועי,"<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">הלוח השבועי הוא כלי בסיסי בתכנון.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">אין שבוע אחד שנראה כמו הקודם וכשאת מתכננת מראש, את מרגישה בהבדל: ביעילות, בהספק ובמוטיבציה.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">התכנון השבועי הוא פגישה עם עצמך.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">זה לא “לשבץ משימות”, אלא רגע לעצור,</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">לחשוב מה עבד בשבוע שעבר ומה תרצי לשפר בשבוע הקרוב.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">איזה הרגל חדש את מכניסה, ואיך את עושה את זה?</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">הלוח נותן לך תמונה רחבה של כל השבוע ומאפשר לך לראות מתי הזמן הנכון לכל דבר.</span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none white-space-prewrap""> </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">עצם הכתיבה מאלצת אותך להתרכז, לחשוב, לעבד את המידע ולזכור אותו טוב יותר.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">הימים כתובים בעברית ומתחילים ביום ראשון.</span></p>
+<p style=""text-align: right;"" class=""cvGsUA direction-rtl align-start para-style-body""><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">חלוקת העמודות מאפשרת הפרדה בין לו״ז, למשימות ותזכורות כלליים </span><span class=""a_GcMg font-feature-liga-off font-feature-clig-off font-feature-calt-off text-decoration-none text-strikethrough-none"">החלק התחתון מתאים למטרות או משימות שבועיות</span></p>",120gr / 50P / A4,"Office Supplies > Filing & Organization > Calendars, Organizers & Planners > Organizers","",מוצרי תכנון שבועיים,true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,65.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0229_e542a252-fd09-413c-8b0a-b5b4e71ef240.jpg?v=1771313966,1,"",false,,,50 דפים,A4,120 גרם,powder,,,,kg,,,active
+p4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0276-Edit_8d539c2f-1df3-46ea-8be0-40e789d67644.jpg?v=1770563440,2,"",,,,,,,,,,,,,,
+p4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0229_1fd0d9bd-92fb-4103-9d7c-be81bbecbef8.jpg?v=1770825454,3,"",,,,,,,,,,,,,,
+p4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0228-Edit_8ada33be-b0ed-42cc-a174-0e704d9dc385.jpg?v=1770825454,4,"",,,,,,,,,,,,,,
+p4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0276-Edit_be6dd230-904e-4395-9e76-9d154a695b7f.jpg?v=1770825445,5,"",,,,,,,,,,,,,,
+בלוק-תכנון-גדול,בלוק תכנון גדול,"<p>בלוק נייר חלק </p>
+<p>לכתיבה ותכנון חופשי.</p>
+<p>מתאים לרשימות, להודעות ותזכורות</p>
+<p>מגיע בשלושה גדלים בהתאם לכל צורך.</p>
+<p>משתלב בעיצוב של שאר מוצרי התכנון.</p>
+<p> </p>
+<p>גודל A4</p>
+<p>50 דפים</p>
+<p><img>עובי נייר 120 גרם</p>
+<p>גב קרטון</p>",120gr / 50P / A4,Office Supplies > General Office Supplies > Paper Products > Notebooks & Notepads > Notepads,"",מוצרי תכנון משלימים,true,Title,Default Title,,,,,,,,,0.0,shopify,199,deny,manual,50.00,,true,true,,,,,"",https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_1493d0ed-54b6-43b9-9de3-2e13d07ef0a0.jpg?v=1771313896,1,"",false,,,50 דפים,A4,120 גרם,wine,,,,kg,,,active
+בלוק-תכנון-גדול,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_7f32bdfe-06a4-4cac-9300-781ebedf219f.jpg?v=1770563944,2,"",,,,,,,,,,,,,,
+בלוק-תכנון-גדול,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0221_afc87196-c3a1-4e3d-a7b2-6a14ec38a49b.jpg?v=1770826909,3,"",,,,,,,,,,,,,,
+בלוק-תכנון-גדול,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0219-Edit_46babbe8-ab29-40e5-8fdd-bd72e803eef0.jpg?v=1770826979,4,"",,,,,,,,,,,,,,
+בלוק-תכנון-גדול,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,https://cdn.shopify.com/s/files/1/0798/7838/9996/files/0S2A0218-Edit-2_3688235c-f892-4a7b-9d27-79908c6d7e63.jpg?v=1770827030,5,"",,,,,,,,,,,,,,

@@ -59,7 +59,7 @@ export function AddressAutocomplete({
         });
 
         if (type === "street" && cityCode) {
-          params.set("filters", JSON.stringify({ city_code: cityCode }));
+          params.set("filters", JSON.stringify({ "סמל_ישוב": cityCode }));
         }
 
         const response = await fetch(`${API_BASE}?${params}`);

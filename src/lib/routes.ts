@@ -7,25 +7,25 @@ export const ROUTES = {
   auth: '/auth',
   
   // Site routes (main content)
-  home: '/site',
-  allProducts: '/site/products',
-  allSets: '/site/sets',
-  profile: '/site/profile',
-  addresses: '/site/addresses',
-  orders: '/site/orders',
-  wishlist: '/site/wishlist',
-  about: '/site/about',
-  blog: '/site/blog',
-  content1: '/site/content-1',
-  content2: '/site/content-2',
-  content3: '/site/content-3',
-  shipping: '/site/shipping',
-  privacy: '/site/privacy',
-  terms: '/site/terms',
-  returns: '/site/returns',
-  support: '/site/support',
-  checkout: '/site/checkout',
-  checkoutConfirmation: '/site/checkout/confirmation',
+  home: '/',
+  allProducts: '/products',
+  allSets: '/sets',
+  profile: '/profile',
+  addresses: '/addresses',
+  orders: '/orders',
+  wishlist: '/wishlist',
+  about: '/about',
+  blog: '/blog',
+  content1: '/content-1',
+  content2: '/content-2',
+  content3: '/content-3',
+  shipping: '/shipping',
+  privacy: '/privacy',
+  terms: '/terms',
+  returns: '/returns',
+  support: '/support',
+  checkout: '/checkout',
+  checkoutConfirmation: '/checkout/confirmation',
 } as const;
 
 // Collection handles (for type safety and consistency)
@@ -47,11 +47,11 @@ export const PRODUCT_HANDLES = {
 } as const;
 
 // Dynamic route builders (type-safe functions)
-export const buildProductPath = (handle: string): string => 
-  `/site/product/${handle}`;
+export const buildProductPath = (handle: string): string =>
+  `/product/${handle}`;
 
-export const buildCollectionPath = (handle: string): string => 
-  `/site/collection/${handle}`;
+export const buildCollectionPath = (handle: string): string =>
+  `/collection/${handle}`;
 
 // Type exports for TypeScript consumers
 export type RouteKey = keyof typeof ROUTES;

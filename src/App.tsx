@@ -61,9 +61,8 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/site" replace />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/site" element={<SiteAccess />}>
+              <Route path="/" element={<SiteAccess />}>
                 <Route index element={<Index />} />
                 <Route path="products" element={<AllProducts />} />
                 <Route path="sets" element={<AllSets />} />
@@ -85,6 +84,9 @@ const App = () => (
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="checkout/confirmation/:orderId" element={<CheckoutConfirmation />} />
               </Route>
+              {/* Redirect old /site/* URLs */}
+              <Route path="/site" element={<Navigate to="/" replace />} />
+              <Route path="/site/*" element={<Navigate to="/" replace />} />
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/admin/*" element={<AdminDashboardPage />} />

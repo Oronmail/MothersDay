@@ -52,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } = process.env;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SITE_URL) {
-    return res.redirect(302, `${SITE_URL || ""}/site/checkout?error=config`);
+    return res.redirect(302, `${SITE_URL || ""}/checkout?error=config`);
   }
 
   const effectiveOrderId = orderId || uniqueID;
@@ -66,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
       if (!isValid) {
         console.error("Invalid responseMac for order:", effectiveOrderId);
-        return res.redirect(302, `${SITE_URL}/site/checkout?error=validation`);
+        return res.redirect(302, `${SITE_URL}/checkout?error=validation`);
       }
     }
 
@@ -90,13 +90,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error("Failed to update order:", error);
     }
 
-    return res.redirect(302, `${SITE_URL}/site/checkout/confirmation/${effectiveOrderId}`);
+    return res.redirect(302, `${SITE_URL}/checkout/confirmation/${effectiveOrderId}`);
   }
 
   if (status === "cancel") {
-    return res.redirect(302, `${SITE_URL}/site/checkout?cancelled=true`);
+    return res.redirect(302, `${SITE_URL}/checkout?cancelled=true`);
   }
 
   // Error or unknown status
-  return res.redirect(302, `${SITE_URL}/site/checkout?error=payment`);
+  return res.redirect(302, `${SITE_URL}/checkout?error=payment`);
 }
