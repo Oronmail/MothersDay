@@ -19,6 +19,51 @@ const CITIES_RESOURCE_ID = "b7cf8f14-64a2-4b33-8d4b-edb286fdbd37";
 const STREETS_RESOURCE_ID = "a7296d1a-f8c9-4b70-96c2-6ebb4352f8e3";
 const API_BASE = "https://data.gov.il/api/3/action/datastore_search";
 
+// Cache: fetch all cities/streets once, filter client-side for instant prefix matching
+const cache: Record<string, AutocompleteResult[]> = {};
+
+async function fetchAllRecords(
+  resourceId: string,
+  cacheKey: string,
+  nameField: string,
+  codeField: string,
+  filters?: Record<string, unknown>
+): Promise<AutocompleteResult[]> {
+  if (cache[cacheKey]) return cache[cacheKey];
+
+  const allRecords: AutocompleteResult[] = [];
+  let offset = 0;
+  const limit = 500;
+
+  while (true) {
+    const params = new URLSearchParams({
+      resource_id: resourceId,
+      limit: String(limit),
+      offset: String(offset),
+    });
+    if (filters) {
+      params.set("filters", JSON.stringify(filters));
+    }
+
+    const response = await fetch(`${API_BASE}?${params}`);
+    const data = await response.json();
+
+    if (!data.success || !data.result?.records?.length) break;
+
+    for (const record of data.result.records) {
+      const name = (record[nameField] as string)?.trim();
+      const code = record[codeField] as number;
+      if (name) allRecords.push({ name, code });
+    }
+
+    if (data.result.records.length < limit) break;
+    offset += limit;
+  }
+
+  cache[cacheKey] = allRecords;
+  return allRecords;
+}
+
 export function AddressAutocomplete({
   type,
   cityCode,
@@ -31,72 +76,67 @@ export function AddressAutocomplete({
   const [results, setResults] = useState<AutocompleteResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [allItems, setAllItems] = useState<AutocompleteResult[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Sync external value changes
   useEffect(() => {
     setQuery(value);
   }, [value]);
 
-  const fetchResults = useCallback(
-    async (searchQuery: string) => {
-      if (searchQuery.length < 2) {
+  // Preload data
+  useEffect(() => {
+    if (type === "city") {
+      fetchAllRecords(CITIES_RESOURCE_ID, "cities", "שם_ישוב", "סמל_ישוב").then(
+        setAllItems
+      );
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (type === "street" && cityCode) {
+      const key = `streets-${cityCode}`;
+      setAllItems([]); // clear while loading
+      fetchAllRecords(
+        STREETS_RESOURCE_ID,
+        key,
+        "שם_רחוב",
+        "סמל_רחוב",
+        { "סמל_ישוב": cityCode }
+      ).then(setAllItems);
+    }
+  }, [type, cityCode]);
+
+  // Client-side prefix filter — instant, no API calls
+  const filterResults = useCallback(
+    (searchQuery: string) => {
+      if (searchQuery.length < 1) {
         setResults([]);
         return;
       }
 
-      if (type === "street" && !cityCode) {
-        setResults([]);
-        return;
-      }
+      const q = searchQuery.trim();
+      const filtered = allItems
+        .filter((item) => item.name.startsWith(q) || item.name.includes(q))
+        .sort((a, b) => {
+          // Prefer prefix matches over contains matches
+          const aStarts = a.name.startsWith(q) ? 0 : 1;
+          const bStarts = b.name.startsWith(q) ? 0 : 1;
+          return aStarts - bStarts || a.name.localeCompare(b.name);
+        })
+        .slice(0, 10);
 
-      try {
-        const params = new URLSearchParams({
-          resource_id: type === "city" ? CITIES_RESOURCE_ID : STREETS_RESOURCE_ID,
-          q: searchQuery,
-          limit: "10",
-        });
-
-        if (type === "street" && cityCode) {
-          params.set("filters", JSON.stringify({ "סמל_ישוב": cityCode }));
-        }
-
-        const response = await fetch(`${API_BASE}?${params}`);
-        const data = await response.json();
-
-        if (data.success && data.result?.records) {
-          const mapped: AutocompleteResult[] = data.result.records.map(
-            (record: Record<string, unknown>) => {
-              if (type === "city") {
-                return {
-                  name: (record["שם_ישוב"] as string)?.trim(),
-                  code: record["סמל_ישוב"] as number,
-                };
-              }
-              return {
-                name: (record["שם_רחוב"] as string)?.trim(),
-                code: record["סמל_רחוב"] as number,
-              };
-            }
-          );
-          setResults(mapped.filter((r) => r.name));
-        }
-      } catch {
-        setResults([]);
-      }
+      setResults(filtered);
     },
-    [type, cityCode]
+    [allItems]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-    onChange(val); // update parent with raw text (no code = not selected from list)
+    onChange(val);
     setHighlightedIndex(-1);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchResults(val), 300);
+    filterResults(val);
   };
 
   const handleSelect = (result: AutocompleteResult) => {
@@ -139,20 +179,16 @@ export function AddressAutocomplete({
     if (results.length > 0) setIsOpen(true);
   }, [results]);
 
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
   return (
     <div ref={containerRef} className="relative">
       <Input
         value={query}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => results.length > 0 && setIsOpen(true)}
+        onFocus={() => {
+          if (results.length > 0) setIsOpen(true);
+          else filterResults(query);
+        }}
         placeholder={placeholder}
         disabled={disabled}
         autoComplete="off"
