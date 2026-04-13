@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { items, email, shippingAddress, userId } = req.body as {
+  const { items, email, shippingAddress, shippingCost, userId } = req.body as {
     items: Array<{
       title: string;
       quantity: number;
@@ -36,6 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       postal_code?: string;
       phone?: string;
     };
+    shippingCost?: number;
     userId?: string;
   };
 
@@ -52,10 +53,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const totalPrice = items.reduce(
+  const itemsTotal = items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+
+  // Server-side shipping cost validation: recompute from store_settings
+  let validatedShippingCost = 0;
+  try {
+    const { data: settingsRows } = await supabase
+      .from("store_settings")
+      .select("key, value");
+    const settingsMap = new Map((settingsRows ?? []).map((r: any) => [r.key, r.value]));
+    const enabled = Boolean(settingsMap.get("shipping_enabled") ?? true);
+    const cost = Number(settingsMap.get("shipping_cost") ?? 35);
+    const threshold = Number(settingsMap.get("free_shipping_threshold") ?? 350);
+    validatedShippingCost = enabled ? (itemsTotal >= threshold ? 0 : cost) : 0;
+  } catch {
+    // Fallback to client-provided value if settings read fails, but clamp to non-negative
+    validatedShippingCost = Math.max(0, shippingCost ?? 0);
+  }
+
+  const totalPrice = itemsTotal + validatedShippingCost;
 
   let phone = shippingAddress.phone || "";
   if (phone.startsWith("0")) {
@@ -71,6 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         line_items: items,
         shipping_address: { ...shippingAddress, phone },
         total_price: totalPrice,
+        shipping_cost: validatedShippingCost,
         currency_code: "ILS",
         financial_status: "pending",
         fulfillment_status: "unfulfilled",

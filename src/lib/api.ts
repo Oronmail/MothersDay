@@ -248,12 +248,13 @@ export async function createOrder(
     postal_code?: string;
     phone?: string;
   },
+  shippingCost: number,
   userId?: string
 ): Promise<{ orderId: string; orderNumber: number }> {
   const response = await fetch('/api/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items, email, shippingAddress, userId }),
+    body: JSON.stringify({ items, email, shippingAddress, shippingCost, userId }),
   });
 
   if (!response.ok) {

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
-import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, LogOut, Settings } from 'lucide-react';
+import logoNew from '@/assets/logo-new.png';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: LayoutDashboard, label: 'דשבורד', end: true },
@@ -10,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/admin/orders', icon: ShoppingCart, label: 'הזמנות' },
   { to: '/admin/customers', icon: Users, label: 'לקוחות' },
   { to: '/admin/newsletter', icon: Mail, label: 'ניוזלטר' },
+  { to: '/admin/settings', icon: Settings, label: 'הגדרות' },
 ];
 
 export const AdminSidebar = () => {
@@ -18,7 +20,10 @@ export const AdminSidebar = () => {
   return (
     <aside className="w-56 bg-card border-l border-border flex flex-col min-h-screen fixed right-0 top-0 z-40" dir="rtl">
       <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-bold">MD Admin</h2>
+        <div className="flex items-center gap-2">
+          <img src={logoNew} alt="MothersDay" className="h-8 w-auto" />
+          <span className="text-sm font-semibold text-muted-foreground">Admin</span>
+        </div>
       </div>
       <nav className="flex-1 p-2 space-y-1">
         {NAV_ITEMS.map(({ to, icon: Icon, label, end }) => (

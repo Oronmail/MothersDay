@@ -8,17 +8,16 @@ import { LazyImage } from "@/components/LazyImage";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
+  subtotal: number;
+  shippingCost: number;
   isSubmitting: boolean;
   onSubmit: () => void;
 }
 
-export function CheckoutSummary({ items, isSubmitting, onSubmit }: CheckoutSummaryProps) {
+export function CheckoutSummary({ items, subtotal, shippingCost, isSubmitting, onSubmit }: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const totalPrice = items.reduce(
-    (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
-    0
-  );
+  const totalPrice = subtotal + shippingCost;
 
   return (
     <div className="space-y-4">
@@ -75,11 +74,11 @@ export function CheckoutSummary({ items, isSubmitting, onSubmit }: CheckoutSumma
         <div className="border-t border-border pt-3 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">סכום ביניים</span>
-            <span>&#8362;{totalPrice.toFixed(2)}</span>
+            <span>&#8362;{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">משלוח</span>
-            <span>חינם</span>
+            <span>{shippingCost === 0 ? 'חינם' : <>{'\u20AA'}{shippingCost.toFixed(2)}</>}</span>
           </div>
           <div className="flex justify-between text-lg pt-2 border-t border-border">
             <span>סה״כ</span>

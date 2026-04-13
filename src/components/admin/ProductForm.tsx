@@ -38,12 +38,18 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const IMAGE_LAYOUTS = [
-  { value: 'grid-2x2', label: 'Grid 2x2' },
-  { value: 'grid-2-left-1-right', label: 'Grid 2 Left 1 Right' },
-  { value: 'grid-1-left-2-right', label: 'Grid 1 Left 2 Right' },
-  { value: 'grid-3x1', label: 'Grid 3x1' },
-  { value: 'single', label: 'Single' },
-  { value: 'carousel', label: 'Carousel' },
+  { value: 'grid-2x2', label: '2x2 רגיל' },
+  { value: 'grid-2-large-2-small', label: '2 גדולות + 2 קטנות' },
+  { value: 'grid-hero-bottom', label: 'ראשי + 2 למטה' },
+  { value: 'grid-3x1', label: '3 בשורה' },
+  { value: 'grid-1-2-1', label: '1-2-1 (אנכי)' },
+  { value: 'grid-2-1-3-2', label: '2-1-3-2 (8 תמונות)' },
+  { value: 'grid-2-2-4', label: '2-2-4 (8 תמונות)' },
+  { value: 'grid-2-left-1-right', label: '2 שמאל + 1 ימין' },
+  { value: 'grid-1-2-right', label: '1 שמאל + 2 ימין' },
+  { value: 'grid-2-stacked', label: '2 זה מעל זה' },
+  { value: 'grid-2-left-carousel-right', label: '2 שמאל + קרוסלה ימין' },
+  { value: 'grid-custom', label: 'מותאם אישית' },
 ];
 
 function toKebab(str: string): string {
@@ -173,6 +179,23 @@ export const ProductForm = () => {
           .select('id')
           .single();
         if (error) throw error;
+
+        // Persist temp images for new product
+        const tempImages = images.filter(img => img.id.startsWith('temp-'));
+        if (tempImages.length > 0) {
+          const { error: imgError } = await supabase
+            .from('product_images')
+            .insert(tempImages.map(img => ({
+              product_id: data.id,
+              url: img.url,
+              position: img.position,
+            })));
+          if (imgError) {
+            console.error('Failed to persist images:', imgError);
+            toast.error('המוצר נוצר אך חלק מהתמונות לא נשמרו');
+          }
+        }
+
         return data.id;
       }
     },

@@ -165,23 +165,57 @@ export const DEFAULT_IMAGE_LAYOUT: ImageLayoutConfig = {
  * Parse image layout from product's imageLayout field (a plain string from Supabase).
  * Returns default layout if parsing fails.
  */
+/**
+ * Map a plain layout type string to a default ImageLayoutConfig.
+ * Used when the DB stores a plain string (e.g. "grid-2-left-1-right")
+ * rather than a full JSON config object.
+ */
+function getDefaultConfigForLayoutType(type: string): ImageLayoutConfig {
+  switch (type) {
+    case 'grid-2x2':
+      return { type: 'grid-2x2', mainImages: [0, 1, 2, 3], aspectRatios: ['10/7', '10/7', '10/7', '10/7'] };
+    case 'grid-2-large-2-small':
+      return { type: 'grid-2-large-2-small', mainImages: [0, 1, 2, 3], aspectRatios: ['3/2', '3/2', '4/3', '4/3'] };
+    case 'grid-hero-bottom':
+      return { type: 'grid-hero-bottom', mainImages: [0, 1, 2], aspectRatios: ['16/9', '4/3', '4/3'] };
+    case 'grid-3x1':
+      return { type: 'grid-3x1', mainImages: [0, 1, 2], aspectRatios: ['4/3', '4/3', '4/3'] };
+    case 'grid-1-2-1':
+      return { type: 'grid-1-2-1', mainImages: [0, 1, 2, 3], aspectRatios: ['16/9', '4/3', '4/3', '16/9'] };
+    case 'grid-2-1-3-2':
+      return { type: 'grid-2-1-3-2', mainImages: [0, 1, 2, 3, 4, 5, 6, 7], aspectRatios: ['3/2', '3/2', '3/2', '4/3', '4/3', '4/3', '4/3', '4/3'] };
+    case 'grid-2-2-4':
+      return { type: 'grid-2-2-4', mainImages: [0, 1, 2, 3, 4, 5, 6, 7], aspectRatios: ['3/2', '3/2', '3/2', '3/2', '4/3', '4/3', '4/3', '4/3'] };
+    case 'grid-2-left-1-right':
+      return { type: 'grid-2-left-1-right', mainImages: [0, 1, 2], aspectRatios: ['4/3', '4/3', '3/4'] };
+    case 'grid-1-2-right':
+      return { type: 'grid-1-2-right', mainImages: [0, 1, 2, 3], aspectRatios: ['4/3', '4/3', '4/3', '3/4'] };
+    case 'grid-2-stacked':
+      return { type: 'grid-2-stacked', mainImages: [0, 1], aspectRatios: ['4/3', '4/3'] };
+    case 'grid-2-left-carousel-right':
+      return { type: 'grid-2-left-carousel-right', mainImages: [0, 1], carouselImages: [2, 3], aspectRatios: ['4/3', '4/3'] };
+    case 'grid-custom':
+    default:
+      return DEFAULT_IMAGE_LAYOUT;
+  }
+}
+
 export const parseImageLayout = (imageLayoutValue: string | null | undefined): ImageLayoutConfig => {
   if (!imageLayoutValue) {
     return DEFAULT_IMAGE_LAYOUT;
   }
 
+  // Try JSON first (backward compat with any JSON-stored values)
   try {
     const parsed = JSON.parse(imageLayoutValue);
-
-    // Validate required fields
-    if (!parsed.type || !Array.isArray(parsed.mainImages) || !Array.isArray(parsed.aspectRatios)) {
-      console.warn('Invalid image layout value, using default layout');
-      return DEFAULT_IMAGE_LAYOUT;
+    if (typeof parsed === 'object' && parsed !== null
+        && parsed.type && Array.isArray(parsed.mainImages) && Array.isArray(parsed.aspectRatios)) {
+      return parsed as ImageLayoutConfig;
     }
-
-    return parsed as ImageLayoutConfig;
-  } catch (error) {
-    console.error('Failed to parse image layout:', error);
-    return DEFAULT_IMAGE_LAYOUT;
+  } catch {
+    // Not JSON — fall through to plain string handling
   }
+
+  // Handle plain string layout type (the normal case from DB)
+  return getDefaultConfigForLayoutType(imageLayoutValue);
 };

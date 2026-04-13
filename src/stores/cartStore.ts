@@ -13,7 +13,7 @@ interface CartStore {
   removeItem: (variantId: string) => void;
   clearCart: () => void;
   setLoading: (loading: boolean) => void;
-  createOrder: (userEmail: string, shippingAddress: ShippingAddress, userId?: string) => Promise<{ orderId: string; orderNumber: number }>;
+  createOrder: (userEmail: string, shippingAddress: ShippingAddress, shippingCost: number, userId?: string) => Promise<{ orderId: string; orderNumber: number }>;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -64,7 +64,7 @@ export const useCartStore = create<CartStore>()(
 
       setLoading: (isLoading) => set({ isLoading }),
 
-      createOrder: async (userEmail: string, shippingAddress: ShippingAddress, userId?: string) => {
+      createOrder: async (userEmail: string, shippingAddress: ShippingAddress, shippingCost: number, userId?: string) => {
         return startSpan(
           {
             op: 'ui.action',
@@ -101,7 +101,7 @@ export const useCartStore = create<CartStore>()(
                 variant_id: item.variantId,
               }));
 
-              const result = await createOrder(lineItems, userEmail, shippingAddress, userId);
+              const result = await createOrder(lineItems, userEmail, shippingAddress, shippingCost, userId);
 
               logger.info('Order created successfully', { orderId: result.orderId, orderNumber: result.orderNumber });
               clearCart();

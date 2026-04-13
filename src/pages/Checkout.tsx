@@ -13,6 +13,7 @@ import { CheckoutShippingForm } from "@/components/checkout/CheckoutShippingForm
 import { CheckoutPayment } from "@/components/checkout/CheckoutPayment";
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
 import { Footer } from "@/components/Footer";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const checkoutSchema = z.object({
   email: z.string().email("כתובת אימייל לא תקינה"),
@@ -35,6 +36,15 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { items, isLoading, createOrder } = useCartStore();
+  const { data: settings } = useStoreSettings();
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
+    0
+  );
+  const shippingCost = settings?.shipping_enabled
+    ? (subtotal >= (settings?.free_shipping_threshold ?? 350) ? 0 : (settings?.shipping_cost ?? 35))
+    : 0;
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -83,7 +93,7 @@ export default function Checkout() {
     };
 
     try {
-      const { orderId, orderNumber } = await createOrder(email, shippingAddress, user?.id);
+      const { orderId, orderNumber } = await createOrder(email, shippingAddress, shippingCost, user?.id);
 
       toast.success("ההזמנה נוצרה בהצלחה!", {
         description: `מספר הזמנה: ${orderNumber}`,
@@ -125,6 +135,8 @@ export default function Checkout() {
               <div className="md:sticky md:top-8">
                 <CheckoutSummary
                   items={items}
+                  subtotal={subtotal}
+                  shippingCost={shippingCost}
                   isSubmitting={isLoading}
                   onSubmit={handleSubmit}
                 />
