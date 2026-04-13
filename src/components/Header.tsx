@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { CartDrawer } from "./CartDrawer";
 import { MobileNav } from "./MobileNav";
 import { SearchModal } from "./SearchModal";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import headerTexture from "@/assets/header-texture.png";
@@ -173,6 +173,10 @@ export const Header = () => {
                   <DropdownMenuItem onClick={() => navigate(ROUTES.profile)}>
                     <img src={userIcon} alt="" className="ml-2 h-4 w-4" />
                     פרופיל
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(ROUTES.wishlist)}>
+                    <Heart className="ml-2 h-4 w-4" />
+                    רשימת משאלות
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="ml-2 h-4 w-4" />

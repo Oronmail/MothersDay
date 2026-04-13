@@ -9,6 +9,7 @@ import { QuickViewModal } from "./QuickViewModal";
 import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
+import { WishlistButton } from "./WishlistButton";
 
 interface ProductCardProps {
   product: ProductEdge;
@@ -101,6 +102,11 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
 
         {/* Overlay gradient on hover */}
         <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+
+        {/* Wishlist button */}
+        <div className="absolute top-2 left-2 z-10">
+          <WishlistButton productId={node.id} size={18} className="bg-white/80 hover:bg-white shadow-sm" />
+        </div>
 
       </div>
       {/* Product Info */}

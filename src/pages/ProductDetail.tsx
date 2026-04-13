@@ -30,6 +30,7 @@ import { ProductExtraCarousel } from "@/components/ProductExtraCarousel";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
 import { getBundleContents, getBundlesForProduct, BUNDLE_CONTENTS } from "@/lib/productProperties";
 import DOMPurify from "dompurify";
+import { WishlistButton } from "@/components/WishlistButton";
 
 /**
  * For bundle products, replace product names in description HTML with clickable links
@@ -221,7 +222,10 @@ export default function ProductDetail() {
           {/* Left Column - Product Info (visually on right in RTL) */}
           <div className="order-2 md:order-1 md:col-span-3 space-y-5" dir="rtl">
             <div>
-              <h1 className="text-[28px] md:text-3xl mb-1">{data.title}</h1>
+              <div className="flex items-start justify-between gap-2">
+                <h1 className="text-[28px] md:text-3xl mb-1">{data.title}</h1>
+                <WishlistButton productId={data.id} size={24} className="mt-1 flex-shrink-0" />
+              </div>
               {data.vendor && (
                 <p className="text-muted-foreground text-base">{data.vendor}</p>
               )}

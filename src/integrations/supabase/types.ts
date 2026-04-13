@@ -195,31 +195,30 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          product_handle: string
-          product_image: string | null
-          product_price: string | null
-          product_title: string | null
+          product_id: string
           user_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          product_handle: string
-          product_image?: string | null
-          product_price?: string | null
-          product_title?: string | null
+          product_id: string
           user_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          product_handle?: string
-          product_image?: string | null
-          product_price?: string | null
-          product_title?: string | null
+          product_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

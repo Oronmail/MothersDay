@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown, User, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -185,6 +185,13 @@ export const MobileNav = () => {
               >
                 <User className="h-4 w-4" />
                 <span>הפרופיל שלי</span>
+              </button>
+              <button
+                onClick={() => handleNavigate(ROUTES.wishlist)}
+                className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
+              >
+                <Heart className="h-4 w-4" />
+                <span>רשימת משאלות</span>
               </button>
               <button
                 onClick={handleLogout}

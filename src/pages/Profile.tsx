@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, MapPin, Package, ArrowRight } from "lucide-react";
+import { Loader2, User, MapPin, Package, Heart, ArrowRight } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -199,6 +199,15 @@ const Profile = () => {
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" />
                     <span>היסטוריית הזמנות</span>
+                  </div>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to={ROUTES.wishlist}>
+                <Button variant="outline" className="w-full justify-between">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    <span>רשימת משאלות</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
                 </Button>

@@ -13,6 +13,7 @@ export const ROUTES = {
   profile: '/site/profile',
   addresses: '/site/addresses',
   orders: '/site/orders',
+  wishlist: '/site/wishlist',
   about: '/site/about',
   blog: '/site/blog',
   content1: '/site/content-1',

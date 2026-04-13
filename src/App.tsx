@@ -29,6 +29,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
 const AllSets = lazy(() => import("./pages/AllSets"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="sets" element={<AllSets />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="orders" element={<Orders />} />
+                <Route path="wishlist" element={<Wishlist />} />
                 <Route path="product/:handle" element={<ProductDetail />} />
                 <Route path="collection/:handle" element={<Collection />} />
                 <Route path="about" element={<About />} />
