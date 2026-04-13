@@ -1,36 +1,31 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { CartItem, createStorefrontCheckout, ShippingAddress } from '@/lib/shopify';
+import { createOrder } from '@/lib/api';
+import { CartItem, ShippingAddress } from '@/lib/types';
 import { startSpan, captureException, logger } from '@/lib/sentry';
 
 interface CartStore {
   items: CartItem[];
-  cartId: string | null;
-  checkoutUrl: string | null;
   isLoading: boolean;
-  
+
   addItem: (item: CartItem) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
   clearCart: () => void;
-  setCartId: (cartId: string) => void;
-  setCheckoutUrl: (url: string) => void;
   setLoading: (loading: boolean) => void;
-  createCheckout: (userEmail?: string, shippingAddress?: ShippingAddress, userId?: string) => Promise<string>;
+  createOrder: (userEmail: string, shippingAddress: ShippingAddress, userId?: string) => Promise<{ orderId: string; orderNumber: number }>;
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      cartId: null,
-      checkoutUrl: null,
       isLoading: false,
 
       addItem: (item) => {
         const { items } = get();
         const existingItem = items.find(i => i.variantId === item.variantId);
-        
+
         if (existingItem) {
           set({
             items: items.map(i =>
@@ -49,7 +44,7 @@ export const useCartStore = create<CartStore>()(
           get().removeItem(variantId);
           return;
         }
-        
+
         set({
           items: get().items.map(item =>
             item.variantId === variantId ? { ...item, quantity } : item
@@ -64,18 +59,16 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: () => {
-        set({ items: [], cartId: null, checkoutUrl: null });
+        set({ items: [] });
       },
 
-      setCartId: (cartId) => set({ cartId }),
-      setCheckoutUrl: (checkoutUrl) => set({ checkoutUrl }),
       setLoading: (isLoading) => set({ isLoading }),
 
-      createCheckout: async (userEmail?: string, shippingAddress?: ShippingAddress, userId?: string) => {
+      createOrder: async (userEmail: string, shippingAddress: ShippingAddress, userId?: string) => {
         return startSpan(
           {
             op: 'ui.action',
-            name: 'Create Checkout',
+            name: 'Create Order',
             attributes: {
               itemCount: get().items.length,
               hasEmail: !!userEmail,
@@ -84,50 +77,48 @@ export const useCartStore = create<CartStore>()(
             },
           },
           async () => {
-            const { items, setLoading, setCheckoutUrl } = get();
+            const { items, setLoading, clearCart } = get();
 
             if (items.length === 0) {
               const error = new Error('Cart is empty');
-              logger.warn('Checkout attempted with empty cart');
+              logger.warn('Order attempted with empty cart');
               throw error;
             }
 
             setLoading(true);
             try {
-              logger.info('Creating checkout', {
+              logger.info('Creating order', {
                 itemCount: items.length,
                 totalValue: items.reduce((sum, item) => sum + (parseFloat(item.price.amount) * item.quantity), 0),
               });
 
-              const checkoutUrl = await createStorefrontCheckout(items, userEmail, shippingAddress, userId);
+              const lineItems = items.map(item => ({
+                title: item.product.node.title,
+                quantity: item.quantity,
+                price: item.price.amount,
+                image: item.product.node.images.edges[0]?.node.url || '',
+                product_id: item.product.node.id,
+                variant_id: item.variantId,
+              }));
 
-              if (!checkoutUrl) {
-                const error = new Error('No checkout URL returned');
-                captureException(error, {
-                  itemCount: items.length,
-                  userEmail,
-                  userId,
-                });
-                throw error;
-              }
+              const result = await createOrder(lineItems, userEmail, shippingAddress, userId);
 
-              logger.info('Checkout created successfully', { checkoutUrl });
-              setCheckoutUrl(checkoutUrl);
-              return checkoutUrl;
+              logger.info('Order created successfully', { orderId: result.orderId, orderNumber: result.orderNumber });
+              clearCart();
+              return result;
             } catch (error) {
-              logger.error('Failed to create checkout', {
+              logger.error('Failed to create order', {
                 error: error instanceof Error ? error.message : String(error),
                 itemCount: items.length,
               });
               captureException(error instanceof Error ? error : new Error(String(error)), {
-                context: 'createCheckout',
+                context: 'createOrder',
                 itemCount: items.length,
                 userEmail,
                 userId,
               });
               throw error;
             } finally {
-              // Always set loading to false in finally block (runs regardless of success/error)
               setLoading(false);
             }
           }
@@ -135,7 +126,7 @@ export const useCartStore = create<CartStore>()(
       }
     }),
     {
-      name: 'shopify-cart',
+      name: 'cart-storage',
       storage: createJSONStorage(() => localStorage),
     }
   )

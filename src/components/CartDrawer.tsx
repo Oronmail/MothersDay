@@ -6,7 +6,7 @@ import { Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
 import shoppingBagIcon from "@/assets/shopping-bag-icon.png";
 import { useCartStore } from "@/stores/cartStore";
 import { supabase } from "@/integrations/supabase/client";
-import { ShippingAddress } from "@/lib/shopify";
+import { ShippingAddress } from "@/lib/types";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { LazyImage } from "./LazyImage";
@@ -22,7 +22,7 @@ export const CartDrawer = () => {
     isLoading,
     updateQuantity,
     removeItem,
-    createCheckout
+    createOrder
   } = useCartStore();
   
   // Get user email and default address when user is available
@@ -58,41 +58,35 @@ export const CartDrawer = () => {
   const totalPrice = items.reduce((sum, item) => sum + parseFloat(item.price.amount) * item.quantity, 0);
 
   const handleCheckout = async () => {
-    const loadingToast = toast.loading('יוצר קישור לתשלום...', {
+    if (!userEmail || !defaultAddress) {
+      toast.error('חסרים פרטים', {
+        description: 'יש להתחבר ולהוסיף כתובת למשלוח'
+      });
+      return;
+    }
+
+    const loadingToast = toast.loading('יוצר הזמנה...', {
       description: 'אנא המתן'
     });
-    
+
     try {
-      await createCheckout(userEmail, defaultAddress, user?.id);
-      const checkoutUrl = useCartStore.getState().checkoutUrl;
-      
+      const { orderNumber } = await createOrder(userEmail, defaultAddress, user?.id);
+
       toast.dismiss(loadingToast);
-      
-      if (checkoutUrl) {
-        toast.success('הקישור נוצר בהצלחה!', {
-          description: 'מעביר אותך לדף התשלום...'
-        });
-        window.open(checkoutUrl, '_blank');
-        setIsOpen(false);
-      } else {
-        toast.error('שגיאה ביצירת קישור', {
-          description: 'לא התקבל קישור תשלום. אנא נסה שנית'
-        });
-      }
+      toast.success('ההזמנה נוצרה בהצלחה!', {
+        description: `מספר הזמנה: ${orderNumber}`
+      });
+      setIsOpen(false);
     } catch (error: any) {
       toast.dismiss(loadingToast);
-      console.error('Checkout failed:', error);
-      
+      console.error('Order creation failed:', error);
+
       let errorMessage = 'אנא נסה שנית';
-      if (error?.message?.includes('Shopify API')) {
-        errorMessage = 'שגיאה בחיבור לשופיפיי. אנא נסה שנית';
-      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+      if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
         errorMessage = 'בעיית תקשורת. בדוק את החיבור לאינטרנט';
-      } else if (error?.message?.includes('Cart creation failed')) {
-        errorMessage = 'שגיאה ביצירת עגלה. אנא רענן את הדף ונסה שוב';
       }
-      
-      toast.error('תהליך התשלום נכשל', {
+
+      toast.error('יצירת ההזמנה נכשלה', {
         description: errorMessage
       });
     }

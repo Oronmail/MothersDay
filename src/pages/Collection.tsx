@@ -1,9 +1,8 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { ROUTES } from "@/lib/routes";
 import { useQuery } from "@tanstack/react-query";
 import { Play } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Newsletter } from "@/components/Newsletter";
 import { Header } from "@/components/Header";
@@ -25,8 +24,8 @@ import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
 
 // Hero assets mapping by collection handle
-const getCollectionHeroAssets = (handle: string): { image: string; video: string | null; useCloudVideo?: boolean } => {
-  const heroAssets: Record<string, { image: string; video: string | null; useCloudVideo?: boolean }> = {
+const getCollectionHeroAssets = (handle: string): { image: string; video: string | null } => {
+  const heroAssets: Record<string, { image: string; video: string | null }> = {
     'frontpage': {
       image: collectionHeroFrontpage,
       video: '/videos/collection-hero-frontpage.mp4?v=2'
@@ -37,11 +36,10 @@ const getCollectionHeroAssets = (handle: string): { image: string; video: string
     },
     'מוצרי-תכנון-משלימים': {
       image: collectionHeroComplementary,
-      video: null,
-      useCloudVideo: true
+      video: '/videos/ProductVideos/comlete.mp4'
     }
   };
-  
+
   // Default: use complementary image, no video
   return heroAssets[handle] || { image: collectionHeroComplementary, video: null };
 };
@@ -110,30 +108,17 @@ const Collection = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { handle } = useParams<{ handle: string }>();
-  const [cloudVideoUrl, setCloudVideoUrl] = useState<string | null>(null);
-  
   // Check if video should autoplay (no play button)
   const shouldAutoplay =
     handle === "frontpage" ||
     handle === "מוצרי-תכנון-משלימים" ||
     handle === "מוצרי-תכנון-שבועיים";
-  
+
   // Get hero assets and description based on collection handle
   const heroAssets = getCollectionHeroAssets(handle || '');
   const descriptionLines = getCollectionDescription(handle || '');
 
-  // Fetch cloud video URL if needed
-  useEffect(() => {
-    if (heroAssets.useCloudVideo) {
-      const { data } = supabase.storage
-        .from("videos")
-        .getPublicUrl("productsvideo/comlete.mp4");
-      setCloudVideoUrl(data.publicUrl);
-    }
-  }, [heroAssets.useCloudVideo]);
-
-  const resolvedVideoUrl = heroAssets.useCloudVideo ? cloudVideoUrl : heroAssets.video;
-  const hasVideo = !!resolvedVideoUrl;
+  const hasVideo = !!heroAssets.video;
 
   const { data: collections } = useQuery({
     queryKey: ['collections'],
@@ -267,7 +252,7 @@ const Collection = () => {
               <div className="overflow-hidden relative bg-muted">
                 <video
                   ref={videoRef}
-                  src={resolvedVideoUrl!}
+                  src={heroAssets.video!}
                   className="w-full h-full object-cover"
                   playsInline
                   loop

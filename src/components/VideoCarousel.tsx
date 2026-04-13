@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { buildProductPath } from "@/lib/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -22,6 +21,14 @@ const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; delay: 
   "HP_VCarousel_6": { title: "בלוק תכנון", handle: "p6", delay: 1000 },
 };
 
+const CAROUSEL_VIDEOS: VideoFile[] = [
+  { name: 'HP_VCarousel_1', url: '/videos/HomeVideoCarousel/HP_VCarousel_1.mp4' },
+  { name: 'HP_VCarousel_2', url: '/videos/HomeVideoCarousel/HP_VCarousel_2.mp4' },
+  { name: 'HP_VCarousel_3', url: '/videos/HomeVideoCarousel/HP_VCarousel_3.mp4' },
+  { name: 'HP_VCarousel_4', url: '/videos/HomeVideoCarousel/HP_VCarousel_4.mp4' },
+  { name: 'HP_VCarousel_5', url: '/videos/HomeVideoCarousel/HP_VCarousel_5.mp4' },
+];
+
 // Manual order for carousel (right to left in RTL)
 const CAROUSEL_ORDER = [
   'רשימת קניות',
@@ -35,10 +42,10 @@ const sortVideosByOrder = (videos: VideoFile[]): VideoFile[] => {
     const keyB = b.name.replace(/\.[^/.]+$/, "");
     const infoA = VIDEO_PRODUCT_MAP[keyA];
     const infoB = VIDEO_PRODUCT_MAP[keyB];
-    
+
     const indexA = CAROUSEL_ORDER.findIndex(title => infoA?.title.includes(title));
     const indexB = CAROUSEL_ORDER.findIndex(title => infoB?.title.includes(title));
-    
+
     // If both are in the order list, sort by their position
     if (indexA !== -1 && indexB !== -1) return indexA - indexB;
     // If only one is in the list, prioritize it
@@ -157,60 +164,7 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
 };
 
 export const VideoCarousel = ({ className }: { className?: string }) => {
-  const [videos, setVideos] = useState<VideoFile[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const { data: files, error } = await supabase.storage
-          .from("videos")
-          .list("Clip_Carousel", {
-            limit: 100,
-            sortBy: { column: "created_at", order: "asc" },
-          });
-
-        if (error) {
-          console.error("Error fetching videos:", error);
-          return;
-        }
-
-        if (files && files.length > 0) {
-          const videoFiles = files
-            .filter((file) => 
-              file.name !== ".emptyFolderPlaceholder" && 
-              file.name !== ".lovkeep" &&
-              file.metadata?.mimetype?.startsWith('video/')
-            )
-            .map((file) => {
-              const { data } = supabase.storage.from("videos").getPublicUrl(`Clip_Carousel/${file.name}`);
-              return {
-                name: file.name,
-                url: data.publicUrl,
-              };
-            });
-          const sortedVideos = sortVideosByOrder(videoFiles);
-          setVideos(sortedVideos);
-        }
-      } catch (err) {
-        console.error("Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVideos();
-  }, []);
-
-  if (loading) {
-    return (
-      <section className={`py-12 bg-background ${className || ""}`}>
-        <div className="w-[95%] mx-auto flex justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </section>
-    );
-  }
+  const videos = sortVideosByOrder(CAROUSEL_VIDEOS);
 
   if (videos.length === 0) {
     return (
