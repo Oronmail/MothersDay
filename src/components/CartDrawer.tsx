@@ -1,95 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, ExternalLink } from "lucide-react";
 import shoppingBagIcon from "@/assets/shopping-bag-icon.png";
 import { useCartStore } from "@/stores/cartStore";
-import { supabase } from "@/lib/supabase";
-import { ShippingAddress } from "@/lib/types";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+import { ROUTES } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | undefined>();
-  const [defaultAddress, setDefaultAddress] = useState<ShippingAddress | undefined>();
-  const { user } = useAuth();
-  
+  const navigate = useNavigate();
+
   const {
     items,
-    isLoading,
     updateQuantity,
     removeItem,
-    createOrder
   } = useCartStore();
-  
-  // Get user email and default address when user is available
-  useEffect(() => {
-    const getUserData = async () => {
-      if (user) {
-        setUserEmail(user.email);
-        
-        // Fetch default address
-        const { data: addresses } = await supabase
-          .from('addresses')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_default', true)
-          .limit(1);
-        
-        if (addresses && addresses.length > 0) {
-          const addr = addresses[0];
-          setDefaultAddress({
-            full_name: addr.full_name,
-            street: addr.street,
-            city: addr.city,
-            postal_code: addr.postal_code || undefined,
-            phone: addr.phone || undefined,
-          });
-        }
-      }
-    };
-    getUserData();
-  }, [user]);
-  
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + parseFloat(item.price.amount) * item.quantity, 0);
 
-  const handleCheckout = async () => {
-    if (!userEmail || !defaultAddress) {
-      toast.error('חסרים פרטים', {
-        description: 'יש להתחבר ולהוסיף כתובת למשלוח'
-      });
-      return;
-    }
-
-    const loadingToast = toast.loading('יוצר הזמנה...', {
-      description: 'אנא המתן'
-    });
-
-    try {
-      const { orderNumber } = await createOrder(userEmail, defaultAddress, user?.id);
-
-      toast.dismiss(loadingToast);
-      toast.success('ההזמנה נוצרה בהצלחה!', {
-        description: `מספר הזמנה: ${orderNumber}`
-      });
-      setIsOpen(false);
-    } catch (error: any) {
-      toast.dismiss(loadingToast);
-      console.error('Order creation failed:', error);
-
-      let errorMessage = 'אנא נסה שנית';
-      if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-        errorMessage = 'בעיית תקשורת. בדוק את החיבור לאינטרנט';
-      }
-
-      toast.error('יצירת ההזמנה נכשלה', {
-        description: errorMessage
-      });
-    }
+  const handleCheckout = () => {
+    setIsOpen(false);
+    navigate(ROUTES.checkout);
   };
   return <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -165,14 +100,9 @@ export const CartDrawer = () => {
                   </span>
                 </div>
                 
-                <Button onClick={handleCheckout} className="w-full" size="lg" disabled={items.length === 0 || isLoading}>
-                  {isLoading ? <>
-                      <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                      יוצר הזמנה...
-                    </> : <>
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                      מעבר לתשלום
-                    </>}
+                <Button onClick={handleCheckout} className="w-full" size="lg" disabled={items.length === 0}>
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                  מעבר לתשלום
                 </Button>
               </div>
             </>}

@@ -29,6 +29,8 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
 const AllSets = lazy(() => import("./pages/AllSets"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const CheckoutConfirmation = lazy(() => import("./pages/CheckoutConfirmation"));
 
 // Admin
 const AdminLoginPage = lazy(() => import("./pages/AdminLogin"));
@@ -80,6 +82,8 @@ const App = () => (
                 <Route path="terms" element={<Terms />} />
                 <Route path="returns" element={<Returns />} />
                 <Route path="support" element={<Support />} />
+                <Route path="checkout" element={<Checkout />} />
+                <Route path="checkout/confirmation/:orderId" element={<CheckoutConfirmation />} />
               </Route>
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
