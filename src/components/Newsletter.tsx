@@ -53,6 +53,9 @@ export const Newsletter = () => {
         toast.success("תודה על ההרשמה!", {
           description: "נעדכן אותך במבצעים ומוצרים חדשים"
         });
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'generate_lead', { method: 'newsletter_footer' });
+        }
         setEmail("");
       }
     } catch (err) {

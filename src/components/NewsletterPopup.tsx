@@ -44,6 +44,9 @@ export const NewsletterPopup = () => {
         }
       } else {
         toast.success("נרשמת בהצלחה! קוד ההנחה בדרך אלייך 💛");
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'generate_lead', { method: 'newsletter_popup' });
+        }
       }
       handleDismiss();
     } catch {

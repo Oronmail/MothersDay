@@ -24,8 +24,12 @@ export default function Auth() {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        if (typeof window.gtag === 'function') {
+          const method = session.user.app_metadata?.provider === 'google' ? 'google' : 'magic_link';
+          window.gtag('event', event === 'SIGNED_IN' ? 'login' : 'sign_up', { method });
+        }
         navigate(ROUTES.home);
       }
     });

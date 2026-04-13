@@ -99,6 +99,21 @@ export default function Checkout() {
         description: `מספר הזמנה: ${orderNumber}`,
       });
 
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'purchase', {
+          transaction_id: orderId,
+          value: subtotal + shippingCost,
+          currency: 'ILS',
+          shipping: shippingCost,
+          items: items.map(item => ({
+            item_id: item.variantId,
+            item_name: item.product.node.title,
+            price: parseFloat(item.price.amount),
+            quantity: item.quantity,
+          })),
+        });
+      }
+
       navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
     } catch (error) {
       const message =
