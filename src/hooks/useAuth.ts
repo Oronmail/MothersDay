@@ -5,7 +5,17 @@ import { supabase } from "@/lib/supabase";
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<'customer' | 'admin'>('customer');
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchRole = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    if (data) setRole(data.role as 'customer' | 'admin');
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -17,6 +27,9 @@ export const useAuth = () => {
       if (mounted && !initialized) {
         setSession(session);
         setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchRole(session.user.id);
+        }
         setIsLoading(false);
         initialized = true;
       }
@@ -26,10 +39,15 @@ export const useAuth = () => {
 
     // Then listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchRole(session.user.id);
+          } else {
+            setRole('customer');
+          }
           // Only set loading to false if we've already initialized
           if (initialized) {
             setIsLoading(false);
@@ -44,5 +62,5 @@ export const useAuth = () => {
     };
   }, []);
 
-  return { user, session, isLoading };
+  return { user, session, role, isLoading };
 };
