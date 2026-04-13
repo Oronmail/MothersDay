@@ -23,15 +23,21 @@ export const useAuth = () => {
 
     // First, get the current session synchronously
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mounted && !initialized) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchRole(session.user.id);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (mounted && !initialized) {
+          if (!error && session) {
+            setSession(session);
+            setUser(session.user ?? null);
+            if (session.user) {
+              await fetchRole(session.user.id);
+            }
+          }
+          setIsLoading(false);
+          initialized = true;
         }
-        setIsLoading(false);
-        initialized = true;
+      } catch {
+        if (mounted) setIsLoading(false);
       }
     };
 

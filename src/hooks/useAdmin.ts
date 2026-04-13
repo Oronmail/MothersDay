@@ -9,21 +9,26 @@ export const useAdmin = () => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session?.user) {
+          setIsLoading(false);
+          return;
+        }
+
+        setUser(session.user);
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        setIsAdmin(data?.role === 'admin');
+      } catch {
+        // Session restoration failed (stale token, key mismatch, etc.)
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      setUser(session.user);
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      setIsAdmin(data?.role === 'admin');
-      setIsLoading(false);
     };
 
     checkAdmin();
