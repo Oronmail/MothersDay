@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,6 +37,7 @@ export default function Checkout() {
   const { user } = useAuth();
   const { items, isLoading, createOrder } = useCartStore();
   const { data: settings } = useStoreSettings();
+  const orderInProgress = useRef(false);
 
   const subtotal = items.reduce(
     (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
@@ -61,9 +62,9 @@ export default function Checkout() {
     },
   });
 
-  // Redirect to home if cart is empty
+  // Redirect to home if cart is empty (but not during order submission)
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !orderInProgress.current) {
       navigate(ROUTES.home, { replace: true });
     }
   }, [items.length, navigate]);
@@ -77,6 +78,7 @@ export default function Checkout() {
 
   const handleSubmit = form.handleSubmit(async (data) => {
     const email = user?.email || data.email;
+    orderInProgress.current = true;
 
     const streetFull = data.apartment
       ? `${data.street} ${data.house_number}, דירה ${data.apartment}`
@@ -93,7 +95,7 @@ export default function Checkout() {
     };
 
     try {
-      const { orderId, orderNumber } = await createOrder(email, shippingAddress, shippingCost, user?.id);
+      const { orderId, orderNumber } = await createOrder(email, shippingAddress, shippingCost, user?.id, data.notes);
 
       toast.success("ההזמנה נוצרה בהצלחה!", {
         description: `מספר הזמנה: ${orderNumber}`,

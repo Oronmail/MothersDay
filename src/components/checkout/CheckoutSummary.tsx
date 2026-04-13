@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Lock, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { ROUTES } from "@/lib/routes";
+
 import { CartItem } from "@/lib/types";
 import { LazyImage } from "@/components/LazyImage";
 
@@ -115,12 +114,13 @@ export function CheckoutSummary({ items, subtotal, shippingCost, isSubmitting, o
       {/* Spacer for fixed bottom bar on mobile */}
       <div className="h-24 md:hidden" />
 
-      <Link
-        to={ROUTES.home}
-        className="block text-center text-sm text-muted-foreground underline hover:text-foreground"
+      <button
+        type="button"
+        onClick={() => window.history.back()}
+        className="block w-full text-center text-sm text-muted-foreground underline hover:text-foreground"
       >
         עריכת העגלה
-      </Link>
+      </button>
     </div>
   );
 }

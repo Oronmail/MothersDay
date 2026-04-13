@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabase";
 import { Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
+import { Footer } from "@/components/Footer";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
 
@@ -19,14 +19,14 @@ export default function CheckoutConfirmation() {
     async function fetchOrder() {
       if (!orderId) return;
 
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", orderId)
-        .single();
-
-      if (!error && data) {
-        setOrder(data as Order);
+      try {
+        const response = await fetch(`/api/get-order?id=${orderId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrder(data as Order);
+        }
+      } catch {
+        // Order fetch failed
       }
       setLoading(false);
     }
@@ -119,6 +119,8 @@ export default function CheckoutConfirmation() {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

@@ -1,10 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
 
 const SiteAccess = () => {
+  const { pathname } = useLocation();
+  const isCheckout = pathname.startsWith("/checkout");
+
   return (
     <>
-      <NewsletterPopup />
+      {!isCheckout && <NewsletterPopup />}
       <Outlet />
     </>
   );

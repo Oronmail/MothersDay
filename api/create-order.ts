@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { items, email, shippingAddress, shippingCost, userId } = req.body as {
+  const { items, email, shippingAddress, shippingCost, userId, notes } = req.body as {
     items: Array<{
       title: string;
       quantity: number;
@@ -38,6 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
     shippingCost?: number;
     userId?: string;
+    notes?: string;
   };
 
   if (!items || !email || !shippingAddress) {
@@ -53,7 +54,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const itemsTotal = items.reduce(
+  // Server-side price validation: look up actual variant prices from the database
+  const variantIds = items.map((item) => item.variant_id);
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("id, price")
+    .in("id", variantIds);
+
+  const priceMap = new Map(
+    (variants ?? []).map((v: { id: string; price: number }) => [v.id, v.price])
+  );
+
+  // Use verified prices from DB; fall back to client price only if variant not found
+  const verifiedItems = items.map((item) => {
+    const dbPrice = priceMap.get(item.variant_id);
+    return {
+      ...item,
+      price: dbPrice !== undefined ? String(dbPrice) : item.price,
+    };
+  });
+
+  const itemsTotal = verifiedItems.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
@@ -87,13 +108,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .insert({
         user_id: userId || null,
         guest_email: userId ? null : email,
-        line_items: items,
+        line_items: verifiedItems,
         shipping_address: { ...shippingAddress, phone },
         total_price: totalPrice,
         shipping_cost: validatedShippingCost,
         currency_code: "ILS",
         financial_status: "pending",
         fulfillment_status: "unfulfilled",
+        notes: notes || null,
       })
       .select("id, order_number")
       .single();

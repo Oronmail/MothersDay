@@ -179,6 +179,8 @@ export function AddressAutocomplete({
     if (results.length > 0) setIsOpen(true);
   }, [results]);
 
+  const listboxId = `${type}-listbox`;
+
   return (
     <div ref={containerRef} className="relative">
       <Input
@@ -192,12 +194,23 @@ export function AddressAutocomplete({
         placeholder={placeholder}
         disabled={disabled}
         autoComplete="off"
+        role="combobox"
+        aria-expanded={isOpen && results.length > 0}
+        aria-controls={listboxId}
+        aria-activedescendant={highlightedIndex >= 0 ? `${listboxId}-${highlightedIndex}` : undefined}
       />
       {isOpen && results.length > 0 && (
-        <ul className="absolute z-50 w-full mt-1 bg-background border border-border shadow-lg max-h-48 overflow-y-auto">
+        <ul
+          id={listboxId}
+          role="listbox"
+          className="absolute z-50 w-full mt-1 bg-background border border-border shadow-lg max-h-48 overflow-y-auto"
+        >
           {results.map((result, index) => (
             <li
               key={`${result.code}-${result.name}`}
+              id={`${listboxId}-${index}`}
+              role="option"
+              aria-selected={index === highlightedIndex}
               className={`px-3 py-2 cursor-pointer text-sm ${
                 index === highlightedIndex
                   ? "bg-primary text-primary-foreground"

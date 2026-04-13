@@ -249,12 +249,13 @@ export async function createOrder(
     phone?: string;
   },
   shippingCost: number,
-  userId?: string
+  userId?: string,
+  notes?: string,
 ): Promise<{ orderId: string; orderNumber: number }> {
   const response = await fetch('/api/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items, email, shippingAddress, shippingCost, userId }),
+    body: JSON.stringify({ items, email, shippingAddress, shippingCost, userId, notes }),
   });
 
   if (!response.ok) {

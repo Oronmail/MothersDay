@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { createHmac } from "crypto";
+import { createHash } from "crypto";
 
 /**
  * Vercel API route: GET /api/payment-callback
@@ -10,18 +10,17 @@ import { createHmac } from "crypto";
  * to the checkout confirmation or error page.
  *
  * Required env vars:
- *   HYP_PASSWORD       — used for MAC validation
- *   SUPABASE_URL       — Supabase project URL
- *   SUPABASE_SERVICE_KEY — Supabase service role key (server-side only)
- *   SITE_URL           — e.g. "https://mothers-day-flax-one.vercel.app"
+ *   HYP_PASSWORD        — used for MAC validation
+ *   SUPABASE_Secret_KEY — Supabase service role key (server-side only)
+ *   VITE_SUPABASE_URL   — Supabase project URL
+ *   SITE_URL            — e.g. "https://mothers-day-flax-one.vercel.app"
  */
 
 function validateResponseMac(params: Record<string, string>, password: string): boolean {
   const { txId, uniqueID, cardToken, cardExp, personalId, responseMac } = params;
   // Hyp MAC = SHA-256(password + txId + "000" + cardToken + cardExp + personalId + uniqueID)
   const payload = `${password}${txId || ""}000${cardToken || ""}${cardExp || ""}${personalId || ""}${uniqueID || ""}`;
-  const expected = createHmac("sha256", "").update(payload).digest("hex");
-  // Note: Hyp uses plain SHA-256, not HMAC. Using createHash for consistency.
+  const expected = createHash("sha256").update(payload).digest("hex");
   return expected === responseMac;
 }
 
@@ -46,12 +45,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const {
     HYP_PASSWORD,
-    SUPABASE_URL,
-    SUPABASE_SERVICE_KEY,
+    VITE_SUPABASE_URL,
+    SUPABASE_Secret_KEY,
     SITE_URL,
   } = process.env;
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SITE_URL) {
+  if (!VITE_SUPABASE_URL || !SUPABASE_Secret_KEY || !SITE_URL) {
     return res.redirect(302, `${SITE_URL || ""}/checkout?error=config`);
   }
 
@@ -71,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Update order status to paid
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const supabase = createClient(VITE_SUPABASE_URL, SUPABASE_Secret_KEY);
 
     const { error } = await supabase
       .from("orders")

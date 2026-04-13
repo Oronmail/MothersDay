@@ -149,7 +149,7 @@ export const getWebsiteStructuredData = () => ({
     "@type": "SearchAction",
     target: {
       "@type": "EntryPoint",
-      urlTemplate: `${defaultSEO.defaultUrl}/site/products?q={search_term_string}`,
+      urlTemplate: `${defaultSEO.defaultUrl}/products?q={search_term_string}`,
     },
     "query-input": "required name=search_term_string",
   },
