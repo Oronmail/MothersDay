@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp, Lock, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/lib/routes";
+import { CartItem } from "@/lib/types";
+import { LazyImage } from "@/components/LazyImage";
+
+interface CheckoutSummaryProps {
+  items: CartItem[];
+  isSubmitting: boolean;
+  onSubmit: () => void;
+}
+
+export function CheckoutSummary({ items, isSubmitting, onSubmit }: CheckoutSummaryProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const totalPrice = items.reduce(
+    (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
+    0
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Mobile: collapsible summary bar */}
+      <button
+        type="button"
+        className="md:hidden w-full flex items-center justify-between p-3 bg-muted/50 border border-border"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span className="text-sm">
+          {isExpanded ? "הסתר פרטים" : "הצג פרטי הזמנה"}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">&#8362;{totalPrice.toFixed(2)}</span>
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </button>
+
+      {/* Items list — always visible on desktop, collapsible on mobile */}
+      <div className={`space-y-3 ${isExpanded ? "block" : "hidden md:block"}`}>
+        <h2 className="text-lg hidden md:block">סיכום הזמנה</h2>
+
+        {items.map((item) => (
+          <div key={item.variantId} className="flex gap-3">
+            <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 relative">
+              {item.product.node.images?.edges?.[0]?.node && (
+                <LazyImage
+                  src={item.product.node.images.edges[0].node.url}
+                  alt={item.product.node.title}
+                />
+              )}
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs w-5 h-5 flex items-center justify-center">
+                {item.quantity}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm truncate">{item.product.node.title}</p>
+              {item.selectedOptions.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {item.selectedOptions.map((o) => o.value).join(" / ")}
+                </p>
+              )}
+            </div>
+            <p className="text-sm flex-shrink-0">
+              &#8362;{(parseFloat(item.price.amount) * item.quantity).toFixed(2)}
+            </p>
+          </div>
+        ))}
+
+        <div className="border-t border-border pt-3 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">סכום ביניים</span>
+            <span>&#8362;{totalPrice.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">משלוח</span>
+            <span>חינם</span>
+          </div>
+          <div className="flex justify-between text-lg pt-2 border-t border-border">
+            <span>סה״כ</span>
+            <span>&#8362;{totalPrice.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA button */}
+      <Button
+        type="button"
+        onClick={onSubmit}
+        className="w-full"
+        size="lg"
+        disabled={items.length === 0 || isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+            יוצר הזמנה...
+          </>
+        ) : (
+          <>אישור ותשלום — &#8362;{totalPrice.toFixed(2)}</>
+        )}
+      </Button>
+
+      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+        <Lock className="h-3 w-3" />
+        תשלום מאובטח ומוצפן
+      </p>
+
+      <Link
+        to={ROUTES.home}
+        className="block text-center text-sm text-muted-foreground underline hover:text-foreground"
+      >
+        עריכת העגלה
+      </Link>
+    </div>
+  );
+}
