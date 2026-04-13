@@ -243,36 +243,23 @@ export async function createOrder(
     full_name: string;
     street: string;
     city: string;
+    house_number?: string;
+    apartment?: string;
     postal_code?: string;
     phone?: string;
   },
   userId?: string
 ): Promise<{ orderId: string; orderNumber: number }> {
-  const totalPrice = items.reduce(
-    (sum, item) => sum + parseFloat(item.price) * item.quantity,
-    0
-  );
+  const response = await fetch('/api/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items, email, shippingAddress, userId }),
+  });
 
-  let phone = shippingAddress.phone || '';
-  if (phone.startsWith('0')) {
-    phone = '+972' + phone.slice(1);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(err.error || 'Failed to create order');
   }
 
-  const { data, error } = await supabase
-    .from('orders')
-    .insert({
-      user_id: userId || null,
-      guest_email: userId ? null : email,
-      line_items: items,
-      shipping_address: { ...shippingAddress, phone },
-      total_price: totalPrice,
-      currency_code: 'ILS',
-      financial_status: 'pending',
-      fulfillment_status: 'unfulfilled',
-    })
-    .select('id, order_number')
-    .single();
-
-  if (error) throw error;
-  return { orderId: data.id, orderNumber: data.order_number };
+  return response.json();
 }
