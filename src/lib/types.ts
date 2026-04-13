@@ -92,8 +92,10 @@ export interface CartItem {
 
 export interface ShippingAddress {
   full_name: string;
-  street: string;
   city: string;
+  street: string;
+  house_number: string;
+  apartment?: string;
   postal_code?: string;
   phone?: string;
 }

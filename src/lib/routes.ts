@@ -24,6 +24,8 @@ export const ROUTES = {
   terms: '/site/terms',
   returns: '/site/returns',
   support: '/site/support',
+  checkout: '/site/checkout',
+  checkoutConfirmation: '/site/checkout/confirmation',
 } as const;
 
 // Collection handles (for type safety and consistency)
