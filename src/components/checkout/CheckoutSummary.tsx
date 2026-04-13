@@ -29,7 +29,7 @@ export function CheckoutSummary({ items, isSubmitting, onSubmit }: CheckoutSumma
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="text-sm">
-          {isExpanded ? "הסתר פרטים" : "הצג פרטי הזמנה"}
+          {isExpanded ? "הסתר פרטים" : "הצג פרטים"}
         </span>
         <div className="flex items-center gap-2">
           <span className="font-medium">&#8362;{totalPrice.toFixed(2)}</span>
@@ -88,28 +88,33 @@ export function CheckoutSummary({ items, isSubmitting, onSubmit }: CheckoutSumma
         </div>
       </div>
 
-      {/* CTA button */}
-      <Button
-        type="button"
-        onClick={onSubmit}
-        className="w-full"
-        size="lg"
-        disabled={items.length === 0 || isSubmitting}
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-            יוצר הזמנה...
-          </>
-        ) : (
-          <>אישור ותשלום — &#8362;{totalPrice.toFixed(2)}</>
-        )}
-      </Button>
+      {/* CTA button — sticky on mobile */}
+      <div className="md:relative fixed bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-auto bg-background md:bg-transparent p-4 md:p-0 border-t md:border-t-0 border-border z-40 space-y-2">
+        <Button
+          type="button"
+          onClick={onSubmit}
+          className="w-full"
+          size="lg"
+          disabled={items.length === 0 || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+              יוצר הזמנה...
+            </>
+          ) : (
+            <>אישור ותשלום — &#8362;{totalPrice.toFixed(2)}</>
+          )}
+        </Button>
 
-      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
-        <Lock className="h-3 w-3" />
-        תשלום מאובטח ומוצפן
-      </p>
+        <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+          <Lock className="h-3 w-3" />
+          תשלום מאובטח ומוצפן
+        </p>
+      </div>
+
+      {/* Spacer for fixed bottom bar on mobile */}
+      <div className="h-24 md:hidden" />
 
       <Link
         to={ROUTES.home}
