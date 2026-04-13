@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout Page Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: #f4ede7;
+    color: #5a4340;
+    direction: rtl;
+  }
+
+  .design-label {
+    background: #2563eb;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-family: sans-serif;
+    direction: ltr;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Header bar */
+  .checkout-header {
+    background: #f4ede7;
+    border-bottom: 1px solid #ede3d9;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .checkout-header .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4d3c40;
+  }
+  .checkout-header .back-link {
+    font-size: 14px;
+    color: #a19c93;
+    text-decoration: none;
+  }
+  .checkout-header .back-link:hover { color: #5a4340; }
+  .checkout-header .steps {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: #a19c93;
+  }
+  .checkout-header .steps .active {
+    color: #4d3c40;
+    font-weight: 500;
+    border-bottom: 2px solid #4d3c40;
+    padding-bottom: 4px;
+  }
+
+  /* Main layout */
+  .checkout-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+  }
+
+  /* Form section */
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4d3c40;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ede3d9;
+  }
+  .section-subtitle {
+    font-size: 14px;
+    color: #a19c93;
+    margin-bottom: 16px;
+  }
+
+  /* Form fields */
+  .form-group { margin-bottom: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #5a4340;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ede3d9;
+    background: white;
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    color: #5a4340;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    border-color: #4d3c40;
+  }
+  input::placeholder {
+    color: #c4b8ad;
+  }
+
+  /* Saved addresses */
+  .saved-addresses {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .address-card {
+    padding: 14px 16px;
+    border: 1px solid #ede3d9;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .address-card:hover { border-color: #a19c93; }
+  .address-card.selected {
+    border-color: #4d3c40;
+    background: #faf7f4;
+  }
+  .address-radio {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ede3d9;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .address-card.selected .address-radio {
+    border-color: #4d3c40;
+  }
+  .address-card.selected .address-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #4d3c40;
+    border-radius: 50%;
+  }
+  .address-details {
+    flex: 1;
+  }
+  .address-name { font-weight: 500; font-size: 14px; }
+  .address-line { font-size: 13px; color: #a19c93; }
+  .new-address-link {
+    font-size: 13px;
+    color: #4d3c40;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+
+  /* Guest email */
+  .guest-section {
+    background: #faf7f4;
+    padding: 20px;
+    border: 1px solid #ede3d9;
+    margin-bottom: 16px;
+  }
+  .guest-section .or-login {
+    font-size: 13px;
+    color: #a19c93;
+    margin-top: 8px;
+  }
+  .guest-section .or-login a {
+    color: #4d3c40;
+    text-decoration: underline;
+  }
+
+  /* Payment section */
+  .payment-box {
+    border: 1px solid #ede3d9;
+    background: white;
+    padding: 24px;
+  }
+  .payment-methods {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .payment-method {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ede3d9;
+    text-align: center;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .payment-method:hover { border-color: #a19c93; }
+  .payment-method.selected {
+    border-color: #4d3c40;
+    background: #faf7f4;
+  }
+  .payment-iframe-placeholder {
+    background: #faf7f4;
+    border: 1px dashed #d9c8b3;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a19c93;
+    font-size: 14px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .payment-iframe-placeholder .lock-icon {
+    font-size: 24px;
+  }
+
+  /* Order summary sidebar */
+  .order-summary {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+  .summary-card {
+    background: white;
+    border: 1px solid #ede3d9;
+    padding: 24px;
+  }
+  .summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4d3c40;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ede3d9;
+  }
+  .summary-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f4ede7;
+  }
+  .summary-item:last-of-type { border-bottom: none; }
+  .summary-item-img {
+    width: 64px;
+    height: 64px;
+    background: #ede3d9;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #a19c93;
+    overflow: hidden;
+  }
+  .summary-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .summary-item-info { flex: 1; }
+  .summary-item-title { font-size: 14px; font-weight: 500; }
+  .summary-item-variant { font-size: 12px; color: #a19c93; }
+  .summary-item-qty { font-size: 12px; color: #a19c93; }
+  .summary-item-price { font-size: 14px; font-weight: 500; white-space: nowrap; }
+
+  .summary-totals {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #ede3d9;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .summary-row.total {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4d3c40;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #ede3d9;
+  }
+
+  /* CTA button */
+  .cta-button {
+    width: 100%;
+    padding: 16px;
+    background: #4d3c40;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Heebo', sans-serif;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.2s;
+    border-radius: 0;
+  }
+  .cta-button:hover { background: #3d2d30; }
+
+  .secure-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #a19c93;
+    margin-top: 12px;
+  }
+
+  /* Edit cart link */
+  .edit-cart {
+    text-align: center;
+    margin-top: 12px;
+  }
+  .edit-cart a {
+    font-size: 13px;
+    color: #a19c93;
+    text-decoration: underline;
+  }
+
+  /* Notes */
+  textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ede3d9;
+    background: white;
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    color: #5a4340;
+    resize: vertical;
+    min-height: 80px;
+    border-radius: 0;
+    outline: none;
+  }
+  textarea:focus { border-color: #4d3c40; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .checkout-container {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 16px;
+    }
+    .order-summary { position: static; }
+    .form-row { grid-template-columns: 1fr; }
+    .checkout-header .steps { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">CHECKOUT PAGE MOCKUP — matches mothersdayil design language (cream, warm tones, sharp corners, Hebrew RTL)</div>
+
+<!-- Header -->
+<div class="checkout-header">
+  <a href="#" class="back-link">← חזרה לחנות</a>
+  <div class="steps">
+    <span class="active">פרטי משלוח</span>
+    <span>תשלום</span>
+    <span>אישור</span>
+  </div>
+  <div class="logo">יום האם</div>
+</div>
+
+<!-- Main -->
+<div class="checkout-container">
+
+  <!-- Left: Form -->
+  <div class="form-section">
+
+    <!-- Contact / Guest -->
+    <div>
+      <h2 class="section-title">פרטי התקשרות</h2>
+      <div class="guest-section">
+        <label>אימייל</label>
+        <input type="email" placeholder="your@email.com" dir="ltr" />
+        <div class="or-login">
+          כבר יש לך חשבון? <a href="#">התחבר/י</a> לחוויה מהירה יותר
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping -->
+    <div>
+      <h2 class="section-title">כתובת למשלוח</h2>
+
+      <div class="section-subtitle">בחר/י כתובת שמורה או הוסף/י חדשה</div>
+
+      <div class="saved-addresses">
+        <div class="address-card selected">
+          <div class="address-radio"></div>
+          <div class="address-details">
+            <div class="address-name">שרה כהן</div>
+            <div class="address-line">רחוב הרצל 15, תל אביב</div>
+            <div class="address-line">052-1234567</div>
+          </div>
+        </div>
+        <div class="address-card">
+          <div class="address-radio"></div>
+          <div class="address-details">
+            <div class="address-name">שרה כהן — עבודה</div>
+            <div class="address-line">רחוב רוטשילד 42, תל אביב</div>
+            <div class="address-line">052-1234567</div>
+          </div>
+        </div>
+      </div>
+      <div class="new-address-link">+ הוסף כתובת חדשה</div>
+
+      <!-- New address form (shown when "add new" clicked) -->
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ede3d9;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>שם מלא</label>
+            <input type="text" placeholder="שם מלא" />
+          </div>
+          <div class="form-group">
+            <label>טלפון</label>
+            <input type="tel" placeholder="052-0000000" dir="ltr" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>רחוב ומספר</label>
+          <input type="text" placeholder="רחוב ומספר בית" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>עיר</label>
+            <input type="text" placeholder="עיר" />
+          </div>
+          <div class="form-group">
+            <label>מיקוד</label>
+            <input type="text" placeholder="מיקוד (אופציונלי)" dir="ltr" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <h2 class="section-title">הערות להזמנה</h2>
+      <textarea placeholder="הערות מיוחדות, הוראות למשלוח..."></textarea>
+    </div>
+
+    <!-- Payment -->
+    <div>
+      <h2 class="section-title">תשלום</h2>
+
+      <div class="payment-methods">
+        <div class="payment-method selected">
+          💳 כרטיס אשראי
+        </div>
+        <div class="payment-method">
+           Apple Pay
+        </div>
+        <div class="payment-method">
+          📱 Bit
+        </div>
+      </div>
+
+      <div class="payment-box">
+        <div class="payment-iframe-placeholder">
+          <div class="lock-icon">🔒</div>
+          <div>טופס תשלום מאובטח</div>
+          <div style="font-size: 12px;">(Hyp iframe — כרטיס אשראי)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: Order Summary -->
+  <div class="order-summary">
+    <div class="summary-card">
+      <h3 class="summary-title">סיכום הזמנה</h3>
+
+      <div class="summary-item">
+        <div class="summary-item-img" style="background:#e8e0d8;">📓</div>
+        <div class="summary-item-info">
+          <div class="summary-item-title">מחברת יום האם לניהול משימות</div>
+          <div class="summary-item-variant">A4 / 30 דפים</div>
+          <div class="summary-item-qty">כמות: 1</div>
+        </div>
+        <div class="summary-item-price">₪160</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-item-img" style="background:#e8e0d8;">📋</div>
+        <div class="summary-item-info">
+          <div class="summary-item-title">בלוק תכנון גדול</div>
+          <div class="summary-item-variant">A4 / 50 דפים</div>
+          <div class="summary-item-qty">כמות: 2</div>
+        </div>
+        <div class="summary-item-price">₪100</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-item-img" style="background:#e8e0d8;">🎁</div>
+        <div class="summary-item-info">
+          <div class="summary-item-title">מארז תכנון</div>
+          <div class="summary-item-variant">לוח שבועי + ארוחות + קניות</div>
+          <div class="summary-item-qty">כמות: 1</div>
+        </div>
+        <div class="summary-item-price">₪180</div>
+      </div>
+
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span>סכום ביניים</span>
+          <span>₪440</span>
+        </div>
+        <div class="summary-row">
+          <span>משלוח</span>
+          <span style="color: #a19c93;">חינם</span>
+        </div>
+        <div class="summary-row total">
+          <span>סה״כ</span>
+          <span>₪440</span>
+        </div>
+      </div>
+
+      <button class="cta-button">אישור ותשלום — ₪440</button>
+
+      <div class="secure-note">
+        🔒 תשלום מאובטח ומוצפן
+      </div>
+
+      <div class="edit-cart">
+        <a href="#">עריכת העגלה</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
