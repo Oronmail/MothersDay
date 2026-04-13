@@ -1,0 +1,114 @@
+@import './assets/fonts/fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Brand Color Palette */
+    --background: 40 20% 96%; /* Cream */
+    --foreground: 25 15% 35%; /* Dark warm gray for text */
+    --card: 0 0% 100%;
+    --card-foreground: 25 15% 35%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 15% 35%;
+    --primary: 345 13% 26%; /* #4d3c40 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 35% 72%; /* Warm Tan */
+    --secondary-foreground: 25 15% 25%;
+    --muted: 30 8% 90%; /* Light Gray */
+    --muted-foreground: 25 18% 38%; /* Dark warm brown */
+    --accent: 30 12% 62%; /* Warm Taupe */
+    --accent-foreground: 0 0% 100%;
+    --hero-button: 39 7% 60%; /* #a19c93 */
+    --hero-button-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 15% 85%;
+    --input: 30 15% 85%;
+    --ring: 5 30% 60%; /* Dusty Rose */
+    --radius: 0;
+    --sidebar-background: 40 20% 96%;
+    --sidebar-foreground: 25 15% 35%;
+    --sidebar-primary: 5 30% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 8% 90%;
+    --sidebar-accent-foreground: 25 15% 35%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 5 30% 60%;
+  }
+
+  .dark {
+    --background: 25 15% 12%;
+    --foreground: 25 10% 95%;
+    --card: 25 15% 15%;
+    --card-foreground: 25 10% 95%;
+    --popover: 25 15% 15%;
+    --popover-foreground: 25 10% 95%;
+    --primary: 345 13% 26%; /* #4d3c40 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 30% 35%;
+    --secondary-foreground: 25 10% 95%;
+    --muted: 25 20% 25%;
+    --muted-foreground: 25 10% 70%;
+    --accent: 30 15% 40%;
+    --accent-foreground: 0 0% 100%;
+    --hero-button: 39 7% 60%; /* #a19c93 */
+    --hero-button-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 25 20% 25%;
+    --input: 25 20% 25%;
+    --ring: 5 35% 65%;
+    --sidebar-background: 25 15% 12%;
+    --sidebar-foreground: 25 10% 95%;
+    --sidebar-primary: 5 35% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 20% 20%;
+    --sidebar-accent-foreground: 25 10% 95%;
+    --sidebar-border: 25 20% 25%;
+    --sidebar-ring: 5 35% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  a:not([class*="button"]):not([class*="btn"]) {
+    @apply transition-colors duration-200;
+  }
+
+  a:not([class*="button"]):not([class*="btn"]):hover {
+    @apply text-secondary;
+  }
+}
+
+@layer components {
+  .link-hover {
+    @apply relative transition-all duration-200 hover:text-secondary;
+  }
+
+  .link-underline {
+    @apply relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-secondary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

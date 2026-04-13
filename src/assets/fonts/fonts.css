@@ -1,0 +1,19 @@
+/* FbEinstein ConThin Font */
+@font-face {
+  font-family: 'FbEinstein';
+  src: url('./FbEinstein-ConThin.woff2') format('woff2'),
+       url('./FbEinstein-ConThin.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* If you need regular weight, use the same font with adjusted weight */
+@font-face {
+  font-family: 'FbEinstein';
+  src: url('./FbEinstein-ConThin.woff2') format('woff2'),
+       url('./FbEinstein-ConThin.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
