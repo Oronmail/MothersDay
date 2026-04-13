@@ -31,6 +31,10 @@ const Orders = lazy(() => import("./pages/Orders"));
 const AllSets = lazy(() => import("./pages/AllSets"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 
+// Admin
+const AdminLoginPage = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -78,6 +82,9 @@ const App = () => (
                 <Route path="returns" element={<Returns />} />
                 <Route path="support" element={<Support />} />
               </Route>
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/*" element={<AdminDashboardPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
