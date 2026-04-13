@@ -73,7 +73,7 @@ const Support = () => {
               הדרך הכי מהירה לקבל מענה
             </p>
             <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href="https://wa.me/972548024058" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/972548024059" target="_blank" rel="noopener noreferrer">
                 שלחי הודעה
               </a>
             </Button>
@@ -103,8 +103,8 @@ const Support = () => {
               א׳-ה׳ 9:00-17:00
             </p>
             <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href="tel:+972548024058">
-                054-8024058
+              <a href="tel:+972548024059">
+                054-8024059
               </a>
             </Button>
           </div>
@@ -133,7 +133,7 @@ const Support = () => {
             שלחי לנו הודעה ונחזור אליך בהקדם
           </p>
           <Button asChild>
-            <a href="https://wa.me/972548024058" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/972548024059" target="_blank" rel="noopener noreferrer">
               דברי איתנו בוואטסאפ
             </a>
           </Button>
