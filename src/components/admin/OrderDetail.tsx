@@ -95,7 +95,7 @@ export const OrderDetail = () => {
 
   const shippingAddress = order.shipping_address as any;
   const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
-  const orderNumber = (order as any).shopify_order_number ?? (order as any).order_number ?? order.id?.slice(0, 8);
+  const orderNumber = (order as any).order_number ?? order.id?.slice(0, 8);
 
   return (
     <div className="space-y-6 max-w-4xl">

@@ -2,13 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 
 // Lazy load all page components
-const UnderConstruction = lazy(() => import("./pages/UnderConstruction"));
 const SiteAccess = lazy(() => import("./pages/SiteAccess"));
 const Index = lazy(() => import("./pages/Index"));
 const AllProducts = lazy(() => import("./pages/AllProducts"));
@@ -60,7 +59,7 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/" element={<UnderConstruction />} />
+              <Route path="/" element={<Navigate to="/site" replace />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/site" element={<SiteAccess />}>
                 <Route index element={<Index />} />

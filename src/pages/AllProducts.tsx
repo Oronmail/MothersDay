@@ -61,7 +61,7 @@ const AllProducts = () => {
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [selectedCollection, setSelectedCollection] = useState<string>("all");
 
-  // Fetch all products from the "הכל" collection (preserves Shopify manual order)
+  // Fetch all products from the "הכל" collection (preserves manual sort order)
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ['all-products-collection'],
     queryFn: async () => {

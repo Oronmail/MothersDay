@@ -2,7 +2,7 @@
  * Product Image Layouts Configuration
  *
  * Maps product handles to their extra carousel configuration.
- * Image layouts are managed via Shopify metafields (custom.image_layout).
+ * Image layouts are stored as the `image_layout` field on the product in Supabase.
  */
 
 export type FeatureIconType = 'clock' | 'heart' | 'smiley';
@@ -66,7 +66,7 @@ export const PRODUCTS_WITH_EXTRA_CAROUSEL: Record<string, ProductExtraCarouselCo
 };
 
 /**
- * Product-specific image layout overrides (when Shopify metafield is not set)
+ * Product-specific image layout overrides (when DB field is not set)
  */
 /**
  * Standard layout for מוצרים collection products:
@@ -122,7 +122,7 @@ export const getProductImageLayoutOverride = (productHandle: string): ImageLayou
 };
 
 /**
- * Image Layout Types (configured via Shopify metafields)
+ * Image Layout Types (configured via product image_layout field)
  */
 export type ImageLayoutType =
   | "grid-2x2"                    // Standard 2x2 grid (default)
@@ -162,26 +162,26 @@ export const DEFAULT_IMAGE_LAYOUT: ImageLayoutConfig = {
 };
 
 /**
- * Parse image layout from Shopify metafield
- * Returns default layout if parsing fails
+ * Parse image layout from product's imageLayout field (a plain string from Supabase).
+ * Returns default layout if parsing fails.
  */
-export const parseImageLayout = (metafieldValue: string | null | undefined): ImageLayoutConfig => {
-  if (!metafieldValue) {
+export const parseImageLayout = (imageLayoutValue: string | null | undefined): ImageLayoutConfig => {
+  if (!imageLayoutValue) {
     return DEFAULT_IMAGE_LAYOUT;
   }
 
   try {
-    const parsed = JSON.parse(metafieldValue);
+    const parsed = JSON.parse(imageLayoutValue);
 
     // Validate required fields
     if (!parsed.type || !Array.isArray(parsed.mainImages) || !Array.isArray(parsed.aspectRatios)) {
-      console.warn('Invalid image layout metafield, using default layout');
+      console.warn('Invalid image layout value, using default layout');
       return DEFAULT_IMAGE_LAYOUT;
     }
 
     return parsed as ImageLayoutConfig;
   } catch (error) {
-    console.error('Failed to parse image layout metafield:', error);
+    console.error('Failed to parse image layout:', error);
     return DEFAULT_IMAGE_LAYOUT;
   }
 };

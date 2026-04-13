@@ -6,7 +6,7 @@ export const MAIN_COLLECTION_HANDLE = 'הכל';
 
 /**
  * Transforms a Supabase product row into the Product shape
- * that all existing components expect (matching old Shopify types).
+ * that all existing components expect.
  */
 function transformProduct(row: any): Product {
   return {

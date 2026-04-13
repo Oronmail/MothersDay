@@ -186,7 +186,7 @@ export const CustomerDetail = () => {
                       onClick={() => navigate(`/admin/orders/${order.id}`)}
                     >
                       <TableCell className="font-mono text-sm">
-                        {order.shopify_order_number ?? order.order_number ?? order.id?.slice(0, 8)}
+                        {order.order_number ?? order.id?.slice(0, 8)}
                       </TableCell>
                       <TableCell>{formatCurrency(order.total_price)}</TableCell>
                       <TableCell>

@@ -30,8 +30,7 @@ export const initSentry = () => {
       Sentry.browserTracingIntegration(),
     ],
 
-    // Trace propagation targets - only our own domains, NOT third-party APIs
-    // Removed myshopify.com because Shopify's CORS doesn't allow the 'baggage' header that Sentry injects
+    // Trace propagation targets - only our own domains
     tracePropagationTargets: [
       "localhost",
       /^https:\/\/yomhaem\.co\.il/,

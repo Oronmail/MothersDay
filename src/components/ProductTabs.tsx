@@ -60,7 +60,7 @@ const ProductTabsContent = () => {
     ...collectionQueryConfig,
   });
 
-  // Fetch products from main collection (respects Shopify manual order)
+  // Fetch products from main collection (respects manual sort order)
   // Falls back to all products if main collection doesn't exist
   const { data: mainCollectionProducts, isLoading: mainLoading } = useQuery({
     queryKey: ['homepage-products', MAIN_COLLECTION_HANDLE],

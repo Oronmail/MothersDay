@@ -2,7 +2,7 @@
  * ProductImageLayout Component
  *
  * Flexible image layout renderer that supports multiple layout types
- * configured via Shopify metafields.
+ * configured via the product's image_layout field.
  */
 
 import { useState, useCallback, useEffect } from "react";
@@ -10,7 +10,7 @@ import { LazyImage } from "@/components/LazyImage";
 import { ImageLayoutConfig } from "@/lib/productImageLayouts";
 import { cn } from "@/lib/utils";
 
-interface ShopifyImage {
+interface ProductImageNode {
   node: {
     url: string;
     altText: string | null;
@@ -18,8 +18,8 @@ interface ShopifyImage {
 }
 
 interface ProductImageLayoutProps {
-  /** Product images from Shopify */
-  images: ShopifyImage[];
+  /** Product images */
+  images: ProductImageNode[];
   /** Product title for alt text */
   productTitle: string;
   /** Layout configuration from metafield or default */

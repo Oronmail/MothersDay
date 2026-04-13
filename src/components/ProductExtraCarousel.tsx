@@ -18,7 +18,7 @@ import clockIcon from "@/assets/clock-icon.png";
 import heartIcon from "@/assets/heart-icon.png";
 import smileyIcon from "@/assets/smiley-icon.png";
 
-interface ShopifyImage {
+interface ProductImageNode {
   node: {
     url: string;
     altText: string | null;
@@ -26,8 +26,8 @@ interface ShopifyImage {
 }
 
 interface ProductExtraCarouselProps {
-  /** All product images from Shopify */
-  images: ShopifyImage[];
+  /** All product images */
+  images: ProductImageNode[];
   /** Product title for alt text */
   productTitle: string;
   /** Carousel configuration */

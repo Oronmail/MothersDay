@@ -28,31 +28,29 @@ import { LazyImage } from "@/components/LazyImage";
 import { ProductImageLayout } from "@/components/ProductImageLayout";
 import { ProductExtraCarousel } from "@/components/ProductExtraCarousel";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
-import { getBundleContents, getBundlesForProduct, BUNDLE_CONTENTS } from "@/lib/productProperties";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
 
 /**
- * For bundle products, replace product names in description HTML with clickable links
+ * For bundle products, replace product names in description HTML with clickable links.
+ * Uses bundle items fetched from the database.
  */
-function linkifyBundleDescription(html: string, bundleHandle: string): string {
-  const contents = BUNDLE_CONTENTS[bundleHandle];
-  if (!contents) return html;
-  
+function linkifyBundleDescription(
+  html: string,
+  bundleItems: Array<{ product: { handle: string; title: string } }>
+): string {
+  if (!bundleItems || bundleItems.length === 0) return html;
+
   let result = html;
-  for (const item of contents) {
-    const productPath = `/site/product/${item.handle}`;
-    const names = [item.displayName, ...(item.descriptionAliases || [])];
-    // Sort by length descending to match longer names first
-    names.sort((a, b) => b.length - a.length);
-    for (const name of names) {
-      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // Replace text that is NOT already inside an <a> tag
-      result = result.replace(
-        new RegExp(`(?!<a[^>]*>.*?)${escapedName}(?![^<]*<\\/a>)`, 'g'),
-        `<a href="${productPath}" style="text-decoration:underline;cursor:pointer">${name}</a>`
-      );
-    }
+  for (const item of bundleItems) {
+    const productPath = `/site/product/${item.product.handle}`;
+    const name = item.product.title;
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Replace text that is NOT already inside an <a> tag
+    result = result.replace(
+      new RegExp(`(?!<a[^>]*>.*?)${escapedName}(?![^<]*<\\/a>)`, 'g'),
+      `<a href="${productPath}" style="text-decoration:underline;cursor:pointer">${name}</a>`
+    );
   }
   return result;
 }
@@ -173,14 +171,11 @@ export default function ProductDetail() {
   const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
-  const relevantBundleHandles = handle ? getBundlesForProduct(handle) : [];
-  const bundles = (bundlesData || []).filter((bundle: ProductEdge) =>
-    relevantBundleHandles.length > 0
-      ? relevantBundleHandles.includes(bundle.node.handle)
-      : true
-  );
+  const bundles = bundlesData || [];
   // Filter out products that are already in this bundle from recommendations
-  const bundleContentHandles = isBundle && handle ? (getBundleContents(handle) || []).map(item => item.handle) : [];
+  const bundleContentHandles = isBundle && bundleItemsData
+    ? bundleItemsData.map(item => item.product.handle)
+    : [];
   const relatedProducts = (relatedProductsData || []).filter((product: ProductEdge) =>
     !bundleContentHandles.includes(product.node.handle)
   );
@@ -305,7 +300,7 @@ export default function ProductDetail() {
                           />([,.\u060C\u061B])(\s*[\u0590-\u05FF\u0600-\u06FF])/g,
                           '>$2$1'
                         );
-                        const linkedHtml = isBundle ? linkifyBundleDescription(fixedHtml, handle || '') : fixedHtml;
+                        const linkedHtml = isBundle && bundleItemsData ? linkifyBundleDescription(fixedHtml, bundleItemsData) : fixedHtml;
                         // Wrap the specific "family board" section with a highlight
                         const startMarker = 'הלוח המשפחתי שומר';
                         const endMarker = 'משימות בשגרה';

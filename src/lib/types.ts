@@ -48,7 +48,6 @@ export interface Product {
 
 /**
  * Wraps Product in { node: Product } to match existing component interface.
- * Components consume this shape from the old Shopify GraphQL API.
  */
 export interface ProductEdge {
   node: Product;

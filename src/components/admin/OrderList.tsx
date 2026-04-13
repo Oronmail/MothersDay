@@ -149,7 +149,7 @@ export const OrderList = () => {
                     onClick={() => navigate(`/admin/orders/${order.id}`)}
                   >
                     <TableCell className="font-mono text-sm">
-                      {order.shopify_order_number ?? order.order_number ?? order.id?.slice(0, 8)}
+                      {order.order_number ?? order.id?.slice(0, 8)}
                     </TableCell>
                     <TableCell>{getCustomerName(order)}</TableCell>
                     <TableCell>{getItemsCount(order)}</TableCell>
