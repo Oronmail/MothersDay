@@ -1,13 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  storefrontApiRequest, 
-  STOREFRONT_PRODUCT_BY_HANDLE_QUERY,
-  STOREFRONT_COLLECTION_PRODUCTS_QUERY,
-  STOREFRONT_PRODUCT_RECOMMENDATIONS_QUERY,
-  ShopifyProduct,
+import {
+  getProductByHandle,
+  getProducts,
+  getProductRecommendations,
+  getBundleItems,
   MAIN_COLLECTION_HANDLE
-} from "@/lib/shopify";
+} from "@/lib/api";
+import { ProductEdge } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
@@ -69,8 +69,7 @@ export default function ProductDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', handle],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_PRODUCT_BY_HANDLE_QUERY, { handle });
-      return response.data.product;
+      return await getProductByHandle(handle!);
     },
     enabled: !!handle
   });
@@ -82,26 +81,19 @@ export default function ProductDetail() {
   const { data: bundlesData } = useQuery({
     queryKey: ['bundles-collection'],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, { 
-        handle: 'מארזים',
-        first: 10 
-      });
-      return response.data.collection?.products?.edges || [];
+      return await getProducts('מארזים');
     },
     enabled: !isBundle
   });
 
-  // Fetch products from main collection (for bundle contents)
-  const { data: mainCollectionProducts } = useQuery({
-    queryKey: ['main-collection-products'],
+  // Fetch bundle items from DB (for bundle contents)
+  const { data: bundleItemsData } = useQuery({
+    queryKey: ['bundle-items', data?.id],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, { 
-        handle: MAIN_COLLECTION_HANDLE,
-        first: 50
-      });
-      return response.data.collection?.products?.edges || [];
+      if (!data?.id) return [];
+      return await getBundleItems(data.id);
     },
-    enabled: isBundle
+    enabled: isBundle && !!data?.id
   });
 
   // Fetch product recommendations (for "אימהות מוסיפות גם" section)
@@ -109,12 +101,7 @@ export default function ProductDetail() {
     queryKey: ['product-recommendations', data?.id],
     queryFn: async () => {
       if (!data?.id) return [];
-      const response = await storefrontApiRequest(STOREFRONT_PRODUCT_RECOMMENDATIONS_QUERY, { 
-        productId: data.id
-      });
-      // Transform recommendations to match ShopifyProduct interface
-      const recommendations = response.data.productRecommendations || [];
-      return recommendations.slice(0, 4).map((product: any) => ({ node: product }));
+      return await getProductRecommendations(data.id);
     },
     enabled: !!data?.id
   });
@@ -186,27 +173,27 @@ export default function ProductDetail() {
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
   const relevantBundleHandles = handle ? getBundlesForProduct(handle) : [];
-  const bundles = (bundlesData || []).filter((bundle: ShopifyProduct) =>
+  const bundles = (bundlesData || []).filter((bundle: ProductEdge) =>
     relevantBundleHandles.length > 0
       ? relevantBundleHandles.includes(bundle.node.handle)
       : true
   );
   // Filter out products that are already in this bundle from recommendations
   const bundleContentHandles = isBundle && handle ? (getBundleContents(handle) || []).map(item => item.handle) : [];
-  const relatedProducts = (relatedProductsData || []).filter((product: ShopifyProduct) =>
+  const relatedProducts = (relatedProductsData || []).filter((product: ProductEdge) =>
     !bundleContentHandles.includes(product.node.handle)
   );
 
-  // For bundles: filter out bundle products from main collection to show as contents
-  const bundleContents = isBundle && mainCollectionProducts
-    ? mainCollectionProducts.filter((p: ShopifyProduct) => !p.node.title.includes('מארז')).slice(0, 6)
+  // For bundles: use bundle items from DB
+  const bundleContents = isBundle && bundleItemsData
+    ? bundleItemsData.map(item => ({ node: item.product }))
     : [];
 
   // Parse image layout from metafield, or use override if exists
   // Bundle products get a special 2-stacked layout (images 3 & 4 only)
   const imageLayout = isBundle
     ? { type: "grid-2-left-carousel-right" as const, mainImages: [2, 3], carouselImages: [4, 5, 6], aspectRatios: ["4/3", "4/3"], description: "2 stacked left, carousel right" }
-    : getProductImageLayoutOverride(handle || '') || parseImageLayout(data.imageLayout?.value);
+    : getProductImageLayoutOverride(handle || '') || parseImageLayout(data.imageLayout);
 
   // Get carousel configuration if this product has extra carousel
   const carouselConfig = getProductCarouselConfig(handle || '');
@@ -430,7 +417,7 @@ export default function ProductDetail() {
               המוצר זמין גם במארזים
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {bundles.slice(0, 4).map((bundle: ShopifyProduct) => (
+              {bundles.slice(0, 4).map((bundle: ProductEdge) => (
                 <ProductCardCompact key={bundle.node.id} product={bundle} />
               ))}
             </div>
@@ -448,7 +435,7 @@ export default function ProductDetail() {
               אימהות מוסיפות גם
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product: ShopifyProduct) => (
+              {relatedProducts.map((product: ProductEdge) => (
                 <ProductCardCompact key={product.node.id} product={product} alignment="end" />
               ))}
             </div>

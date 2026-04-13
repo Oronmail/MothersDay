@@ -5,7 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Newsletter } from "@/components/Newsletter";
 import { ProductCard } from "@/components/ProductCard";
-import { storefrontApiRequest, STOREFRONT_COLLECTION_PRODUCTS_QUERY, ShopifyProduct } from "@/lib/shopify";
+import { getProducts } from "@/lib/api";
+import { ProductEdge } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WIDE_PRODUCT_TITLES } from "@/lib/constants";
@@ -20,7 +21,7 @@ import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
 import { COLLECTION_HANDLES } from "@/lib/routes";
 
-const isWideProduct = (product: ShopifyProduct) => {
+const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
 
@@ -36,7 +37,7 @@ const SETS_ORDER = [
   'מארז מחברות',
 ];
 
-const sortProducts = (products: ShopifyProduct[], sortBy: SortOption): ShopifyProduct[] => {
+const sortProducts = (products: ProductEdge[], sortBy: SortOption): ProductEdge[] => {
   // Always apply manual ordering first
   const orderedProducts = [...products].sort((a, b) => {
     const indexA = SETS_ORDER.findIndex(title => a.node.title.includes(title));
@@ -77,11 +78,7 @@ const AllSets = () => {
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['bundles-products'],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, {
-        handle: COLLECTION_HANDLES.bundles,
-        first: 100
-      });
-      return response.data.collection?.products.edges as ShopifyProduct[] || [];
+      return await getProducts(COLLECTION_HANDLES.bundles);
     },
   });
 

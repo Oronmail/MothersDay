@@ -11,7 +11,7 @@ import { Plus, Edit, Trash2, Star, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 const addressSchema = z.object({
   full_name: z.string().trim().min(2, "השם חייב להכיל לפחות 2 תווים").max(100, "השם חייב להיות פחות מ-100 תווים"),

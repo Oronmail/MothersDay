@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -11,22 +11,7 @@ import { Footer } from "@/components/Footer";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { LazyImage } from "@/components/LazyImage";
-import { Database } from "@/integrations/supabase/types";
-
-// Define proper types for the JSON fields
-interface OrderLineItem {
-  title: string;
-  quantity: number;
-  price: string;
-  image?: string;
-}
-
-interface ShippingAddress {
-  name?: string;
-  address1?: string;
-  city?: string;
-  country?: string;
-}
+import type { Order as OrderType, OrderLineItem, ShippingAddress as OrderShippingAddress } from "@/lib/types";
 
 // Type helper to validate JSON structure
 function isOrderLineItem(item: unknown): item is OrderLineItem {
@@ -39,16 +24,26 @@ function isOrderLineItem(item: unknown): item is OrderLineItem {
   );
 }
 
-function isShippingAddress(addr: unknown): addr is ShippingAddress {
+function isShippingAddress(addr: unknown): addr is OrderShippingAddress {
   if (typeof addr !== 'object' || addr === null) return false;
   return true; // All fields are optional
 }
 
-type OrderRow = Database['public']['Tables']['orders']['Row'];
-
-interface Order extends Omit<OrderRow, 'line_items' | 'shipping_address'> {
+interface Order {
+  id: string;
+  order_number: number;
+  user_id: string | null;
+  guest_email: string | null;
   line_items: OrderLineItem[];
-  shipping_address: ShippingAddress | null;
+  shipping_address: OrderShippingAddress | null;
+  total_price: number;
+  currency_code: string;
+  financial_status: string;
+  fulfillment_status: string;
+  tracking_number: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 const Orders = () => {
@@ -90,9 +85,9 @@ const Orders = () => {
             }
 
             // Parse shipping_address
-            let shippingAddress: ShippingAddress | null = null;
+            let shippingAddress: OrderShippingAddress | null = null;
             if (order.shipping_address && isShippingAddress(order.shipping_address)) {
-              shippingAddress = order.shipping_address;
+              shippingAddress = order.shipping_address as OrderShippingAddress;
             }
 
             return {
@@ -161,7 +156,7 @@ const Orders = () => {
                     <div className="flex items-start justify-between" dir="rtl">
                       <div className="space-y-1">
                         <CardTitle className="text-lg">
-                          הזמנה #{order.shopify_order_number || order.shopify_order_id.slice(-8)}
+                          הזמנה #{order.order_number}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2">
                           <Calendar className="h-3 w-3" />
@@ -169,8 +164,8 @@ const Orders = () => {
                         </CardDescription>
                       </div>
                       <div className="flex flex-col gap-2 items-end">
-                        <Badge className={getStatusColor(order.order_status)}>
-                          {order.order_status}
+                        <Badge className={getStatusColor(order.financial_status)}>
+                          {order.financial_status === 'paid' ? 'שולם' : order.financial_status === 'pending' ? 'ממתין' : order.financial_status}
                         </Badge>
                         {order.fulfillment_status && (
                           <Badge variant="outline">
@@ -230,7 +225,7 @@ const Orders = () => {
                       <div className="flex justify-between items-center pt-2">
                         <span className="">סה"כ</span>
                         <span className="text-xl">
-                          ₪{parseFloat(order.total_price).toFixed(2)}
+                          ₪{order.total_price.toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -240,11 +235,11 @@ const Orders = () => {
                       <div className="border-t pt-4" dir="rtl">
                         <p className="text-sm font-medium mb-1">כתובת למשלוח</p>
                         <p className="text-sm text-muted-foreground">
-                          {order.shipping_address.name}
+                          {order.shipping_address.full_name}
                           <br />
-                          {order.shipping_address.address1}
+                          {order.shipping_address.street}
                           <br />
-                          {order.shipping_address.city}, {order.shipping_address.country}
+                          {order.shipping_address.city}
                         </p>
                       </div>
                     )}

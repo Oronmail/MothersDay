@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  storefrontApiRequest,
-  STOREFRONT_COLLECTION_PRODUCTS_QUERY,
-  STOREFRONT_COLLECTIONS_QUERY,
-  STOREFRONT_PRODUCTS_QUERY,
-  STOREFRONT_PRODUCT_BY_HANDLE_QUERY,
-  ShopifyProduct,
-  ShopifyCollection,
+  getProducts,
+  getProductByHandle,
+  getCollections,
   MAIN_COLLECTION_HANDLE,
-} from "@/lib/shopify";
+} from "@/lib/api";
+import { ProductEdge, CollectionEdge } from "@/lib/types";
 import { collectionQueryConfig, productQueryConfig } from "@/lib/queryConfig";
 import { ProductCard } from "./ProductCard";
 import { Loader2 } from "lucide-react";
@@ -41,7 +38,7 @@ const COLLECTION_TABS = [
 // were not successfully added to the main collection yet.
 const HOMEPAGE_REQUIRED_PRODUCT_HANDLES = ["בלוק-תכנון-קטן", "בלוק-תכנון"] as const;
 
-const isWideProduct = (product: ShopifyProduct) => {
+const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
 
@@ -53,8 +50,7 @@ const ProductTabsContent = () => {
     queryKey: ['collections'],
     queryFn: async () => {
       try {
-        const response = await storefrontApiRequest(STOREFRONT_COLLECTIONS_QUERY, { first: 20 });
-        return response.data.collections.edges as ShopifyCollection[];
+        return await getCollections();
       } catch (error) {
         console.error('Failed to fetch collections:', error);
         return [];
@@ -71,28 +67,21 @@ const ProductTabsContent = () => {
     queryFn: async () => {
       // Try collection first for manual ordering
       try {
-        const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, {
-          handle: MAIN_COLLECTION_HANDLE,
-          first: 100
-        });
-        console.log('[ProductTabs] Collection response:', response?.data?.collection ? 'has collection' : 'no collection');
-        const products = response?.data?.collection?.products?.edges as ShopifyProduct[] || [];
+        const products = await getProducts(MAIN_COLLECTION_HANDLE);
+        console.log('[ProductTabs] Got', products.length, 'products from collection');
         if (products.length > 0) {
-          console.log('[ProductTabs] Got', products.length, 'products from collection');
-
           // Fetch required products by handle and append any missing ones.
           const extras = (await Promise.all(
             HOMEPAGE_REQUIRED_PRODUCT_HANDLES.map(async (handle) => {
               try {
-                const extraRes = await storefrontApiRequest(STOREFRONT_PRODUCT_BY_HANDLE_QUERY, { handle });
-                const product = extraRes?.data?.product;
-                return product ? ({ node: product } as ShopifyProduct) : null;
+                const product = await getProductByHandle(handle);
+                return product ? ({ node: product } as ProductEdge) : null;
               } catch (error) {
                 console.error('[ProductTabs] Required product fetch failed:', handle, error);
                 return null;
               }
             })
-          )).filter(Boolean) as ShopifyProduct[];
+          )).filter(Boolean) as ProductEdge[];
 
           if (extras.length === 0) return products;
 
@@ -124,13 +113,11 @@ const ProductTabsContent = () => {
       } catch (e) {
         console.error('[ProductTabs] Main collection failed:', e);
       }
-      
+
       // Fallback to all products - wrapped in try-catch to never throw
       try {
         console.log('[ProductTabs] Trying fallback to all products...');
-        const response = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first: 100 });
-        console.log('[ProductTabs] Fallback response:', response?.data?.products ? 'has products' : 'no products');
-        const products = response?.data?.products?.edges as ShopifyProduct[] || [];
+        const products = await getProducts();
         console.log('[ProductTabs] Fallback got', products.length, 'products');
         return products;
       } catch (e) {
@@ -149,11 +136,7 @@ const ProductTabsContent = () => {
     queryFn: async () => {
       if (!activeCollection) return [];
       try {
-        const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, {
-          handle: activeCollection,
-          first: 100
-        });
-        return response?.data?.collection?.products?.edges as ShopifyProduct[] || [];
+        return await getProducts(activeCollection);
       } catch (e) {
         console.error('[ProductTabs] Selected collection failed:', e);
         return [];

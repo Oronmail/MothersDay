@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { ShopifyProduct } from "@/lib/shopify";
+import { ProductEdge } from "@/lib/types";
 import { Minus, Plus } from "lucide-react";
 import { buildProductPath } from "@/lib/routes";
 import { QuickViewModal } from "./QuickViewModal";
@@ -11,7 +11,7 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
 
 interface ProductCardProps {
-  product: ShopifyProduct;
+  product: ProductEdge;
   isWide?: boolean;
   showDescriptionFirstLine?: boolean;
   largeCarouselMobile?: boolean;

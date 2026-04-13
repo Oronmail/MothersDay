@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useCartStore } from "@/stores/cartStore";
-import { ShopifyProduct } from "@/lib/shopify";
+import { ProductEdge } from "@/lib/types";
 import { startSpan } from "@/lib/sentry";
 
 interface VariantNode {
@@ -18,7 +18,7 @@ interface VariantNode {
 }
 
 interface UseAddToCartOptions {
-  product: ShopifyProduct;
+  product: ProductEdge;
   variant: VariantNode | null;
   onSuccess?: () => void;
 }

@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
 import shoppingBagIcon from "@/assets/shopping-bag-icon.png";
 import { useCartStore } from "@/stores/cartStore";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ShippingAddress } from "@/lib/types";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";

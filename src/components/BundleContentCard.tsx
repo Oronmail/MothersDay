@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ShopifyProduct } from "@/lib/shopify";
+import { ProductEdge } from "@/lib/types";
 import { Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { buildProductPath } from "@/lib/routes";
@@ -7,7 +7,7 @@ import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 
 interface BundleContentCardProps {
-  product: ShopifyProduct;
+  product: ProductEdge;
 }
 
 export const BundleContentCard = ({ product }: BundleContentCardProps) => {

@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
-import { ShopifyProduct } from "@/lib/shopify";
+import { ProductEdge } from "@/lib/types";
 import { buildProductPath } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
 
 interface ProductCardCompactProps {
-  product: ShopifyProduct;
+  product: ProductEdge;
   alignment?: 'center' | 'end';
 }
 

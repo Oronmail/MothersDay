@@ -5,7 +5,8 @@ import { X, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Input } from "./ui/input";
-import { storefrontApiRequest, STOREFRONT_PRODUCTS_QUERY, ShopifyProduct } from "@/lib/shopify";
+import { getProducts } from "@/lib/api";
+import { ProductEdge } from "@/lib/types";
 import { buildProductPath } from "@/lib/routes";
 import searchIcon from "@/assets/search-icon.png";
 export const SearchModal = () => {
@@ -18,10 +19,7 @@ export const SearchModal = () => {
   } = useQuery({
     queryKey: ['all-products-search'],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, {
-        first: 100
-      });
-      return response.data.products.edges as ShopifyProduct[];
+      return await getProducts();
     },
     enabled: isOpen
   });

@@ -10,7 +10,7 @@ import logo from "@/assets/logo-new.png";
 import userIcon from "@/assets/user-icon.png";
 import homeIcon from "@/assets/home-icon.png";
 import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, buildProductPath } from "@/lib/routes";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 

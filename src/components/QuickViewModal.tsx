@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShopifyProduct } from "@/lib/shopify";
+import { ProductEdge } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { buildProductPath } from "@/lib/routes";
 import { useAddToCart } from "@/hooks/useAddToCart";
 
 interface QuickViewModalProps {
-  product: ShopifyProduct | null;
+  product: ProductEdge | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import titleUnderline from "@/assets/title-underline.png";
 import heartIcon from "@/assets/heart-icon.png";
 import smileyIcon from "@/assets/smiley-icon.png";

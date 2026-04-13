@@ -8,7 +8,8 @@ import { Newsletter } from "@/components/Newsletter";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { storefrontApiRequest, STOREFRONT_COLLECTION_PRODUCTS_QUERY, STOREFRONT_COLLECTIONS_QUERY, ShopifyProduct, ShopifyCollection, MAIN_COLLECTION_HANDLE } from "@/lib/shopify";
+import { getProducts, getCollections, MAIN_COLLECTION_HANDLE } from "@/lib/api";
+import { ProductEdge, CollectionEdge } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WIDE_PRODUCT_TITLES } from "@/lib/constants";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -77,13 +78,13 @@ const getCollectionDescription = (handle: string): string[] => {
   return descriptions[handle] || descriptions['מוצרי-תכנון-משלימים'];
 };
 
-const isWideProduct = (product: ShopifyProduct) => {
+const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
 
 type SortOption = "default" | "price-asc" | "price-desc" | "newest";
 
-const sortProducts = (products: ShopifyProduct[], sortBy: SortOption): ShopifyProduct[] => {
+const sortProducts = (products: ProductEdge[], sortBy: SortOption): ProductEdge[] => {
   if (sortBy === "default") return products;
 
   return [...products].sort((a, b) => {
@@ -123,8 +124,7 @@ const Collection = () => {
   const { data: collections } = useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTIONS_QUERY, { first: 20 });
-      return response.data.collections.edges as ShopifyCollection[];
+      return await getCollections();
     },
     ...collectionQueryConfig,
   });
@@ -135,11 +135,7 @@ const Collection = () => {
     queryKey: ['collection-products', handle],
     queryFn: async () => {
       if (!handle) return [];
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, {
-        handle,
-        first: 100
-      });
-      return response.data.collection?.products.edges as ShopifyProduct[] || [];
+      return await getProducts(handle);
     },
     enabled: !!handle,
     ...productQueryConfig,
@@ -149,11 +145,7 @@ const Collection = () => {
   const { data: allCollectionProducts } = useQuery({
     queryKey: ['collection-products', MAIN_COLLECTION_HANDLE],
     queryFn: async () => {
-      const response = await storefrontApiRequest(STOREFRONT_COLLECTION_PRODUCTS_QUERY, {
-        handle: MAIN_COLLECTION_HANDLE,
-        first: 100
-      });
-      return response.data.collection?.products.edges as ShopifyProduct[] || [];
+      return await getProducts(MAIN_COLLECTION_HANDLE);
     },
     ...productQueryConfig,
   });
