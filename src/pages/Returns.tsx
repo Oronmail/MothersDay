@@ -70,7 +70,7 @@ const Returns = () => {
           
           <h2 className="text-2xl text-foreground mt-8 mb-4">יצירת קשר</h2>
           <p className="text-muted-foreground">
-            לבקשות החזרה, ניתן לפנות אלינו בכתובת hello@yomhaem.co.il או בוואטסאפ
+            לבקשות החזרה, ניתן לפנות אלינו בכתובת support@mothersday.co.il או בוואטסאפ
           </p>
         </div>
       </main>

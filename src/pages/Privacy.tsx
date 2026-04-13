@@ -46,7 +46,7 @@ const Privacy = () => {
           
           <h2 className="text-2xl text-foreground mt-8 mb-4">יצירת קשר</h2>
           <p className="text-muted-foreground">
-            לשאלות בנוגע למדיניות הפרטיות, ניתן לפנות אלינו בכתובת hello@yomhaem.co.il
+            לשאלות בנוגע למדיניות הפרטיות, ניתן לפנות אלינו בכתובת support@mothersday.co.il
           </p>
         </div>
       </main>
