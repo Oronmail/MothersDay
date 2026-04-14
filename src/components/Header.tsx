@@ -28,7 +28,7 @@ export const Header = () => {
   const desktopNavMenuClassName =
     "z-[100] min-w-[220px] rounded-none border border-primary/10 p-2 shadow-[0_24px_48px_rgba(77,60,64,0.14)] backdrop-blur-sm";
   const desktopNavMenuItemClassName =
-    "justify-end rounded-none px-4 py-3 text-[15px] text-foreground/85 transition-colors hover:text-primary focus:bg-white/70 focus:text-primary data-[highlighted]:bg-white/70 data-[highlighted]:text-primary cursor-pointer";
+    "w-full justify-end text-right rounded-none px-4 py-3 text-[15px] text-foreground/85 transition-colors hover:text-primary focus:bg-white/70 focus:text-primary data-[highlighted]:bg-white/70 data-[highlighted]:text-primary cursor-pointer";
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
