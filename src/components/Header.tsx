@@ -94,7 +94,8 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  align="start"
+                  dir="rtl"
+                  align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}
                   style={desktopNavMenuStyle}
@@ -138,7 +139,8 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  align="start"
+                  dir="rtl"
+                  align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}
                   style={desktopNavMenuStyle}
@@ -210,7 +212,8 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  align="start"
+                  dir="rtl"
+                  align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}
                   style={desktopNavMenuStyle}
