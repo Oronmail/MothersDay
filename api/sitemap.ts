@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { getRequestSiteUrl } from "./_lib/siteUrl";
+import { getRequestSiteUrl } from "./_lib/siteUrl.js";
 
 type SitemapEntry = {
   path: string;

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { isCheckoutEnabled } from "./_lib/checkout";
+import { isCheckoutEnabled } from "./_lib/checkout.js";
 
 /**
  * Vercel API route: POST /api/create-payment

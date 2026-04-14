@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
-import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess";
+import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
 
 /**
  * Vercel API route: GET /api/payment-callback

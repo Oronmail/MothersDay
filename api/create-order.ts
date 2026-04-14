@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { isCheckoutEnabled } from "./_lib/checkout";
-import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess";
+import { isCheckoutEnabled } from "./_lib/checkout.js";
+import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
 
 /**
  * Vercel API route: POST /api/create-order

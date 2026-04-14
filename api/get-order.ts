@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { getOrderAccessSecret, isValidOrderAccessToken } from "./_lib/orderAccess";
+import { getOrderAccessSecret, isValidOrderAccessToken } from "./_lib/orderAccess.js";
 
 /**
  * Vercel API route: GET /api/get-order?id=<orderId>
