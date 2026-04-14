@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { buildProductPath } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 
 interface BundleContentCardProps {
   product: ProductEdge;
@@ -39,7 +40,7 @@ export const BundleContentCard = ({ product }: BundleContentCardProps) => {
         >
           {primaryImage ? (
             <LazyImage
-              src={primaryImage.url}
+              src={getProductThumbnailImageUrl(primaryImage.url)}
               alt={primaryImage.altText || node.title}
               className="group-hover:scale-105 transition-transform duration-300"
             />

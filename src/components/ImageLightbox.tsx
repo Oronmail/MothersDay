@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { getProductDetailLightboxImageUrl } from "@/lib/imageTransforms";
 import { cn } from "@/lib/utils";
 
 interface ImageLightboxProps {
@@ -65,7 +66,7 @@ export const ImageLightbox = ({ images, currentIndex, open, onClose, onNavigate 
 
       {/* Image */}
       <img
-        src={image.url}
+        src={getProductDetailLightboxImageUrl(image.url)}
         alt={image.altText || ""}
         className="max-h-[90vh] max-w-[90vw] object-contain"
         onClick={(e) => e.stopPropagation()}

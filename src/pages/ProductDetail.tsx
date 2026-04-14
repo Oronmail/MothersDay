@@ -27,6 +27,10 @@ import { ErrorFallback } from "@/components/ErrorFallback";
 import { LazyImage } from "@/components/LazyImage";
 import { ProductImageLayout } from "@/components/ProductImageLayout";
 import { ProductExtraCarousel } from "@/components/ProductExtraCarousel";
+import {
+  getProductDetailGridImageUrl,
+  getProductDetailLightboxImageUrl,
+} from "@/lib/imageTransforms";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
@@ -415,7 +419,7 @@ export default function ProductDetail() {
                           aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
                         >
                           <LazyImage
-                            src={img.node.url}
+                            src={getProductDetailGridImageUrl(img.node.url)}
                             alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
                             className="w-full h-full object-cover"
                           />
@@ -436,7 +440,7 @@ export default function ProductDetail() {
                           aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
                         >
                           <LazyImage
-                            src={img.node.url}
+                            src={getProductDetailGridImageUrl(img.node.url)}
                             alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
                             className="w-full h-full object-cover"
                           />
@@ -533,7 +537,7 @@ export default function ProductDetail() {
         {data && (
           <ImageLightbox
             images={data.images.edges.map((imageEdge) => ({
-              url: imageEdge.node.url,
+              url: getProductDetailLightboxImageUrl(imageEdge.node.url),
               altText: imageEdge.node.altText,
             }))}
             currentIndex={selectedImageIndex}

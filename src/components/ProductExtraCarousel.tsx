@@ -7,6 +7,7 @@
 
 import { LazyImage } from "@/components/LazyImage";
 import { ProductExtraCarouselConfig, FeatureIconType } from "@/lib/productImageLayouts";
+import { getProductDetailGridImageUrl } from "@/lib/imageTransforms";
 import {
   Carousel,
   CarouselContent,
@@ -121,7 +122,7 @@ export const ProductExtraCarousel: React.FC<ProductExtraCarouselProps> = ({
                 >
                   <div className="aspect-[3/4] overflow-hidden bg-secondary/10">
                     <LazyImage
-                      src={image.node.url}
+                      src={getProductDetailGridImageUrl(image.node.url)}
                       alt={
                         image.node.altText ||
                         `${productTitle} - ${config.carouselTitle} ${index + 1}`

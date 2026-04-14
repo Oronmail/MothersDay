@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { LazyImage } from "@/components/LazyImage";
 import { ImageLayoutConfig } from "@/lib/productImageLayouts";
+import { getProductDetailGridImageUrl } from "@/lib/imageTransforms";
 import { cn } from "@/lib/utils";
 
 interface ProductImageNode {
@@ -78,7 +79,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
         aria-label={getImageButtonLabel(imageIndex)}
       >
         <LazyImage
-          src={image.node.url}
+          src={getProductDetailGridImageUrl(image.node.url)}
           alt={image.node.altText || `${productTitle} ${imageIndex + 1}`}
           className="w-full h-full object-cover"
           priority={imageIndex === layout.mainImages[0]}
@@ -219,7 +220,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
                 aria-label={getImageButtonLabel(layout.mainImages[2])}
               >
                 <LazyImage
-                  src={rightImage.node.url}
+                  src={getProductDetailGridImageUrl(rightImage.node.url)}
                   alt={rightImage.node.altText || `${productTitle} 3`}
                   className="w-full h-full object-cover"
                 />
@@ -260,7 +261,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
                 aria-label={getImageButtonLabel(layout.mainImages[3])}
               >
                 <LazyImage
-                  src={rightImage.node.url}
+                  src={getProductDetailGridImageUrl(rightImage.node.url)}
                   alt={rightImage.node.altText || `${productTitle} 4`}
                   className="w-full h-full object-cover"
                 />
@@ -306,7 +307,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
                 aria-label={getImageButtonLabel(carouselIndices[carouselIdx])}
               >
                 <LazyImage
-                  src={currentCarouselImage.node.url}
+                  src={getProductDetailGridImageUrl(currentCarouselImage.node.url)}
                   alt={currentCarouselImage.node.altText || `${productTitle} ${carouselIndices[carouselIdx] + 1}`}
                   className="w-full h-full object-cover transition-opacity duration-500"
                 />

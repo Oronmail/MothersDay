@@ -55,3 +55,24 @@ export const getProductThumbnailImageUrl = (src: string | undefined) =>
     quality: 68,
     resize: "fill",
   });
+
+export const getProductDetailImageUrl = (src: string | undefined) =>
+  getOptimizedProductImageUrl(src, {
+    width: 1400,
+    quality: 78,
+    resize: "contain",
+  });
+
+export const getProductDetailGridImageUrl = (src: string | undefined) =>
+  getOptimizedProductImageUrl(src, {
+    width: 1100,
+    quality: 76,
+    resize: "contain",
+  });
+
+export const getProductDetailLightboxImageUrl = (src: string | undefined) =>
+  getOptimizedProductImageUrl(src, {
+    width: 1800,
+    quality: 82,
+    resize: "contain",
+  });

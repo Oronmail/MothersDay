@@ -6,10 +6,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { LazyImage } from "@/components/LazyImage";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { buildProductPath } from "@/lib/routes";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import {
+  getProductDetailImageUrl,
+  getProductThumbnailImageUrl,
+} from "@/lib/imageTransforms";
 
 interface QuickViewModalProps {
   product: ProductEdge | null;
@@ -87,10 +92,11 @@ const QuickViewModalContent = ({
           <div className="space-y-3">
             {/* Main Image */}
             <div className="aspect-square overflow-hidden bg-secondary/10">
-              <img
-                src={images[selectedImageIndex]?.node.url}
+              <LazyImage
+                src={getProductDetailImageUrl(images[selectedImageIndex]?.node.url)}
                 alt={images[selectedImageIndex]?.node.altText || data.title}
                 className="w-full h-full object-cover"
+                priority
               />
             </div>
             
@@ -105,8 +111,8 @@ const QuickViewModalContent = ({
                       selectedImageIndex === index ? 'ring-2 ring-primary' : 'hover:opacity-75'
                     }`}
                   >
-                    <img
-                      src={edge.node.url}
+                    <LazyImage
+                      src={getProductThumbnailImageUrl(edge.node.url)}
                       alt={edge.node.altText || `${data.title} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
