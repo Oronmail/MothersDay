@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { ProductEdge } from "@/lib/types";
 import { startSpan } from "@/lib/sentry";
+import { ROUTES } from "@/lib/routes";
 
 interface VariantNode {
   id: string;
@@ -28,6 +30,7 @@ interface UseAddToCartOptions {
  * Handles validation, cart mutation, and toast notifications
  */
 export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOptions) => {
+  const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const [quantity, setQuantity] = useState(1);
@@ -81,8 +84,14 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
           toast.success("המוצר נוסף לסל", {
             description: `${product.node.title}${variant.title !== "Default Title" ? ` - ${variant.title}` : ""} (${qtyToAdd})`,
             position: "top-center",
-            duration: 4000,
+            duration: 5000,
             action: {
+              label: "לתשלום",
+              onClick: () => {
+                navigate(ROUTES.checkout);
+              },
+            },
+            cancel: {
               label: "ביטול",
               onClick: () => {
                 // Undo by setting quantity to 0 (removes item)
@@ -102,7 +111,7 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
         }
       );
     },
-    [product, variant, quantity, addItem, updateQuantity, onSuccess]
+    [product, variant, quantity, addItem, updateQuantity, onSuccess, navigate]
   );
 
   const incrementQuantity = useCallback(() => {
