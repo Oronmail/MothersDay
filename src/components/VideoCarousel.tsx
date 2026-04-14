@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface VideoFile {
   name: string;
   url: string;
+  poster: string;
 }
 
 // Hardcoded mapping: video filename -> product info with custom delay
@@ -22,11 +23,31 @@ const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; delay: 
 };
 
 const CAROUSEL_VIDEOS: VideoFile[] = [
-  { name: 'HP_VCarousel_1', url: '/videos/HomeVideoCarousel/HP_VCarousel_1.mp4' },
-  { name: 'HP_VCarousel_2', url: '/videos/HomeVideoCarousel/HP_VCarousel_2.mp4' },
-  { name: 'HP_VCarousel_3', url: '/videos/HomeVideoCarousel/HP_VCarousel_3.mp4' },
-  { name: 'HP_VCarousel_4', url: '/videos/HomeVideoCarousel/HP_VCarousel_4.mp4' },
-  { name: 'HP_VCarousel_5', url: '/videos/HomeVideoCarousel/HP_VCarousel_5.mp4' },
+  {
+    name: 'HP_VCarousel_1',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_1.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_1.webp',
+  },
+  {
+    name: 'HP_VCarousel_2',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_2.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_2.webp',
+  },
+  {
+    name: 'HP_VCarousel_3',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_3.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_3.webp',
+  },
+  {
+    name: 'HP_VCarousel_4',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_4.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_4.webp',
+  },
+  {
+    name: 'HP_VCarousel_5',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_5.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_5.webp',
+  },
 ];
 
 // Manual order for carousel (right to left in RTL)
@@ -140,6 +161,7 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
       <video
         ref={videoRef}
         src={video.url}
+        poster={video.poster}
         className={`w-full h-full object-cover ${productInfo?.cropBorder ? 'scale-[1.08]' : ''}`}
         muted
         loop
