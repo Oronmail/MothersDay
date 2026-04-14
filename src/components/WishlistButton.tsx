@@ -39,6 +39,7 @@ export function WishlistButton({ productId, className, size = 20 }: WishlistButt
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={isLoading}
       aria-label={isInWishlist ? 'הסר מרשימת המשאלות' : 'הוסף לרשימת המשאלות'}

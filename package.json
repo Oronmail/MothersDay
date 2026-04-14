@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run prerender:seo",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "prerender:seo": "tsx scripts/prerender-seo.ts",
     "import:products": "tsx scripts/import-products.ts",
     "seed:admin": "tsx scripts/seed-admin.ts"
   },

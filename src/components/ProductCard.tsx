@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { ProductEdge } from "@/lib/types";
 import { Minus, Plus } from "lucide-react";
@@ -22,8 +22,8 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
   const isMobile = useIsMobile();
   const [isHovered, setIsHovered] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const navigate = useNavigate();
   const { node } = product;
+  const productPath = buildProductPath(node.handle);
   const primaryImage = node.images.edges[0]?.node;
   const secondaryImage = node.images.edges[1]?.node;
   const price = node.priceRange.minVariantPrice;
@@ -71,37 +71,41 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
       <div className="flex flex-col h-full w-full group animate-fade-in">
       {/* Image Container - all products use 4/5 aspect ratio */}
       <div
-        className="relative overflow-hidden bg-secondary/30 cursor-pointer transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[4/5]"
-        onClick={() => navigate(buildProductPath(node.handle))}
+        className="relative overflow-hidden bg-secondary/30 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[4/5]"
         onMouseEnter={() => !isMobile && setIsHovered(true)}
         onMouseLeave={() => !isMobile && setIsHovered(false)}
       >
-        
-        {primaryImage ? (
-          <>
-            {/* Primary Image */}
-            <LazyImage
-              src={primaryImage.url}
-              alt={primaryImage.altText || node.title}
-              className={`absolute inset-0 transition-all duration-500 ${isHovered && secondaryImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
-            />
-            {/* Hover Image - only if secondary image exists */}
-            {secondaryImage && (
+        <Link
+          to={productPath}
+          aria-label={`עבור לעמוד המוצר ${node.title}`}
+          className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          {primaryImage ? (
+            <>
+              {/* Primary Image */}
               <LazyImage
-                src={secondaryImage.url}
-                alt={secondaryImage.altText || `${node.title} - hover`}
-                className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                src={primaryImage.url}
+                alt={primaryImage.altText || node.title}
+                className={`absolute inset-0 transition-all duration-500 ${isHovered && secondaryImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
               />
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            אין תמונה
-          </div>
-        )}
+              {/* Hover Image - only if secondary image exists */}
+              {secondaryImage && (
+                <LazyImage
+                  src={secondaryImage.url}
+                  alt={secondaryImage.altText || `${node.title} - hover`}
+                  className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                />
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              אין תמונה
+            </div>
+          )}
 
-        {/* Overlay gradient on hover */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+          {/* Overlay gradient on hover */}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+        </Link>
 
         {/* Wishlist button */}
         <div className="absolute top-2 left-2 z-10">
@@ -157,6 +161,7 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
               <button
                 onClick={(e) => handleQuantityChange(-1, e)}
                 className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+                aria-label={`הפחתי כמות עבור ${node.title}`}
               >
                 <Minus className="w-3 h-3 md:w-3.5 md:h-3.5" />
               </button>
@@ -164,6 +169,7 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
               <button
                 onClick={(e) => handleQuantityChange(1, e)}
                 className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+                aria-label={`הגדילי כמות עבור ${node.title}`}
               >
                 <Plus className="w-3 h-3 md:w-3.5 md:h-3.5" />
               </button>
@@ -175,6 +181,7 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
               className={`font-normal h-7 md:h-7 px-3 md:px-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] gap-0.5 flex-1 md:flex-none ${largeCarouselMobile ? 'text-base md:text-sm' : 'text-sm md:text-sm'}`}
               variant="default"
               size="sm"
+              aria-label={`הוסיפי את ${node.title} לעגלה`}
             >
               <span className="hidden md:inline">₪ {parseFloat(price.amount).toFixed(0)}</span>
               <span className="hidden md:inline mx-0.5">-</span>

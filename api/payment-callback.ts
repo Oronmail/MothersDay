@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
+import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess";
 
 /**
  * Vercel API route: GET /api/payment-callback
@@ -72,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Update order status to paid
     const supabase = createClient(VITE_SUPABASE_URL, SUPABASE_Secret_KEY);
 
-    const { error } = await supabase
+    const { data: orderRow, error } = await supabase
       .from("orders")
       .update({
         financial_status: "paid",
@@ -83,13 +84,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           hyp_txid: txId,
         }),
       })
+      .select("guest_email, user_id")
       .eq("id", effectiveOrderId);
 
     if (error) {
       console.error("Failed to update order:", error);
     }
 
-    return res.redirect(302, `${SITE_URL}/checkout/confirmation/${effectiveOrderId}`);
+    const ownerRef = orderRow?.[0]?.user_id || orderRow?.[0]?.guest_email;
+    const token = ownerRef
+      ? createOrderAccessToken(effectiveOrderId, ownerRef, getOrderAccessSecret())
+      : null;
+    const confirmationUrl = token
+      ? `${SITE_URL}/checkout/confirmation/${effectiveOrderId}?token=${encodeURIComponent(token)}`
+      : `${SITE_URL}/checkout/confirmation/${effectiveOrderId}`;
+
+    return res.redirect(302, confirmationUrl);
   }
 
   if (status === "cancel") {

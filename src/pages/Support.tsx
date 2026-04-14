@@ -9,7 +9,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_E164,
+  WHATSAPP_URL,
+  getAbsoluteSiteUrl,
+} from "@/lib/siteConfig";
 import titleUnderline from "@/assets/title-underline.png";
+import { SEO } from "@/components/SEO";
+import { ROUTES } from "@/lib/routes";
 const faqItems = [
   {
     question: "כמה זמן לוקחת המשלוח?",
@@ -47,10 +56,16 @@ const faqItems = [
 
 const Support = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <>
+      <SEO
+        title="תמיכה ושירות לקוחות"
+        description="שירות הלקוחות של יום האם. שאלות נפוצות, יצירת קשר בוואטסאפ, בטלפון או במייל, ומענה על משלוחים, החזרות והתאמת מוצרים."
+        url={getAbsoluteSiteUrl(ROUTES.support)}
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12" dir="rtl">
           <h1 className="text-4xl text-foreground">תמיכה</h1>
           <img 
@@ -73,7 +88,7 @@ const Support = () => {
               הדרך הכי מהירה לקבל מענה
             </p>
             <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href="https://wa.me/972548024059" target="_blank" rel="noopener noreferrer">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 שלחי הודעה
               </a>
             </Button>
@@ -88,7 +103,7 @@ const Support = () => {
               נחזור אליך תוך 24 שעות
             </p>
             <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href="mailto:support@mothersday.co.il">
+              <a href={`mailto:${SUPPORT_EMAIL}`}>
                 שלחי מייל
               </a>
             </Button>
@@ -103,8 +118,8 @@ const Support = () => {
               א׳-ה׳ 9:00-17:00
             </p>
             <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href="tel:+972548024059">
-                054-8024059
+              <a href={`tel:${SUPPORT_PHONE_E164}`}>
+                {SUPPORT_PHONE_DISPLAY}
               </a>
             </Button>
           </div>
@@ -133,14 +148,15 @@ const Support = () => {
             שלחי לנו הודעה ונחזור אליך בהקדם
           </p>
           <Button asChild>
-            <a href="https://wa.me/972548024059" target="_blank" rel="noopener noreferrer">
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
               דברי איתנו בוואטסאפ
             </a>
           </Button>
         </div>
-      </main>
-      <Footer />
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 };
 

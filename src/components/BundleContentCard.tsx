@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ProductEdge } from "@/lib/types";
 import { Plus } from "lucide-react";
 import { Button } from "./ui/button";
@@ -11,11 +11,11 @@ interface BundleContentCardProps {
 }
 
 export const BundleContentCard = ({ product }: BundleContentCardProps) => {
-  const navigate = useNavigate();
   const { node } = product;
   const primaryImage = node.images.edges[0]?.node;
   const price = node.priceRange.minVariantPrice;
   const variant = node.variants.edges[0]?.node;
+  const productPath = buildProductPath(node.handle);
 
   // Use the custom add-to-cart hook
   const { handleAddToCart } = useAddToCart({
@@ -29,13 +29,14 @@ export const BundleContentCard = ({ product }: BundleContentCardProps) => {
   };
 
   return (
-    <div 
-      className="group bg-card border border-border overflow-hidden hover:shadow-lg transition-all cursor-pointer"
-      onClick={() => navigate(buildProductPath(node.handle))}
-    >
+    <article className="group bg-card border border-border overflow-hidden hover:shadow-lg transition-all">
       <div className="flex gap-4 p-4">
         {/* Image */}
-        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 overflow-hidden bg-secondary/20">
+        <Link
+          to={productPath}
+          aria-label={`עבור לעמוד המוצר ${node.title}`}
+          className="w-20 h-20 md:w-24 md:h-24 shrink-0 overflow-hidden bg-secondary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
           {primaryImage ? (
             <LazyImage
               src={primaryImage.url}
@@ -47,14 +48,19 @@ export const BundleContentCard = ({ product }: BundleContentCardProps) => {
               אין תמונה
             </div>
           )}
-        </div>
+        </Link>
         
         {/* Info */}
         <div className="flex-1 flex flex-col justify-between min-w-0" dir="rtl">
           <div>
-            <h4 className="font-medium text-sm md:text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-              {node.title}
-            </h4>
+            <Link
+              to={productPath}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <h4 className="font-medium text-sm md:text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                {node.title}
+              </h4>
+            </Link>
             {node.vendor && (
               <p className="text-muted-foreground text-xs mt-0.5">{node.vendor}</p>
             )}
@@ -69,6 +75,7 @@ export const BundleContentCard = ({ product }: BundleContentCardProps) => {
               variant="outline"
               className="h-7 px-2 gap-1 text-xs"
               onClick={onAddToCart}
+              aria-label={`הוסיפי את ${node.title} לעגלה`}
             >
               <Plus className="h-3 w-3" />
               הוספה
@@ -76,6 +83,6 @@ export const BundleContentCard = ({ product }: BundleContentCardProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };

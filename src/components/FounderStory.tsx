@@ -1,4 +1,4 @@
-import founderImage from "@/assets/founder-image.png";
+import founderImage from "@/assets/founder-image.webp";
 import titleUnderline from "@/assets/title-underline.png";
 import smileyIcon from "@/assets/smiley-icon.png";
 import { Button } from "./ui/button";

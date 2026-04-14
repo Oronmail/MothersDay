@@ -28,8 +28,8 @@ export const CartDrawer = () => {
   };
   return <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative p-0">
-          <img src={shoppingBagIcon} alt="Shopping bag" className="h-6 w-6 md:h-[30px] md:w-[30px]" />
+        <Button variant="ghost" size="icon" className="relative p-0" aria-label="פתחי את עגלת הקניות">
+          <img src={shoppingBagIcon} alt="" aria-hidden="true" className="h-6 w-6 md:h-[30px] md:w-[30px]" />
           {totalItems > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
               {totalItems}
             </Badge>}
@@ -74,16 +74,34 @@ export const CartDrawer = () => {
                       </div>
                       
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(item.variantId)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => removeItem(item.variantId)}
+                          aria-label={`הסירי את ${item.product.node.title} מהעגלה`}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                         
                         <div className="flex items-center gap-1">
-                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.variantId, item.quantity + 1)}>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                            aria-label={`הגדילי כמות עבור ${item.product.node.title}`}
+                          >
                             <Plus className="h-3 w-3" />
                           </Button>
                           <span className="w-8 text-center text-sm">{item.quantity}</span>
-                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.variantId, item.quantity - 1)}>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+                            aria-label={`הפחיתי כמות עבור ${item.product.node.title}`}
+                          >
                             <Minus className="h-3 w-3" />
                           </Button>
                         </div>

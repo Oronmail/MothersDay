@@ -5,7 +5,7 @@
  * configured via the product's image_layout field.
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LazyImage } from "@/components/LazyImage";
 import { ImageLayoutConfig } from "@/lib/productImageLayouts";
 import { cn } from "@/lib/utils";
@@ -37,12 +37,33 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
   selectedImageIndex,
   onImageClick,
 }) => {
+  const carouselIndices =
+    layout.type === "grid-2-left-carousel-right" ? layout.carouselImages || [] : [];
+  const [carouselIdx, setCarouselIdx] = useState(0);
+
+  useEffect(() => {
+    setCarouselIdx(0);
+  }, [layout.type, carouselIndices.length]);
+
+  useEffect(() => {
+    if (layout.type !== "grid-2-left-carousel-right" || carouselIndices.length <= 1) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setCarouselIdx((prev) => (prev + 1) % carouselIndices.length);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [layout.type, carouselIndices.length]);
+
+  const getImageButtonLabel = (imageIndex: number) =>
+    `פתחי תמונה ${imageIndex + 1} של ${productTitle}`;
+
   // Helper to render a single image
   const renderImage = (imageIndex: number, aspectRatio: string, className?: string) => {
     const image = images[imageIndex];
     if (!image) return null;
-
-    const isSelected = selectedImageIndex === imageIndex;
 
     return (
       <button
@@ -54,11 +75,13 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
           className
         )}
         style={{ aspectRatio: aspectRatio.replace("/", " / ") }}
+        aria-label={getImageButtonLabel(imageIndex)}
       >
         <LazyImage
           src={image.node.url}
           alt={image.node.altText || `${productTitle} ${imageIndex + 1}`}
           className="w-full h-full object-cover"
+          priority={imageIndex === layout.mainImages[0]}
         />
       </button>
     );
@@ -193,6 +216,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
               <button
                 onClick={() => onImageClick(layout.mainImages[2])}
                 className="overflow-hidden bg-secondary/10 transition-all relative w-full h-full hover:opacity-90"
+                aria-label={getImageButtonLabel(layout.mainImages[2])}
               >
                 <LazyImage
                   src={rightImage.node.url}
@@ -233,6 +257,7 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
               <button
                 onClick={() => onImageClick(layout.mainImages[3])}
                 className="overflow-hidden bg-secondary/10 transition-all relative w-full h-full hover:opacity-90"
+                aria-label={getImageButtonLabel(layout.mainImages[3])}
               >
                 <LazyImage
                   src={rightImage.node.url}
@@ -254,18 +279,6 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
           </div>
         );
       case "grid-2-left-carousel-right": {
-        const carouselIndices = layout.carouselImages || [];
-        const [carouselIdx, setCarouselIdx] = useState(0);
-
-        // Auto-advance carousel
-        useEffect(() => {
-          if (carouselIndices.length <= 1) return;
-          const interval = setInterval(() => {
-            setCarouselIdx(prev => (prev + 1) % carouselIndices.length);
-          }, 3000);
-          return () => clearInterval(interval);
-        }, [carouselIndices.length]);
-
         const currentCarouselImage = images[carouselIndices[carouselIdx]];
         if (!currentCarouselImage) {
           return (
@@ -286,22 +299,32 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
             </div>
             {/* Right column - carousel that fills the full height */}
             <div className="relative h-full overflow-hidden bg-secondary/10">
-              <LazyImage
-                src={currentCarouselImage.node.url}
-                alt={currentCarouselImage.node.altText || `${productTitle} ${carouselIndices[carouselIdx] + 1}`}
-                className="w-full h-full object-cover transition-opacity duration-500"
-              />
+              <button
+                type="button"
+                onClick={() => onImageClick(carouselIndices[carouselIdx])}
+                className="w-full h-full"
+                aria-label={getImageButtonLabel(carouselIndices[carouselIdx])}
+              >
+                <LazyImage
+                  src={currentCarouselImage.node.url}
+                  alt={currentCarouselImage.node.altText || `${productTitle} ${carouselIndices[carouselIdx] + 1}`}
+                  className="w-full h-full object-cover transition-opacity duration-500"
+                />
+              </button>
               {/* Dots indicator */}
               {carouselIndices.length > 1 && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                   {carouselIndices.map((_, i) => (
                     <button
+                      type="button"
                       key={i}
                       onClick={() => setCarouselIdx(i)}
                       className={cn(
                         "w-2 h-2 rounded-full transition-colors",
                         i === carouselIdx ? "bg-foreground" : "bg-foreground/30"
                       )}
+                      aria-label={`הציגי תמונה ${carouselIndices[i] + 1} של ${productTitle}`}
+                      aria-pressed={i === carouselIdx}
                     />
                   ))}
                 </div>

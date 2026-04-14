@@ -16,12 +16,15 @@ import { ErrorFallback } from "@/components/ErrorFallback";
 import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
 import titleUnderline from "@/assets/title-underline.png";
-import heroImage1 from "@/assets/all-products-hero-1.png";
-import heroImage2 from "@/assets/all-products-hero-2.png";
-import heroImage3 from "@/assets/all-products-hero-3.png";
+import heroImage1 from "@/assets/all-products-hero-1.webp";
+import heroImage2 from "@/assets/all-products-hero-2.webp";
+import heroImage3 from "@/assets/all-products-hero-3.webp";
 import smileyIcon from "@/assets/smiley-icon.png";
 import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
+import { SEO } from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
+import { ROUTES } from "@/lib/routes";
 
 const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
@@ -89,9 +92,16 @@ const AllProducts = () => {
   }, [activeProducts, sortBy]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
+    <>
+      <SEO
+        title="כל המוצרים"
+        description="כל מוצרי התכנון של יום האם במקום אחד. מחברות, לוחות, בלוקים ומוצרים משלימים לאימהות שמבקשות יותר סדר, בהירות ושליטה ביום-יום."
+        image={heroImage2}
+        url={getAbsoluteSiteUrl(ROUTES.allProducts)}
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
 
       {/* Breadcrumbs - top right */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 -mb-8 md:-mb-10">
@@ -128,6 +138,8 @@ const AllProducts = () => {
                 src={heroImage1} 
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
             
@@ -137,6 +149,8 @@ const AllProducts = () => {
                 src={heroImage2} 
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
             
@@ -146,6 +160,8 @@ const AllProducts = () => {
                 src={heroImage3} 
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
           </div>
@@ -288,8 +304,9 @@ const AllProducts = () => {
       </ErrorBoundary>
 
       <Newsletter />
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

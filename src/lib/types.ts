@@ -44,6 +44,8 @@ export interface Product {
   pageWeight: string | null;
   colorPattern: string | null;
   paperType: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 }
 
 /**

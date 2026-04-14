@@ -3,27 +3,80 @@ import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-const STORAGE_KEY = "newsletter_popup_dismissed";
-const POPUP_DELAY = 5000;
+const STORAGE_KEY = "newsletter_popup_dismissed_at";
+const POPUP_DELAY_MS = 15000;
+const DISMISS_DURATION_MS = 1000 * 60 * 60 * 24 * 14;
+const SCROLL_THRESHOLD = 0.35;
+const EXIT_INTENT_Y = 24;
+
+const wasDismissedRecently = () => {
+  const storedValue = localStorage.getItem(STORAGE_KEY);
+  if (!storedValue) return false;
+
+  const dismissedAt = Number(storedValue);
+  if (!Number.isFinite(dismissedAt)) return false;
+
+  return Date.now() - dismissedAt < DISMISS_DURATION_MS;
+};
 
 export const NewsletterPopup = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEligibleToOpen, setIsEligibleToOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(STORAGE_KEY);
-    if (dismissed) return;
+    if (wasDismissedRecently()) return;
 
-    const timer = setTimeout(() => setIsOpen(true), POPUP_DELAY);
+    const timer = window.setTimeout(() => setIsEligibleToOpen(true), POPUP_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isEligibleToOpen || isOpen) return;
+
+    const openPopup = () => setIsOpen(true);
+    const hasScrollablePage =
+      document.documentElement.scrollHeight > window.innerHeight + 120;
+
+    const maybeOpenFromScroll = () => {
+      const scrollableHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const scrollProgress =
+        scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
+
+      if (scrollProgress >= SCROLL_THRESHOLD) {
+        openPopup();
+      }
+    };
+
+    const handleMouseOut = (event: MouseEvent) => {
+      if (window.matchMedia("(pointer: coarse)").matches) return;
+      if (event.relatedTarget) return;
+      if (event.clientY > EXIT_INTENT_Y) return;
+      openPopup();
+    };
+
+    if (!hasScrollablePage) {
+      openPopup();
+      return;
+    }
+
+    maybeOpenFromScroll();
+    window.addEventListener("scroll", maybeOpenFromScroll, { passive: true });
+    document.addEventListener("mouseout", handleMouseOut);
+
+    return () => {
+      window.removeEventListener("scroll", maybeOpenFromScroll);
+      document.removeEventListener("mouseout", handleMouseOut);
+    };
+  }, [isEligibleToOpen, isOpen]);
+
   const handleDismiss = () => {
     setIsOpen(false);
-    localStorage.setItem(STORAGE_KEY, "true");
+    localStorage.setItem(STORAGE_KEY, String(Date.now()));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +117,12 @@ export const NewsletterPopup = () => {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleDismiss} />
 
       {/* Modal */}
-      <div className="relative bg-foreground text-primary-foreground w-full max-w-md p-8 md:p-10 animate-in fade-in zoom-in-95 duration-300">
+      <div
+        className="relative bg-foreground text-primary-foreground w-full max-w-md p-8 md:p-10 animate-in fade-in zoom-in-95 duration-300"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="newsletter-popup-title"
+      >
         <button
           onClick={handleDismiss}
           className="absolute top-4 left-4 text-primary-foreground/60 hover:text-primary-foreground transition-colors"
@@ -74,7 +132,7 @@ export const NewsletterPopup = () => {
         </button>
 
         <div className="text-center mb-8">
-          <p className="text-3xl md:text-4xl font-bold tracking-wide mb-2">10% הנחה</p>
+          <p id="newsletter-popup-title" className="text-3xl md:text-4xl font-bold tracking-wide mb-2">10% הנחה</p>
           <p className="text-lg md:text-xl font-light tracking-wider">הצטרפי למועדון</p>
         </div>
 
@@ -85,6 +143,7 @@ export const NewsletterPopup = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="שם"
+              aria-label="שם"
               className="w-full bg-transparent border-b border-primary-foreground/30 pb-2 text-sm placeholder:text-primary-foreground/40 focus:outline-none focus:border-primary-foreground/70 transition-colors"
             />
           </div>
@@ -95,6 +154,7 @@ export const NewsletterPopup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="אימייל *"
+              aria-label="אימייל"
               required
               className="w-full bg-transparent border-b border-primary-foreground/30 pb-2 text-sm placeholder:text-primary-foreground/40 focus:outline-none focus:border-primary-foreground/70 transition-colors"
             />
@@ -106,6 +166,7 @@ export const NewsletterPopup = () => {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="טלפון"
+              aria-label="טלפון"
               dir="rtl"
               className="w-full bg-transparent border-b border-primary-foreground/30 pb-2 text-sm text-right placeholder:text-primary-foreground/40 focus:outline-none focus:border-primary-foreground/70 transition-colors"
             />

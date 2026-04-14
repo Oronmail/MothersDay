@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase';
 import type { Product, ProductEdge, Collection, CollectionEdge, BundleItem } from './types';
 import { startSpan } from './sentry';
@@ -54,6 +55,8 @@ function transformProduct(row: any): Product {
     pageWeight: row.page_weight,
     colorPattern: row.color_pattern,
     paperType: row.paper_type,
+    seoTitle: row.seo_title || null,
+    seoDescription: row.seo_description || null,
   };
 }
 
@@ -251,7 +254,7 @@ export async function createOrder(
   shippingCost: number,
   userId?: string,
   notes?: string,
-): Promise<{ orderId: string; orderNumber: number }> {
+): Promise<{ orderId: string; orderNumber: number; orderAccessToken: string }> {
   const response = await fetch('/api/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

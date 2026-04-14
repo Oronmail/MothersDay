@@ -5,9 +5,15 @@ interface CheckoutPaymentProps {
   paymentPageUrl?: string;
   /** Whether the payment page URL is being fetched from the server */
   isLoadingPayment?: boolean;
+  /** Whether checkout is live */
+  checkoutEnabled?: boolean;
 }
 
-export function CheckoutPayment({ paymentPageUrl, isLoadingPayment }: CheckoutPaymentProps) {
+export function CheckoutPayment({
+  paymentPageUrl,
+  isLoadingPayment,
+  checkoutEnabled = false,
+}: CheckoutPaymentProps) {
   return (
     <section className="space-y-4">
       <h2 className="text-lg">תשלום</h2>
@@ -45,10 +51,12 @@ export function CheckoutPayment({ paymentPageUrl, isLoadingPayment }: CheckoutPa
         <div className="border border-dashed border-border p-8 flex flex-col items-center justify-center gap-3 bg-muted/30">
           <Lock className="h-6 w-6 text-muted-foreground" />
           <p className="text-sm text-muted-foreground text-center">
-            טופס תשלום מאובטח
+            {checkoutEnabled ? "טופס תשלום מאובטח" : "התשלום ייפתח בקרוב"}
           </p>
           <p className="text-xs text-muted-foreground text-center">
-            טופס התשלום יופיע לאחר מילוי פרטי המשלוח
+            {checkoutEnabled
+              ? "טופס התשלום יופיע לאחר מילוי פרטי המשלוח"
+              : "אפשר להמשיך לבדוק את החנות, אבל עדיין לא ניתן להשלים הזמנה."}
           </p>
         </div>
       )}

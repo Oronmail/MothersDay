@@ -10,10 +10,18 @@ interface CheckoutSummaryProps {
   subtotal: number;
   shippingCost: number;
   isSubmitting: boolean;
+  checkoutEnabled: boolean;
   onSubmit: () => void;
 }
 
-export function CheckoutSummary({ items, subtotal, shippingCost, isSubmitting, onSubmit }: CheckoutSummaryProps) {
+export function CheckoutSummary({
+  items,
+  subtotal,
+  shippingCost,
+  isSubmitting,
+  checkoutEnabled,
+  onSubmit,
+}: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const totalPrice = subtotal + shippingCost;
@@ -93,13 +101,15 @@ export function CheckoutSummary({ items, subtotal, shippingCost, isSubmitting, o
           onClick={onSubmit}
           className="w-full"
           size="lg"
-          disabled={items.length === 0 || isSubmitting}
+          disabled={items.length === 0 || isSubmitting || !checkoutEnabled}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 ml-2 animate-spin" />
               יוצר הזמנה...
             </>
+          ) : !checkoutEnabled ? (
+            <>הזמנות אונליין ייפתחו בקרוב</>
           ) : (
             <>אישור ותשלום — &#8362;{totalPrice.toFixed(2)}</>
           )}

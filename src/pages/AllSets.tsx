@@ -14,12 +14,14 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorFallback } from "@/components/ErrorFallback";
 import { Button } from "@/components/ui/button";
 import titleUnderline from "@/assets/title-underline.png";
-import heroImage1 from "@/assets/sets-hero-1.png";
-import heroImage2 from "@/assets/sets-hero-2.png";
+import heroImage1 from "@/assets/sets-hero-1.webp";
+import heroImage2 from "@/assets/sets-hero-2.webp";
 import smileyIcon from "@/assets/smiley-icon.png";
 import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
-import { COLLECTION_HANDLES } from "@/lib/routes";
+import { COLLECTION_HANDLES, ROUTES } from "@/lib/routes";
+import { SEO } from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
 
 const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
@@ -89,9 +91,16 @@ const AllSets = () => {
   }, [products, sortBy]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
+    <>
+      <SEO
+        title="כל המארזים"
+        description="מארזי התכנון של יום האם מרכזים יחד מוצרים משלימים במחיר משתלם, כדי לתת לאימהות פתרון שלם ומעוצב לניהול הבית והזמן."
+        image={heroImage1}
+        url={getAbsoluteSiteUrl(ROUTES.allSets)}
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
 
       {/* Breadcrumbs - top right */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 -mb-8 md:-mb-10">
@@ -128,6 +137,8 @@ const AllSets = () => {
                 src={heroImage2} 
                 alt="כל המארזים"
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
             
@@ -137,6 +148,8 @@ const AllSets = () => {
                 src={heroImage1} 
                 alt="כל המארזים"
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
           </div>
@@ -238,8 +251,9 @@ const AllSets = () => {
       <div className="pb-12 md:pb-16" />
 
       <Newsletter />
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

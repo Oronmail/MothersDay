@@ -13,7 +13,13 @@ import { CheckoutShippingForm } from "@/components/checkout/CheckoutShippingForm
 import { CheckoutPayment } from "@/components/checkout/CheckoutPayment";
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
+import {
+  CHECKOUT_DISABLED_MESSAGE,
+  CHECKOUT_ENABLED,
+  getOrderAccessStorageKey,
+} from "@/lib/checkoutConfig";
 
 const checkoutSchema = z.object({
   email: z.string().email("כתובת אימייל לא תקינה"),
@@ -77,6 +83,13 @@ export default function Checkout() {
   }, [user?.email, form]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (!CHECKOUT_ENABLED) {
+      toast.error("הזמנות אונליין עדיין לא פעילות", {
+        description: CHECKOUT_DISABLED_MESSAGE,
+      });
+      return;
+    }
+
     const email = user?.email || data.email;
     orderInProgress.current = true;
 
@@ -95,7 +108,15 @@ export default function Checkout() {
     };
 
     try {
-      const { orderId, orderNumber } = await createOrder(email, shippingAddress, shippingCost, user?.id, data.notes);
+      const { orderId, orderNumber, orderAccessToken } = await createOrder(
+        email,
+        shippingAddress,
+        shippingCost,
+        user?.id,
+        data.notes
+      );
+
+      sessionStorage.setItem(getOrderAccessStorageKey(orderId), orderAccessToken);
 
       toast.success("ההזמנה נוצרה בהצלחה!", {
         description: `מספר הזמנה: ${orderNumber}`,
@@ -118,6 +139,7 @@ export default function Checkout() {
 
       navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
     } catch (error) {
+      orderInProgress.current = false;
       const message =
         error instanceof Error && error.message.includes("network")
           ? "בעיית תקשורת. בדוק את החיבור לאינטרנט"
@@ -131,6 +153,11 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+      <SEO
+        title="תשלום"
+        description="עמוד התשלום של יום האם."
+        noindex
+      />
       <CheckoutHeader />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
@@ -144,7 +171,7 @@ export default function Checkout() {
                 userEmail={user?.email}
               />
               <CheckoutShippingForm form={form} />
-              <CheckoutPayment />
+              <CheckoutPayment checkoutEnabled={CHECKOUT_ENABLED} />
             </div>
 
             {/* Left column (RTL sidebar): order summary */}
@@ -155,6 +182,7 @@ export default function Checkout() {
                   subtotal={subtotal}
                   shippingCost={shippingCost}
                   isSubmitting={isLoading}
+                  checkoutEnabled={CHECKOUT_ENABLED}
                   onSubmit={handleSubmit}
                 />
               </div>

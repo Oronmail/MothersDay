@@ -1,4 +1,12 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import {
+  INSTAGRAM_URL,
+  SITE_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_E164,
+  getSiteUrl,
+} from "@/lib/siteConfig";
 
 interface SEOProps {
   title?: string;
@@ -12,12 +20,124 @@ interface SEOProps {
 }
 
 const defaultSEO = {
-  siteName: "יום האם Mother's Day",
+  siteName: SITE_NAME,
   defaultTitle: "יום האם | מוצרי תכנון איכותיים לאימהות",
   defaultDescription: "יום האם הוא מותג מוצרי תכנון עם מטרה ברורה! לדייק את היום, את השבוע ואת הזמן שלנו האימהות. מוצרי נייר איכותיים בעיצוב נקי ומינימליסטי.",
-  defaultImage: "/og-image.jpg", // You'll need to add this image
-  defaultUrl: "https://mothersday.co.il", 
-  twitterHandle: "@yomhaem", // Add your Twitter handle if you have one
+  defaultImage: "/logo.png",
+};
+
+const upsertMetaTag = (
+  attribute: "name" | "property",
+  key: string,
+  content: string
+) => {
+  if (typeof document === "undefined") return;
+
+  let tag = document.head.querySelector<HTMLMetaElement>(
+    `meta[${attribute}="${key}"]`
+  );
+
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attribute, key);
+    document.head.appendChild(tag);
+  }
+
+  tag.setAttribute("content", content);
+};
+
+const upsertLinkTag = (rel: string, href: string) => {
+  if (typeof document === "undefined") return;
+
+  let tag = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!tag) {
+    tag = document.createElement("link");
+    tag.setAttribute("rel", rel);
+    document.head.appendChild(tag);
+  }
+
+  tag.setAttribute("href", href);
+};
+
+const removeMetaTag = (attribute: "name" | "property", key: string) => {
+  if (typeof document === "undefined") return;
+
+  document.head
+    .querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`)
+    ?.remove();
+};
+
+type DomSeoConfig = {
+  title: string;
+  description: string;
+  keywords?: string;
+  image: string;
+  url: string;
+  type: "website" | "product" | "article";
+  noindex: boolean;
+  structuredData?: object;
+};
+
+const applyDomSeo = ({
+  title,
+  description,
+  keywords,
+  image,
+  url,
+  type,
+  noindex,
+  structuredData,
+}: DomSeoConfig) => {
+  if (typeof document === "undefined") return;
+
+  document.documentElement.lang = "he";
+  document.documentElement.dir = "rtl";
+  document.title = title;
+
+  upsertMetaTag("name", "description", description);
+  upsertMetaTag("name", "theme-color", "#4d3c40");
+  upsertMetaTag("name", "format-detection", "telephone=no");
+  upsertMetaTag("name", "robots", noindex ? "noindex,nofollow" : "index,follow");
+
+  if (keywords) {
+    upsertMetaTag("name", "keywords", keywords);
+  } else {
+    removeMetaTag("name", "keywords");
+  }
+
+  upsertMetaTag("property", "og:type", type);
+  upsertMetaTag("property", "og:url", url);
+  upsertMetaTag("property", "og:title", title);
+  upsertMetaTag("property", "og:description", description);
+  upsertMetaTag("property", "og:image", image);
+  upsertMetaTag("property", "og:image:alt", title);
+  upsertMetaTag("property", "og:site_name", defaultSEO.siteName);
+  upsertMetaTag("property", "og:locale", "he_IL");
+
+  upsertMetaTag("name", "twitter:card", "summary_large_image");
+  upsertMetaTag("name", "twitter:url", url);
+  upsertMetaTag("name", "twitter:title", title);
+  upsertMetaTag("name", "twitter:description", description);
+  upsertMetaTag("name", "twitter:image", image);
+
+  upsertLinkTag("canonical", url);
+
+  const existingStructuredData = document.head.querySelector<HTMLScriptElement>(
+    'script[data-seo-structured="true"]'
+  );
+
+  if (structuredData) {
+    const script = existingStructuredData || document.createElement("script");
+    script.type = "application/ld+json";
+    script.dataset.seoStructured = "true";
+    script.textContent = JSON.stringify(structuredData);
+
+    if (!existingStructuredData) {
+      document.head.appendChild(script);
+    }
+  } else if (existingStructuredData) {
+    existingStructuredData.remove();
+  }
 };
 
 /**
@@ -34,24 +154,61 @@ export const SEO = ({
   noindex = false,
   structuredData,
 }: SEOProps) => {
+  const siteUrl = getSiteUrl();
   const pageTitle = title
     ? `${title} | ${defaultSEO.siteName}`
     : defaultSEO.defaultTitle;
   const pageDescription = description || defaultSEO.defaultDescription;
   const pageImage = image || defaultSEO.defaultImage;
-  const pageUrl = url || defaultSEO.defaultUrl;
+  const pageUrl = url || siteUrl;
 
   // Ensure image is absolute URL
   const absoluteImageUrl = pageImage.startsWith("http")
     ? pageImage
-    : `${defaultSEO.defaultUrl}${pageImage}`;
+    : `${siteUrl}${pageImage}`;
+
+  useEffect(() => {
+    applyDomSeo({
+      title: pageTitle,
+      description: pageDescription,
+      keywords,
+      image: absoluteImageUrl,
+      url: pageUrl,
+      type,
+      noindex,
+      structuredData,
+    });
+
+    return () => {
+      applyDomSeo({
+        title: defaultSEO.defaultTitle,
+        description: defaultSEO.defaultDescription,
+        image: `${siteUrl}${defaultSEO.defaultImage}`,
+        url: siteUrl,
+        type: "website",
+        noindex: false,
+      });
+    };
+  }, [
+    absoluteImageUrl,
+    keywords,
+    noindex,
+    pageDescription,
+    pageTitle,
+    pageUrl,
+    siteUrl,
+    structuredData,
+    type,
+  ]);
 
   return (
     <Helmet>
+      <html lang="he" dir="rtl" />
       {/* Basic Meta Tags */}
       <title>{pageTitle}</title>
       <meta name="description" content={pageDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
+      <link rel="canonical" href={pageUrl} />
 
       {/* Robots */}
       {noindex && <meta name="robots" content="noindex,nofollow" />}
@@ -62,6 +219,7 @@ export const SEO = ({
       <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={pageDescription} />
       <meta property="og:image" content={absoluteImageUrl} />
+      <meta property="og:image:alt" content={pageTitle} />
       <meta property="og:site_name" content={defaultSEO.siteName} />
       <meta property="og:locale" content="he_IL" />
 
@@ -71,9 +229,6 @@ export const SEO = ({
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={absoluteImageUrl} />
-      {defaultSEO.twitterHandle && (
-        <meta name="twitter:site" content={defaultSEO.twitterHandle} />
-      )}
 
       {/* Additional Meta Tags */}
       <meta name="format-detection" content="telephone=no" />
@@ -97,16 +252,14 @@ export const getOrganizationStructuredData = () => ({
   "@type": "Organization",
   name: "יום האם - Yom Ha'Em",
   description: "מותג מוצרי תכנון איכותיים לאימהות",
-  url: defaultSEO.defaultUrl,
-  logo: `${defaultSEO.defaultUrl}/logo.png`,
-  sameAs: [
-    // Add your social media links here
-    // "https://www.facebook.com/yomhaem",
-    // "https://www.instagram.com/yomhaem",
-  ],
+  url: getSiteUrl(),
+  logo: `${getSiteUrl()}/logo.png`,
+  sameAs: INSTAGRAM_URL ? [INSTAGRAM_URL] : undefined,
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "Customer Service",
+    email: SUPPORT_EMAIL,
+    telephone: SUPPORT_PHONE_E164,
     availableLanguage: ["Hebrew"],
   },
 });
@@ -144,15 +297,7 @@ export const getWebsiteStructuredData = () => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: defaultSEO.siteName,
-  url: defaultSEO.defaultUrl,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${defaultSEO.defaultUrl}/products?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
+  url: getSiteUrl(),
 });
 
 /**

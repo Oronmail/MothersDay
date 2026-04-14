@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import { Order } from "@/lib/types";
@@ -8,19 +8,46 @@ import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
 import { Footer } from "@/components/Footer";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
+import { SEO } from "@/components/SEO";
+import { getOrderAccessStorageKey } from "@/lib/checkoutConfig";
 
 export default function CheckoutConfirmation() {
   const { orderId } = useParams<{ orderId: string }>();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const tokenFromUrl = searchParams.get("token");
+  const storedToken = useMemo(
+    () => (orderId ? sessionStorage.getItem(getOrderAccessStorageKey(orderId)) : null),
+    [orderId]
+  );
+
+  useEffect(() => {
+    if (orderId && tokenFromUrl) {
+      sessionStorage.setItem(getOrderAccessStorageKey(orderId), tokenFromUrl);
+    }
+  }, [orderId, tokenFromUrl]);
 
   useEffect(() => {
     async function fetchOrder() {
-      if (!orderId) return;
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
+
+      const accessToken = tokenFromUrl || storedToken;
+      if (!accessToken) {
+        setLoading(false);
+        return;
+      }
 
       try {
-        const response = await fetch(`/api/get-order?id=${orderId}`);
+        const params = new URLSearchParams({
+          id: orderId,
+          token: accessToken,
+        });
+        const response = await fetch(`/api/get-order?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           setOrder(data as Order);
@@ -31,11 +58,16 @@ export default function CheckoutConfirmation() {
       setLoading(false);
     }
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, storedToken, tokenFromUrl]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <SEO
+          title="אישור הזמנה"
+          description="אישור הזמנה של יום האם."
+          noindex
+        />
         <CheckoutHeader />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -47,6 +79,11 @@ export default function CheckoutConfirmation() {
   if (!order) {
     return (
       <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <SEO
+          title="אישור הזמנה"
+          description="אישור הזמנה של יום האם."
+          noindex
+        />
         <CheckoutHeader />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4">
@@ -62,6 +99,11 @@ export default function CheckoutConfirmation() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+      <SEO
+        title="אישור הזמנה"
+        description="אישור הזמנה של יום האם."
+        noindex
+      />
       <CheckoutHeader />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">

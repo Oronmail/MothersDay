@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, User, Heart, LogOut } from "lucide-react";
+import { Menu, ChevronDown, User, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -54,7 +54,7 @@ export const MobileNav = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden" aria-label="פתחי תפריט ניווט">
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>

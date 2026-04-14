@@ -1,12 +1,14 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import * as Sentry from "@sentry/react";
+import { initAnalytics } from "./lib/analytics";
 import { initSentry } from "./lib/sentry";
 import App from "./App.tsx";
 import "./index.css";
 
 // Initialize Sentry error tracking
 initSentry();
+initAnalytics();
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>

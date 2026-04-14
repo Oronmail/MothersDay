@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { isCheckoutEnabled } from "./_lib/checkout";
 
 /**
  * Vercel API route: POST /api/create-payment
@@ -18,6 +19,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (!isCheckoutEnabled()) {
+    return res.status(503).json({ error: "Checkout is currently disabled" });
   }
 
   const { orderId, totalPrice, currency = "ILS" } = req.body as {

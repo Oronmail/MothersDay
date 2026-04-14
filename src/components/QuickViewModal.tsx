@@ -18,10 +18,28 @@ interface QuickViewModalProps {
 }
 
 export const QuickViewModal = ({ product, open, onOpenChange }: QuickViewModalProps) => {
+  if (!product) return null;
+
+  return (
+    <QuickViewModalContent
+      product={product}
+      open={open}
+      onOpenChange={onOpenChange}
+    />
+  );
+};
+
+const QuickViewModalContent = ({
+  product,
+  open,
+  onOpenChange,
+}: {
+  product: ProductEdge;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  if (!product) return null;
 
   const data = product.node;
   const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
@@ -79,7 +97,7 @@ export const QuickViewModal = ({ product, open, onOpenChange }: QuickViewModalPr
             {/* Thumbnail Grid */}
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {images.slice(0, 4).map((edge: any, index: number) => (
+                {images.slice(0, 4).map((edge, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -115,7 +133,7 @@ export const QuickViewModal = ({ product, open, onOpenChange }: QuickViewModalPr
                   בחר אפשרות
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {data.variants.edges.map((edge: any, index: number) => (
+                  {data.variants.edges.map((edge, index) => (
                     <Button
                       key={edge.node.id}
                       variant={selectedVariantIndex === index ? "default" : "outline"}

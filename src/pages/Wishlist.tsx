@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlistItems } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
@@ -55,33 +55,34 @@ export default function Wishlist() {
                   ?.sort((a, b) => a.position - b.position)[0];
 
                 return (
-                  <div
+                  <article
                     key={item.id}
                     className="group border border-border rounded-lg overflow-hidden bg-background hover:shadow-lg transition-shadow"
                   >
                     {/* Image */}
-                    <div
-                      className="relative aspect-[4/5] bg-secondary/30 cursor-pointer overflow-hidden"
-                      onClick={() => navigate(buildProductPath(item.product.handle))}
-                    >
-                      {image ? (
-                        <LazyImage
-                          src={image.url}
-                          alt={item.product.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          אין תמונה
-                        </div>
-                      )}
+                    <div className="relative aspect-[4/5] bg-secondary/30 overflow-hidden">
+                      <Link
+                        to={buildProductPath(item.product.handle)}
+                        aria-label={`עבור לעמוד המוצר ${item.product.title}`}
+                        className="block w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      >
+                        {image ? (
+                          <LazyImage
+                            src={image.url}
+                            alt={item.product.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            אין תמונה
+                          </div>
+                        )}
+                      </Link>
 
                       {/* Remove button */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          remove(item.id);
-                        }}
+                        type="button"
+                        onClick={() => remove(item.id)}
                         className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all hover:scale-110"
                         aria-label="הסר מרשימת המשאלות"
                       >
@@ -91,17 +92,19 @@ export default function Wishlist() {
 
                     {/* Info */}
                     <div className="p-3 space-y-1">
-                      <h3
-                        className="font-medium text-base leading-tight line-clamp-2 cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => navigate(buildProductPath(item.product.handle))}
+                      <Link
+                        to={buildProductPath(item.product.handle)}
+                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       >
-                        {item.product.title}
-                      </h3>
+                        <h3 className="font-medium text-base leading-tight line-clamp-2 hover:text-primary transition-colors">
+                          {item.product.title}
+                        </h3>
+                      </Link>
                       <p className="text-sm text-muted-foreground">
                         {item.product.price.toFixed(0)} ש״ח
                       </p>
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>

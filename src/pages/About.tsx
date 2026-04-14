@@ -2,15 +2,25 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Newsletter } from "@/components/Newsletter";
-import aboutHero from "@/assets/about-hero.png";
+import aboutHero from "@/assets/about-hero.webp";
 import titleUnderline from "@/assets/title-underline.png";
 import smileyIcon from "@/assets/smiley-icon.png";
+import { SEO } from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
+import { ROUTES } from "@/lib/routes";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
+    <>
+      <SEO
+        title="אודות"
+        description="הסיפור מאחורי יום האם: איך נולד מותג מוצרי התכנון לאימהות, מה מייחד את השיטה, ולמה המוצרים נבנו במיוחד לחיי המשפחה האמיתיים."
+        image={aboutHero}
+        url={getAbsoluteSiteUrl(ROUTES.about)}
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
       
       {/* Hero Section */}
       <section className="bg-background pt-12 md:pt-14 pb-1 md:pb-2">
@@ -37,6 +47,8 @@ const About = () => {
           src={aboutHero} 
           alt="המייסדת" 
           className="w-full h-auto"
+          loading="eager"
+          decoding="async"
         />
       </div>
 
@@ -167,9 +179,10 @@ const About = () => {
         </div>
       </main>
 
-      <Newsletter />
-      <Footer />
-    </div>
+        <Newsletter />
+        <Footer />
+      </div>
+    </>
   );
 };
 

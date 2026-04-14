@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel";
-import { Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import { buildProductPath } from "@/lib/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -68,8 +68,16 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
   const videoKey = video.name.replace(/\.[^/.]+$/, "");
   const productInfo = VIDEO_PRODUCT_MAP[videoKey];
 
+  const clearRevealTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
   const handleMouseEnter = () => {
     if (videoRef.current) {
+      clearRevealTimeout();
       videoRef.current.play();
       setIsPlaying(true);
       // Show product name after custom delay for each video
@@ -82,11 +90,7 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
   };
 
   const handleMouseLeave = () => {
-    // Clear timeout to reset the clock
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+    clearRevealTimeout();
 
     if (videoRef.current) {
       videoRef.current.pause();
@@ -97,13 +101,16 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
   };
 
   const handleProductClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
     if (productInfo) {
       navigate(buildProductPath(productInfo.handle));
     }
   };
-  const handleMobileTap = () => {
+
+  const handleMobileToggle = () => {
     if (!isMobile || !videoRef.current) return;
+
+    clearRevealTimeout();
+
     if (isPlaying) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -118,12 +125,17 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      clearRevealTimeout();
+    };
+  }, []);
+
   return (
     <div
-      className="aspect-[9/16] bg-muted overflow-hidden relative cursor-pointer group"
+      className="aspect-[9/16] bg-muted overflow-hidden relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={handleMobileTap}
     >
       <video
         ref={videoRef}
@@ -132,15 +144,30 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
         muted
         loop
         playsInline
+        preload="none"
       />
 
-      {/* Play icon overlay - mobile only */}
-      {isMobile && !isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-black/30 rounded-full p-3 backdrop-blur-sm">
-            <Play className="h-6 w-6 text-white fill-white" />
-          </div>
-        </div>
+      {isMobile && (
+        <button
+          type="button"
+          onClick={handleMobileToggle}
+          aria-label={
+            isPlaying
+              ? `עצרי סרטון של ${productInfo?.title || "המוצר"}`
+              : `נגני סרטון של ${productInfo?.title || "המוצר"}`
+          }
+          className={`absolute z-10 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/45 ${
+            isPlaying
+              ? "top-2 left-2 h-10 w-10"
+              : "inset-0 h-full w-full rounded-none"
+          }`}
+        >
+          {isPlaying ? (
+            <Pause className="h-4 w-4 fill-white" />
+          ) : (
+            <Play className="h-6 w-6 fill-white" />
+          )}
+        </button>
       )}
 
       {/* Product name overlay - appears after custom delay */}
@@ -152,8 +179,10 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
           dir="rtl"
         >
           <button
+            type="button"
             onClick={handleProductClick}
             className="text-white/50 text-[9px] hover:text-white/70 hover:underline transition-all duration-200 bg-black/15 px-1.5 py-0.5 backdrop-blur-sm"
+            aria-label={`עברי לעמוד המוצר ${productInfo.title}`}
           >
             {productInfo.title}
           </button>

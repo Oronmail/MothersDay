@@ -9,6 +9,8 @@ import contentSquare2 from "@/assets/content-square-2.png";
 import contentSquare3 from "@/assets/content-square-3.png";
 import { ROUTES } from "@/lib/routes";
 import { LazyImage } from "@/components/LazyImage";
+import { SEO } from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
 
 const blogPosts = [
   {
@@ -42,10 +44,18 @@ const blogPosts = [
 
 const Blog = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-16" dir="rtl">
+    <>
+      <SEO
+        title="בלוג"
+        description="הבלוג של יום האם על תכנון, ניהול זמן ואימהות. מחשבות, תובנות וכלים שעוזרים לעשות יותר סדר ביומיום המשפחתי."
+        image={contentSquare3}
+        url={getAbsoluteSiteUrl(ROUTES.blog)}
+        type="article"
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-16" dir="rtl">
         {/* Page Title */}
         <div className="flex flex-col items-center mb-12">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground">
@@ -97,10 +107,11 @@ const Blog = () => {
             </Link>
           ))}
         </div>
-      </main>
-      <Newsletter />
-      <Footer />
-    </div>
+        </main>
+        <Newsletter />
+        <Footer />
+      </div>
+    </>
   );
 };
 

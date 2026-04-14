@@ -30,6 +30,12 @@ import { ProductExtraCarousel } from "@/components/ProductExtraCarousel";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
+import {
+  SEO,
+  getBreadcrumbStructuredData,
+  getProductStructuredData,
+} from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
 
 /**
  * For bundle products, replace product names in description HTML with clickable links.
@@ -193,218 +199,267 @@ export default function ProductDetail() {
 
   // Get carousel configuration if this product has extra carousel
   const carouselConfig = getProductCarouselConfig(handle || '');
+  const primaryImage = images[0]?.node?.url || "/logo.png";
+  const seoDescription = (
+    data.seoDescription ||
+    data.description ||
+    "מוצר תכנון איכותי לאימהות מבית יום האם."
+  ).replace(/\s+/g, " ").trim();
+  const productUrl = getAbsoluteSiteUrl(buildProductPath(data.handle));
+  const breadcrumbItems = [
+    { name: "דף הבית", url: getAbsoluteSiteUrl(ROUTES.home) },
+    ...(isBundle
+      ? [{ name: "כל המארזים", url: getAbsoluteSiteUrl(ROUTES.allSets) }]
+      : data.collections?.edges?.[0]
+        ? [{
+            name: data.collections.edges[0].node.title,
+            url: getAbsoluteSiteUrl(
+              buildCollectionPath(data.collections.edges[0].node.handle)
+            ),
+          }]
+        : []),
+    { name: data.title, url: productUrl },
+  ];
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      getProductStructuredData({
+        name: data.title,
+        description: seoDescription,
+        image: primaryImage,
+        price: price.toFixed(0),
+        currency: selectedVariant?.price.currencyCode || "ILS",
+        availability: selectedVariant?.availableForSale ? "InStock" : "OutOfStock",
+        url: productUrl,
+      }),
+      getBreadcrumbStructuredData(breadcrumbItems),
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <AnnouncementBanner />
-      <Header />
+    <>
+      <SEO
+        title={data.seoTitle || data.title}
+        description={seoDescription}
+        image={primaryImage}
+        url={productUrl}
+        type="product"
+        structuredData={structuredData}
+      />
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
+        <AnnouncementBanner />
+        <Header />
       
-      {/* Breadcrumbs Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumbs items={[
-          ...(isBundle
-            ? [{ label: 'מארזים', href: ROUTES.allSets }]
-            : data.collections?.edges?.[0]
-              ? [{ label: data.collections.edges[0].node.title, href: buildCollectionPath(data.collections.edges[0].node.handle) }]
-              : []),
-          { label: data.title }
-        ]} />
-      </div>
+        {/* Breadcrumbs Navigation */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Breadcrumbs items={[
+            ...(isBundle
+              ? [{ label: 'מארזים', href: ROUTES.allSets }]
+              : data.collections?.edges?.[0]
+                ? [{ label: data.collections.edges[0].node.title, href: buildCollectionPath(data.collections.edges[0].node.handle) }]
+                : []),
+            { label: data.title }
+          ]} />
+        </div>
       
-      {/* Section 1: Product Info */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
-        <div className="grid md:grid-cols-12 gap-6 lg:gap-10">
-          {/* Left Column - Product Info (visually on right in RTL) */}
-          <div className="order-2 md:order-1 md:col-span-3 space-y-5" dir="rtl">
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <h1 className="text-[28px] md:text-3xl mb-1">{data.title}</h1>
-                <WishlistButton productId={data.id} size={24} className="mt-1 flex-shrink-0" />
-              </div>
-              {data.vendor && (
-                <p className="text-muted-foreground text-base">{data.vendor}</p>
-              )}
-              <p className="text-xl md:text-2xl mt-3">₪{price.toFixed(0)}</p>
-            </div>
-
-            {/* Desktop Add to Cart with Quantity */}
-            <div className="hidden md:flex items-center gap-3">
-              <div className="flex items-center border border-border">
-                <button
-                  onClick={() => handleQuantityChange(-1)}
-                  className="p-2 hover:bg-muted transition-colors"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="px-3 min-w-[2.5rem] text-center">{quantity}</span>
-                <button
-                  onClick={() => handleQuantityChange(1)}
-                  className="p-2 hover:bg-muted transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-              
-              <Button
-                className="text-lg"
-                onClick={handleAddToCart}
-                disabled={!selectedVariant?.availableForSale}
-              >
-                {selectedVariant?.availableForSale ? `הוספה לעגלה · ₪${price.toFixed(0)}` : 'אזל מהמלאי'}
-              </Button>
-            </div>
-
-            {/* Variant Selection */}
-            {data.variants.edges.length > 1 && (
+        {/* Section 1: Product Info */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+          <div className="grid md:grid-cols-12 gap-6 lg:gap-10">
+            {/* Left Column - Product Info (visually on right in RTL) */}
+            <div className="order-2 md:order-1 md:col-span-3 space-y-5" dir="rtl">
               <div>
-                <label className="block text-sm md:text-base font-medium mb-2">
-                  בחר אפשרות
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {data.variants.edges.map((edge: any, index: number) => (
-                    <Button
-                      key={edge.node.id}
-                      variant={selectedVariantIndex === index ? "default" : "outline"}
-                      onClick={() => setSelectedVariantIndex(index)}
-                      disabled={!edge.node.availableForSale}
-                      size="sm"
-                    >
-                      {edge.node.title}
-                    </Button>
-                  ))}
+                <div className="flex items-start justify-between gap-2">
+                  <h1 className="text-[28px] md:text-3xl mb-1">{data.title}</h1>
+                  <WishlistButton productId={data.id} size={24} className="mt-1 flex-shrink-0" />
                 </div>
-              </div>
-            )}
-
-            {/* Description */}
-            {(data.descriptionHtml || data.description) && (
-              <div className="pt-4 border-t border-border">
-                {data.descriptionHtml ? (
-                  <div 
-                    dir="rtl"
-                    className="text-muted-foreground text-lg leading-snug prose prose-lg max-w-none [&>p]:mb-0 [&>br]:block [&>br]:mb-0 [&_a]:text-foreground [&_a]:underline [&_a]:hover:opacity-70 [&_a]:transition-opacity [&_ul]:list-none [&_ul]:p-0 [&_li]:block [&_li]:mb-0 [&_.desc-highlight]:bg-muted/50 [&_.desc-highlight]:p-3 [&_.desc-highlight]:-mx-1 [&_.desc-highlight]:rounded-sm [&_.desc-highlight]:my-2"
-                    dangerouslySetInnerHTML={{ 
-                      __html: (() => {
-                        const sanitized = DOMPurify.sanitize(data.descriptionHtml, {
-                          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div'],
-                          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style']
-                        });
-                        // Fix RTL punctuation
-                        const fixedPunctuation = sanitized.replace(
-                          /(<\/p>\s*<p[^>]*>(?:\s*<span[^>]*>)?\s*)([,.\u060C\u061B])/g,
-                          (match, tags, punct) => {
-                            return punct + tags.replace(/^<\/p>/, '</p>');
-                          }
-                        );
-                        const fixedHtml = fixedPunctuation.replace(
-                          />([,.\u060C\u061B])(\s*[\u0590-\u05FF\u0600-\u06FF])/g,
-                          '>$2$1'
-                        );
-                        const linkedHtml = isBundle && bundleItemsData ? linkifyBundleDescription(fixedHtml, bundleItemsData) : fixedHtml;
-                        // Wrap the specific "family board" section with a highlight
-                        const startMarker = 'הלוח המשפחתי שומר';
-                        const endMarker = 'משימות בשגרה';
-                        const startIdx = linkedHtml.indexOf(startMarker);
-                        const endIdx = linkedHtml.indexOf(endMarker);
-                        if (startIdx !== -1 && endIdx !== -1) {
-                          const endPos = endIdx + endMarker.length;
-                          // Find the nearest closing tag after endMarker
-                          const afterEnd = linkedHtml.substring(endPos);
-                          const closingMatch = afterEnd.match(/^[^<]*\.?\s*(<\/p>)?/);
-                          const closeLen = closingMatch ? closingMatch[0].length : 0;
-                          // Find the nearest opening tag before startMarker
-                          const beforeStart = linkedHtml.substring(0, startIdx);
-                          const lastOpenTag = beforeStart.lastIndexOf('<p');
-                          const wrapStart = lastOpenTag !== -1 ? lastOpenTag : startIdx;
-                          const wrapEnd = endPos + closeLen;
-                          return linkedHtml.substring(0, wrapStart) + 
-                            '<div class="desc-highlight">' + 
-                            linkedHtml.substring(wrapStart, wrapEnd) + 
-                            '</div>' + 
-                            linkedHtml.substring(wrapEnd);
-                        }
-                        return linkedHtml;
-                      })()
-                    }}
-                  />
-                ) : (
-                  <p dir="rtl" className="text-muted-foreground text-lg leading-relaxed whitespace-pre-line">
-                    {data.description}
-                  </p>
+                {data.vendor && (
+                  <p className="text-muted-foreground text-base">{data.vendor}</p>
                 )}
+                <p className="text-xl md:text-2xl mt-3">₪{price.toFixed(0)}</p>
               </div>
-            )}
 
+              {/* Desktop Add to Cart with Quantity */}
+              <div className="hidden md:flex items-center gap-3">
+                <div className="flex items-center border border-border">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    className="p-2 hover:bg-muted transition-colors"
+                    aria-label={`הפחיתי כמות עבור ${data.title}`}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="px-3 min-w-[2.5rem] text-center">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    className="p-2 hover:bg-muted transition-colors"
+                    aria-label={`הגדילי כמות עבור ${data.title}`}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                
+                <Button
+                  className="text-lg"
+                  onClick={handleAddToCart}
+                  disabled={!selectedVariant?.availableForSale}
+                >
+                  {selectedVariant?.availableForSale ? `הוספה לעגלה · ₪${price.toFixed(0)}` : 'אזל מהמלאי'}
+                </Button>
+              </div>
+
+              {/* Variant Selection */}
+              {data.variants.edges.length > 1 && (
+                <div>
+                  <label className="block text-sm md:text-base font-medium mb-2">
+                    בחר אפשרות
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {data.variants.edges.map((edge, index: number) => (
+                      <Button
+                        key={edge.node.id}
+                        variant={selectedVariantIndex === index ? "default" : "outline"}
+                        onClick={() => setSelectedVariantIndex(index)}
+                        disabled={!edge.node.availableForSale}
+                        size="sm"
+                      >
+                        {edge.node.title}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {(data.descriptionHtml || data.description) && (
+                <div className="pt-4 border-t border-border">
+                  {data.descriptionHtml ? (
+                    <div 
+                      dir="rtl"
+                      className="text-muted-foreground text-lg leading-snug prose prose-lg max-w-none [&>p]:mb-0 [&>br]:block [&>br]:mb-0 [&_a]:text-foreground [&_a]:underline [&_a]:hover:opacity-70 [&_a]:transition-opacity [&_ul]:list-none [&_ul]:p-0 [&_li]:block [&_li]:mb-0 [&_.desc-highlight]:bg-muted/50 [&_.desc-highlight]:p-3 [&_.desc-highlight]:-mx-1 [&_.desc-highlight]:rounded-sm [&_.desc-highlight]:my-2"
+                      dangerouslySetInnerHTML={{ 
+                        __html: (() => {
+                          const sanitized = DOMPurify.sanitize(data.descriptionHtml, {
+                            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div'],
+                            ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style']
+                          });
+                          // Fix RTL punctuation
+                          const fixedPunctuation = sanitized.replace(
+                            /(<\/p>\s*<p[^>]*>(?:\s*<span[^>]*>)?\s*)([,.\u060C\u061B])/g,
+                            (match, tags, punct) => {
+                              return punct + tags.replace(/^<\/p>/, '</p>');
+                            }
+                          );
+                          const fixedHtml = fixedPunctuation.replace(
+                            />([,.\u060C\u061B])(\s*[\u0590-\u05FF\u0600-\u06FF])/g,
+                            '>$2$1'
+                          );
+                          const linkedHtml = isBundle && bundleItemsData ? linkifyBundleDescription(fixedHtml, bundleItemsData) : fixedHtml;
+                          // Wrap the specific "family board" section with a highlight
+                          const startMarker = 'הלוח המשפחתי שומר';
+                          const endMarker = 'משימות בשגרה';
+                          const startIdx = linkedHtml.indexOf(startMarker);
+                          const endIdx = linkedHtml.indexOf(endMarker);
+                          if (startIdx !== -1 && endIdx !== -1) {
+                            const endPos = endIdx + endMarker.length;
+                            // Find the nearest closing tag after endMarker
+                            const afterEnd = linkedHtml.substring(endPos);
+                            const closingMatch = afterEnd.match(/^[^<]*\.?\s*(<\/p>)?/);
+                            const closeLen = closingMatch ? closingMatch[0].length : 0;
+                            // Find the nearest opening tag before startMarker
+                            const beforeStart = linkedHtml.substring(0, startIdx);
+                            const lastOpenTag = beforeStart.lastIndexOf('<p');
+                            const wrapStart = lastOpenTag !== -1 ? lastOpenTag : startIdx;
+                            const wrapEnd = endPos + closeLen;
+                            return linkedHtml.substring(0, wrapStart) + 
+                              '<div class="desc-highlight">' + 
+                              linkedHtml.substring(wrapStart, wrapEnd) + 
+                              '</div>' + 
+                              linkedHtml.substring(wrapEnd);
+                          }
+                          return linkedHtml;
+                        })()
+                      }}
+                    />
+                  ) : (
+                    <p dir="rtl" className="text-muted-foreground text-lg leading-relaxed whitespace-pre-line">
+                      {data.description}
+                    </p>
+                  )}
+                </div>
+              )}
+
+            </div>
+
+            {/* Right Column - Images Grid (visually on left in RTL) */}
+            <div className="order-1 md:order-2 md:col-span-9">
+              <ProductImageLayout
+                images={images}
+                productTitle={data.title}
+                layout={imageLayout}
+                selectedImageIndex={selectedImageIndex}
+                onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
+              />
+              {/* Extra row of images 6-9 for p1 only */}
+              {handle === 'p1' && images.length >= 9 && (
+                <>
+                  {/* Mobile: 3 images in a row */}
+                  <div className="grid grid-cols-3 gap-1 mt-1 md:hidden">
+                    {[5, 6, 7].map((imgIndex) => {
+                      const img = images[imgIndex];
+                      if (!img) return null;
+                      return (
+                        <button
+                          key={imgIndex}
+                          onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
+                          className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
+                          aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
+                        >
+                          <LazyImage
+                            src={img.node.url}
+                            alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Desktop: Grid */}
+                  <div className="hidden md:grid grid-cols-4 gap-1 mt-1">
+                    {[5, 6, 7, 8].map((imgIndex) => {
+                      const img = images[imgIndex];
+                      if (!img) return null;
+                      return (
+                        <button
+                          key={imgIndex}
+                          onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
+                          className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
+                          aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
+                        >
+                          <LazyImage
+                            src={img.node.url}
+                            alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+        </section>
 
-          {/* Right Column - Images Grid (visually on left in RTL) */}
-          <div className="order-1 md:order-2 md:col-span-9">
-            <ProductImageLayout
+        {/* Section 2: Extra Product Carousel (if configured) */}
+        {carouselConfig && (
+          <ErrorBoundary fallback={<div className="py-8"><ErrorFallback message="שגיאה בטעינת תמונות נוספות" /></div>}>
+            <ProductExtraCarousel
               images={images}
               productTitle={data.title}
-              layout={imageLayout}
-              selectedImageIndex={selectedImageIndex}
-              onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
+              config={carouselConfig}
             />
-            {/* Extra row of images 6-9 for p1 only */}
-            {handle === 'p1' && images.length >= 9 && (
-              <>
-                {/* Mobile: 3 images in a row */}
-                <div className="grid grid-cols-3 gap-1 mt-1 md:hidden">
-                  {[5, 6, 7].map((imgIndex) => {
-                    const img = images[imgIndex];
-                    if (!img) return null;
-                    return (
-                      <button
-                        key={imgIndex}
-                        onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
-                        className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
-                      >
-                        <LazyImage
-                          src={img.node.url}
-                          alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-                {/* Desktop: Grid */}
-                <div className="hidden md:grid grid-cols-4 gap-1 mt-1">
-                  {[5, 6, 7, 8].map((imgIndex) => {
-                    const img = images[imgIndex];
-                    if (!img) return null;
-                    return (
-                      <button
-                        key={imgIndex}
-                        onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
-                        className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
-                      >
-                        <LazyImage
-                          src={img.node.url}
-                          alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 2: Extra Product Carousel (if configured) */}
-      {carouselConfig && (
-        <ErrorBoundary fallback={<div className="py-8"><ErrorFallback message="שגיאה בטעינת תמונות נוספות" /></div>}>
-          <ProductExtraCarousel
-            images={images}
-            productTitle={data.title}
-            config={carouselConfig}
-          />
-        </ErrorBoundary>
-      )}
+          </ErrorBoundary>
+        )}
 
 
       {/* Section 4: Product in Bundles (only for non-bundle products) */}
@@ -475,16 +530,20 @@ export default function ProductDetail() {
         </div>
       </div>
       
-      {data && (
-        <ImageLightbox
-          images={data.images.edges.map((e: any) => ({ url: e.node.url, altText: e.node.altText }))}
-          currentIndex={selectedImageIndex}
-          open={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          onNavigate={setSelectedImageIndex}
-        />
-      )}
-      <Footer />
-    </div>
+        {data && (
+          <ImageLightbox
+            images={data.images.edges.map((imageEdge) => ({
+              url: imageEdge.node.url,
+              altText: imageEdge.node.altText,
+            }))}
+            currentIndex={selectedImageIndex}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+            onNavigate={setSelectedImageIndex}
+          />
+        )}
+        <Footer />
+      </div>
+    </>
   );
 }

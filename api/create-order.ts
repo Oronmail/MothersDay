@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { isCheckoutEnabled } from "./_lib/checkout";
+import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess";
 
 /**
  * Vercel API route: POST /api/create-order
@@ -15,6 +17,10 @@ import { createClient } from "@supabase/supabase-js";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (!isCheckoutEnabled()) {
+    return res.status(503).json({ error: "Checkout is currently disabled" });
   }
 
   const { items, email, shippingAddress, shippingCost, userId, notes } = req.body as {
@@ -45,6 +51,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "items, email, and shippingAddress are required" });
   }
 
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "At least one line item is required" });
+  }
+
+  const hasInvalidQuantity = items.some(
+    (item) => !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 20
+  );
+  if (hasInvalidQuantity) {
+    return res.status(400).json({ error: "Item quantities must be whole numbers between 1 and 20" });
+  }
+
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_Secret_KEY;
 
@@ -54,23 +71,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  // Server-side price validation: look up actual variant prices from the database
-  const variantIds = items.map((item) => item.variant_id);
+  // Validate every variant against the database and use only server-side pricing.
+  const variantIds = [...new Set(items.map((item) => item.variant_id))];
   const { data: variants } = await supabase
     .from("product_variants")
-    .select("id, price")
+    .select("id, product_id, price, available_for_sale")
     .in("id", variantIds);
 
   const priceMap = new Map(
-    (variants ?? []).map((v: { id: string; price: number }) => [v.id, v.price])
+    (
+      variants ?? []
+    ).map((variant: {
+      id: string;
+      product_id: string;
+      price: number;
+      available_for_sale: boolean;
+    }) => [variant.id, variant])
   );
 
-  // Use verified prices from DB; fall back to client price only if variant not found
+  const hasInvalidVariant = items.some((item) => {
+    const variant = priceMap.get(item.variant_id);
+    return (
+      !variant ||
+      variant.product_id !== item.product_id ||
+      !variant.available_for_sale
+    );
+  });
+
+  if (hasInvalidVariant) {
+    return res.status(400).json({ error: "One or more cart items are no longer available" });
+  }
+
   const verifiedItems = items.map((item) => {
-    const dbPrice = priceMap.get(item.variant_id);
+    const variant = priceMap.get(item.variant_id);
     return {
       ...item,
-      price: dbPrice !== undefined ? String(dbPrice) : item.price,
+      price: String(variant!.price),
     };
   });
 
@@ -85,7 +121,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data: settingsRows } = await supabase
       .from("store_settings")
       .select("key, value");
-    const settingsMap = new Map((settingsRows ?? []).map((r: any) => [r.key, r.value]));
+    const settingsMap = new Map(
+      (settingsRows ?? []).map((row: { key: string; value: string | number | boolean | null }) => [
+        row.key,
+        row.value,
+      ])
+    );
     const enabled = Boolean(settingsMap.get("shipping_enabled") ?? true);
     const cost = Number(settingsMap.get("shipping_cost") ?? 35);
     const threshold = Number(settingsMap.get("free_shipping_threshold") ?? 350);
@@ -96,6 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const totalPrice = itemsTotal + validatedShippingCost;
+  const orderOwnerRef = userId || email.trim().toLowerCase();
 
   let phone = shippingAddress.phone || "";
   if (phone.startsWith("0")) {
@@ -122,9 +164,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (error) throw error;
 
+    const orderAccessToken = createOrderAccessToken(
+      data.id,
+      orderOwnerRef,
+      getOrderAccessSecret()
+    );
+
     return res.status(200).json({
       orderId: data.id,
       orderNumber: data.order_number,
+      orderAccessToken,
     });
   } catch (error) {
     console.error("Order creation failed:", error);

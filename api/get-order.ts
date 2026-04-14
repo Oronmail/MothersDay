@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { getOrderAccessSecret, isValidOrderAccessToken } from "./_lib/orderAccess";
 
 /**
  * Vercel API route: GET /api/get-order?id=<orderId>
@@ -15,8 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const orderId = req.query.id as string;
-  if (!orderId) {
-    return res.status(400).json({ error: "Order ID is required" });
+  const token = req.query.token as string | undefined;
+  if (!orderId || !token) {
+    return res.status(400).json({ error: "Order ID and access token are required" });
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -27,10 +29,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const accessSecret = getOrderAccessSecret();
 
   const { data, error } = await supabase
     .from("orders")
-    .select("id, order_number, line_items, shipping_address, total_price, shipping_cost, currency_code, financial_status, fulfillment_status, created_at")
+    .select("id, order_number, user_id, guest_email, line_items, shipping_address, total_price, shipping_cost, currency_code, financial_status, fulfillment_status, created_at, updated_at, notes")
     .eq("id", orderId)
     .single();
 
@@ -38,5 +41,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: "Order not found" });
   }
 
-  return res.status(200).json(data);
+  const ownerRef = data.user_id || data.guest_email;
+  if (!ownerRef || !isValidOrderAccessToken(orderId, ownerRef, token, accessSecret)) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+
+  return res.status(200).json({
+    id: data.id,
+    order_number: data.order_number,
+    line_items: data.line_items,
+    shipping_address: data.shipping_address,
+    total_price: data.total_price,
+    shipping_cost: data.shipping_cost,
+    currency_code: data.currency_code,
+    financial_status: data.financial_status,
+    fulfillment_status: data.fulfillment_status,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+    notes: data.notes,
+  });
 }

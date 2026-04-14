@@ -16,13 +16,15 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorFallback } from "@/components/ErrorFallback";
 import { collectionQueryConfig, productQueryConfig } from "@/lib/queryConfig";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import collectionHeroComplementary from "@/assets/collection-hero-complementary-new.png";
-import collectionHeroWeekly from "@/assets/collection-hero-weekly.png";
-import collectionHeroFrontpage from "@/assets/collection-hero-frontpage.png";
+import collectionHeroComplementary from "@/assets/collection-hero-complementary-new.webp";
+import collectionHeroWeekly from "@/assets/collection-hero-weekly.webp";
+import collectionHeroFrontpage from "@/assets/collection-hero-frontpage.webp";
 import titleUnderline from "@/assets/title-underline.png";
 import smileyIcon from "@/assets/smiley-icon.png";
 import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
+import { SEO, getBreadcrumbStructuredData } from "@/components/SEO";
+import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
 
 // Hero assets mapping by collection handle
 const getCollectionHeroAssets = (handle: string): { image: string; video: string | null } => {
@@ -204,11 +206,36 @@ const Collection = () => {
   }
 
   const title = collection?.node.title || handle;
+  const collectionUrl = getAbsoluteSiteUrl(ROUTES.allProducts);
+  const collectionPathUrl = handle
+    ? getAbsoluteSiteUrl(`/collection/${handle}`)
+    : collectionUrl;
+  const seoDescription = (
+    collection?.node.description ||
+    descriptionLines.join(" ")
+  ).replace(/\s+/g, " ").trim();
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      getBreadcrumbStructuredData([
+        { name: "דף הבית", url: getAbsoluteSiteUrl(ROUTES.home) },
+        { name: title, url: collectionPathUrl },
+      ]),
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      <Header />
+    <>
+      <SEO
+        title={title}
+        description={seoDescription}
+        image={heroAssets.image}
+        url={collectionPathUrl}
+        structuredData={structuredData}
+      />
+      <div className="min-h-screen bg-background">
+        <AnnouncementBanner />
+        <Header />
       
       {/* Title Section */}
       <section className="pt-12 md:pt-14 pb-8 md:pb-12 relative z-10" dir="rtl">
@@ -236,6 +263,8 @@ const Collection = () => {
                 src={heroAssets.image} 
                 alt={title}
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
             
@@ -250,12 +279,14 @@ const Collection = () => {
                   loop
                   muted
                   autoPlay={shouldAutoplay}
+                  preload={shouldAutoplay ? "metadata" : "none"}
                   onPlay={() => setIsVideoPlaying(true)}
                   onPause={() => setIsVideoPlaying(false)}
                 />
                 {!shouldAutoplay && !isVideoPlaying && (
                   <button
                     onClick={handlePlayVideo}
+                    aria-label={`נגני את סרטון הקולקציה ${title}`}
                     className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30"
                   >
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-foreground/80 flex items-center justify-center">
@@ -266,6 +297,7 @@ const Collection = () => {
                 {!shouldAutoplay && isVideoPlaying && (
                   <button
                     onClick={handlePlayVideo}
+                    aria-label={`עצרי את סרטון הקולקציה ${title}`}
                     className="absolute inset-0 opacity-0 hover:opacity-100 flex items-center justify-center bg-black/20 transition-opacity"
                   >
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-foreground/80 flex items-center justify-center">
@@ -378,8 +410,9 @@ const Collection = () => {
       </ErrorBoundary>
 
       <Newsletter />
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

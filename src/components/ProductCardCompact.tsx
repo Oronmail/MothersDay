@@ -17,6 +17,7 @@ interface ProductCardCompactProps {
 export function ProductCardCompact({ product, alignment = 'center' }: ProductCardCompactProps) {
   const [isHovered, setIsHovered] = useState(false);
   const productData = product.node;
+  const productPath = buildProductPath(productData.handle);
   const primaryImage = productData.images.edges[0]?.node;
   const secondaryImage = productData.images.edges[1]?.node;
   const variant = productData.variants.edges[0]?.node;
@@ -46,39 +47,42 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
   };
 
   return (
-    <Link 
-      to={buildProductPath(productData.handle)}
-      className="flex flex-col h-full w-full group animate-fade-in"
-    >
+    <div className="flex flex-col h-full w-full group animate-fade-in">
       {/* Image Container */}
       <div 
-        className="relative overflow-hidden bg-secondary/30 cursor-pointer transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[3/4]"
+        className="relative overflow-hidden bg-secondary/30 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[3/4]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {primaryImage ? (
-          <>
-            <LazyImage
-              src={primaryImage.url}
-              alt={primaryImage.altText || productData.title}
-              className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
-            />
-            {secondaryImage && (
+        <Link
+          to={productPath}
+          aria-label={`עבור לעמוד המוצר ${productData.title}`}
+          className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          {primaryImage ? (
+            <>
               <LazyImage
-                src={secondaryImage.url}
-                alt={secondaryImage.altText || `${productData.title} - hover`}
-                className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                src={primaryImage.url}
+                alt={primaryImage.altText || productData.title}
+                className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
               />
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            אין תמונה
-          </div>
-        )}
+              {secondaryImage && (
+                <LazyImage
+                  src={secondaryImage.url}
+                  alt={secondaryImage.altText || `${productData.title} - hover`}
+                  className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                />
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              אין תמונה
+            </div>
+          )}
         
-        {/* Overlay gradient on hover */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+          {/* Overlay gradient on hover */}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+        </Link>
 
         {/* Wishlist button */}
         <div className="absolute top-2 left-2 z-10">
@@ -89,9 +93,14 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
       {/* Product Info */}
       <div className="pt-2 md:pt-4 flex flex-col gap-0.5 md:gap-1" dir="rtl">
         {/* Title */}
-        <h3 className="font-medium text-xs md:text-base leading-tight line-clamp-2 text-right transition-colors duration-200 group-hover:text-primary">
-          {productData.title}
-        </h3>
+        <Link
+          to={productPath}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          <h3 className="font-medium text-xs md:text-base leading-tight line-clamp-2 text-right transition-colors duration-200 group-hover:text-primary">
+            {productData.title}
+          </h3>
+        </Link>
 
         {/* Product Properties - 2 rows: numbers on top, labels below */}
         {productProps && (
@@ -125,6 +134,7 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
             <button
               onClick={(e) => handleQuantityChange(e, -1)}
               className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+              aria-label={`הפחתי כמות עבור ${productData.title}`}
             >
               <Minus className="w-3 h-3 md:w-3.5 md:h-3.5" />
             </button>
@@ -132,6 +142,7 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
             <button
               onClick={(e) => handleQuantityChange(e, 1)}
               className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+              aria-label={`הגדילי כמות עבור ${productData.title}`}
             >
               <Plus className="w-3 h-3 md:w-3.5 md:h-3.5" />
             </button>
@@ -143,6 +154,7 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
             className="text-[11px] md:text-[13px] font-normal h-6 md:h-7 px-3 md:px-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] gap-0.5"
             variant="default"
             size="sm"
+            aria-label={`הוסיפי את ${productData.title} לעגלה`}
           >
             <span>₪ {price.toFixed(0)}</span>
             <span className="mx-0.5">-</span>
@@ -150,6 +162,6 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
           </Button>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

@@ -43,8 +43,8 @@ export const SearchModal = () => {
   };
   return <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="p-0">
-          <img src={searchIcon} alt="חיפוש" className="h-6 w-6 md:h-[30px] md:w-[30px]" />
+        <Button variant="ghost" size="icon" className="p-0" aria-label="פתחי חיפוש מוצרים">
+          <img src={searchIcon} alt="" aria-hidden="true" className="h-6 w-6 md:h-[30px] md:w-[30px]" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col p-0">
@@ -57,7 +57,7 @@ export const SearchModal = () => {
         <div className="relative" dir="rtl">
             <img src={searchIcon} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-60" />
             <Input placeholder="חפש מוצרים..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-10 pl-10 text-right" autoFocus />
-            {searchQuery && <Button variant="ghost" size="icon" className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={handleClear}>
+            {searchQuery && <Button variant="ghost" size="icon" className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={handleClear} aria-label="נקה חיפוש">
                 <X className="h-4 w-4" />
               </Button>}
           </div>
@@ -73,7 +73,7 @@ export const SearchModal = () => {
               {searchQuery && <p className="text-sm text-muted-foreground mb-3">
                   {filteredProducts.length} תוצאות
                 </p>}
-              {filteredProducts.map(product => <button key={product.node.id} onClick={() => handleProductClick(product.node.handle)} className="w-full flex items-center gap-3 p-2 hover:bg-secondary/30 transition-colors text-right">
+              {filteredProducts.map(product => <button key={product.node.id} onClick={() => handleProductClick(product.node.handle)} className="w-full flex items-center gap-3 p-2 hover:bg-secondary/30 transition-colors text-right" aria-label={`עבור אל ${product.node.title}`}>
                   <div className="w-12 h-12 overflow-hidden bg-secondary/20 flex-shrink-0">
                     {product.node.images?.edges?.[0]?.node && <img src={product.node.images.edges[0].node.url} alt={product.node.title} className="w-full h-full object-cover" />}
                   </div>

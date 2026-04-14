@@ -7,6 +7,7 @@ interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'
   className?: string;
   blurDataURL?: string;
   objectFit?: 'cover' | 'contain';
+  priority?: boolean;
   onLoad?: () => void;
   onError?: () => void;
 }
@@ -17,16 +18,22 @@ export const LazyImage = ({
   className,
   blurDataURL,
   objectFit = 'cover',
+  priority = false,
   onLoad,
   onError,
   ...props
 }: LazyImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    if (priority) {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -49,7 +56,7 @@ export const LazyImage = ({
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [priority]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -73,6 +80,7 @@ export const LazyImage = ({
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover blur-sm scale-110 animate-pulse"
+          decoding="async"
         />
       )}
 
@@ -88,7 +96,9 @@ export const LazyImage = ({
             objectFit === 'contain' ? 'object-contain' : 'object-cover',
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : undefined}
           {...props}
         />
       )}
