@@ -9,6 +9,7 @@ import { getProducts } from "@/lib/api";
 import { ProductEdge } from "@/lib/types";
 import { buildProductPath } from "@/lib/routes";
 import searchIcon from "@/assets/search-icon.png";
+import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 export const SearchModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,7 +76,15 @@ export const SearchModal = () => {
                 </p>}
               {filteredProducts.map(product => <button key={product.node.id} onClick={() => handleProductClick(product.node.handle)} className="w-full flex items-center gap-3 p-2 hover:bg-secondary/30 transition-colors text-right" aria-label={`עבור אל ${product.node.title}`}>
                   <div className="w-12 h-12 overflow-hidden bg-secondary/20 flex-shrink-0">
-                    {product.node.images?.edges?.[0]?.node && <img src={product.node.images.edges[0].node.url} alt={product.node.title} className="w-full h-full object-cover" />}
+                    {product.node.images?.edges?.[0]?.node && (
+                      <img
+                        src={getProductThumbnailImageUrl(product.node.images.edges[0].node.url)}
+                        alt={product.node.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium truncate">{product.node.title}</h4>

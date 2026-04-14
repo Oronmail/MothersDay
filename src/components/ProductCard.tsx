@@ -10,6 +10,7 @@ import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
 import { WishlistButton } from "./WishlistButton";
+import { getProductCardImageUrl } from "@/lib/imageTransforms";
 
 interface ProductCardProps {
   product: ProductEdge;
@@ -112,7 +113,7 @@ export const ProductCard = ({
             <>
               {/* Primary Image */}
               <LazyImage
-                src={primaryImage.url}
+                src={getProductCardImageUrl(primaryImage.url)}
                 alt={primaryImage.altText || node.title}
                 className={`absolute inset-0 transition-all duration-500 ${isHovered && secondaryImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
                 priority={imagePriority}
@@ -120,7 +121,7 @@ export const ProductCard = ({
               {/* Hover Image - only if secondary image exists */}
               {secondaryImage && shouldLoadSecondaryImage && (
                 <LazyImage
-                  src={secondaryImage.url}
+                  src={getProductCardImageUrl(secondaryImage.url)}
                   alt={secondaryImage.altText || `${node.title} - hover`}
                   className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                 />

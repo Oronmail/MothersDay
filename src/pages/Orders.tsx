@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { LazyImage } from "@/components/LazyImage";
 import type { Order as OrderType, OrderLineItem, ShippingAddress as OrderShippingAddress } from "@/lib/types";
+import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 
 // Type helper to validate JSON structure
 function isOrderLineItem(item: unknown): item is OrderLineItem {
@@ -184,7 +185,7 @@ const Orders = () => {
                           <div className="w-16 h-16 bg-secondary/20 rounded-md overflow-hidden flex-shrink-0">
                             {item.image ? (
                               <LazyImage
-                                src={item.image}
+                                src={getProductThumbnailImageUrl(item.image)}
                                 alt={item.title}
                               />
                             ) : (

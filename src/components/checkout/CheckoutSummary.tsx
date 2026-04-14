@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Lock, Loader2, Minus, Plus, Trash2 } from "luci
 import { CartItem } from "@/lib/types";
 import { LazyImage } from "@/components/LazyImage";
 import { useCartStore } from "@/stores/cartStore";
+import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -59,7 +60,7 @@ export function CheckoutSummary({
             <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 relative">
               {item.product.node.images?.edges?.[0]?.node && (
                 <LazyImage
-                  src={item.product.node.images.edges[0].node.url}
+                  src={getProductThumbnailImageUrl(item.product.node.images.edges[0].node.url)}
                   alt={item.product.node.title}
                 />
               )}

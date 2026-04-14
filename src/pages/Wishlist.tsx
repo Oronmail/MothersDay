@@ -8,6 +8,7 @@ import { Loader2, Heart, Trash2, ArrowRight } from 'lucide-react';
 import { ROUTES, buildProductPath } from '@/lib/routes';
 import { LazyImage } from '@/components/LazyImage';
 import { useEffect } from 'react';
+import { getProductCardImageUrl } from '@/lib/imageTransforms';
 
 export default function Wishlist() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function Wishlist() {
                       >
                         {image ? (
                           <LazyImage
-                            src={image.url}
+                            src={getProductCardImageUrl(image.url)}
                             alt={item.product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

@@ -9,6 +9,7 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
 import { WishlistButton } from "./WishlistButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getProductCardImageUrl } from "@/lib/imageTransforms";
 
 interface ProductCardCompactProps {
   product: ProductEdge;
@@ -85,13 +86,13 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
           {primaryImage ? (
             <>
               <LazyImage
-                src={primaryImage.url}
+                src={getProductCardImageUrl(primaryImage.url)}
                 alt={primaryImage.altText || productData.title}
                 className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
               />
               {secondaryImage && shouldLoadSecondaryImage && (
                 <LazyImage
-                  src={secondaryImage.url}
+                  src={getProductCardImageUrl(secondaryImage.url)}
                   alt={secondaryImage.altText || `${productData.title} - hover`}
                   className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                 />

@@ -10,6 +10,7 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
 import { SEO } from "@/components/SEO";
 import { getOrderAccessStorageKey } from "@/lib/checkoutConfig";
+import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 
 export default function CheckoutConfirmation() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -121,7 +122,12 @@ export default function CheckoutConfirmation() {
           {order.line_items.map((item, index) => (
             <div key={index} className="flex gap-3 items-center">
               <div className="w-12 h-12 bg-muted overflow-hidden flex-shrink-0">
-                {item.image && <LazyImage src={item.image} alt={item.title} />}
+                {item.image && (
+                  <LazyImage
+                    src={getProductThumbnailImageUrl(item.image)}
+                    alt={item.title}
+                  />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">{item.title}</p>
