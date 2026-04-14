@@ -16,11 +16,19 @@ interface ProductCardProps {
   isWide?: boolean;
   showDescriptionFirstLine?: boolean;
   largeCarouselMobile?: boolean;
+  imagePriority?: boolean;
 }
 
-export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine = false, largeCarouselMobile = false }: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  isWide = false,
+  showDescriptionFirstLine = false,
+  largeCarouselMobile = false,
+  imagePriority = false,
+}: ProductCardProps) => {
   const isMobile = useIsMobile();
   const [isHovered, setIsHovered] = useState(false);
+  const [shouldLoadSecondaryImage, setShouldLoadSecondaryImage] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const { node } = product;
   const productPath = buildProductPath(node.handle);
@@ -65,6 +73,25 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
     handleAddToCart();
   };
 
+  const handleCardMouseEnter = () => {
+    if (isMobile) return;
+    if (secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+    setIsHovered(true);
+  };
+
+  const handleCardMouseLeave = () => {
+    if (isMobile) return;
+    setIsHovered(false);
+  };
+
+  const handleCardFocus = () => {
+    if (secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+  };
+
 
   return (
     <>
@@ -72,13 +99,14 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
       {/* Image Container - all products use 4/5 aspect ratio */}
       <div
         className="relative overflow-hidden bg-secondary/30 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[4/5]"
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        onMouseEnter={handleCardMouseEnter}
+        onMouseLeave={handleCardMouseLeave}
       >
         <Link
           to={productPath}
           aria-label={`עבור לעמוד המוצר ${node.title}`}
           className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          onFocus={handleCardFocus}
         >
           {primaryImage ? (
             <>
@@ -87,9 +115,10 @@ export const ProductCard = ({ product, isWide = false, showDescriptionFirstLine 
                 src={primaryImage.url}
                 alt={primaryImage.altText || node.title}
                 className={`absolute inset-0 transition-all duration-500 ${isHovered && secondaryImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
+                priority={imagePriority}
               />
               {/* Hover Image - only if secondary image exists */}
-              {secondaryImage && (
+              {secondaryImage && shouldLoadSecondaryImage && (
                 <LazyImage
                   src={secondaryImage.url}
                   alt={secondaryImage.altText || `${node.title} - hover`}

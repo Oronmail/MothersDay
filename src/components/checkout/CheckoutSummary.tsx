@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Lock, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Lock, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 
 import { CartItem } from "@/lib/types";
 import { LazyImage } from "@/components/LazyImage";
+import { useCartStore } from "@/stores/cartStore";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -23,6 +24,8 @@ export function CheckoutSummary({
   onSubmit,
 }: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
 
   const totalPrice = subtotal + shippingCost;
 
@@ -52,7 +55,7 @@ export function CheckoutSummary({
         <h2 className="text-lg hidden md:block">סיכום הזמנה</h2>
 
         {items.map((item) => (
-          <div key={item.variantId} className="flex gap-3">
+          <div key={item.variantId} className="flex gap-3 border-b border-border/60 pb-3 last:border-b-0 last:pb-0">
             <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 relative">
               {item.product.node.images?.edges?.[0]?.node && (
                 <LazyImage
@@ -64,17 +67,52 @@ export function CheckoutSummary({
                 {item.quantity}
               </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm truncate">{item.product.node.title}</p>
-              {item.selectedOptions.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {item.selectedOptions.map((o) => o.value).join(" / ")}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm truncate">{item.product.node.title}</p>
+                  {item.selectedOptions.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {item.selectedOptions.map((o) => o.value).join(" / ")}
+                    </p>
+                  )}
+                </div>
+                <p className="text-sm flex-shrink-0">
+                  &#8362;{(parseFloat(item.price.amount) * item.quantity).toFixed(2)}
                 </p>
-              )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.variantId)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={`הסירי את ${item.product.node.title} מהעגלה`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center border border-border h-8">
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+                    className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+                    aria-label={`הפחיתי כמות עבור ${item.product.node.title}`}
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="w-8 text-center text-sm">{item.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                    className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+                    aria-label={`הגדילי כמות עבור ${item.product.node.title}`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <p className="text-sm flex-shrink-0">
-              &#8362;{(parseFloat(item.price.amount) * item.quantity).toFixed(2)}
-            </p>
           </div>
         ))}
 
@@ -123,14 +161,6 @@ export function CheckoutSummary({
 
       {/* Spacer for fixed bottom bar on mobile */}
       <div className="h-24 md:hidden" />
-
-      <button
-        type="button"
-        onClick={() => window.history.back()}
-        className="block w-full text-center text-sm text-muted-foreground underline hover:text-foreground"
-      >
-        עריכת העגלה
-      </button>
     </div>
   );
 }

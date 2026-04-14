@@ -8,6 +8,7 @@ import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { getProductProperties } from "@/lib/productProperties";
 import { WishlistButton } from "./WishlistButton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductCardCompactProps {
   product: ProductEdge;
@@ -15,7 +16,9 @@ interface ProductCardCompactProps {
 }
 
 export function ProductCardCompact({ product, alignment = 'center' }: ProductCardCompactProps) {
+  const isMobile = useIsMobile();
   const [isHovered, setIsHovered] = useState(false);
+  const [shouldLoadSecondaryImage, setShouldLoadSecondaryImage] = useState(false);
   const productData = product.node;
   const productPath = buildProductPath(productData.handle);
   const primaryImage = productData.images.edges[0]?.node;
@@ -46,18 +49,38 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
     }
   };
 
+  const handleCardMouseEnter = () => {
+    if (isMobile) return;
+    if (secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+    setIsHovered(true);
+  };
+
+  const handleCardMouseLeave = () => {
+    if (isMobile) return;
+    setIsHovered(false);
+  };
+
+  const handleCardFocus = () => {
+    if (secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full group animate-fade-in">
       {/* Image Container */}
       <div 
         className="relative overflow-hidden bg-secondary/30 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[3/4]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={handleCardMouseEnter}
+        onMouseLeave={handleCardMouseLeave}
       >
         <Link
           to={productPath}
           aria-label={`עבור לעמוד המוצר ${productData.title}`}
           className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          onFocus={handleCardFocus}
         >
           {primaryImage ? (
             <>
@@ -66,7 +89,7 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
                 alt={primaryImage.altText || productData.title}
                 className={`absolute inset-0 transition-all duration-500 ${isHovered ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
               />
-              {secondaryImage && (
+              {secondaryImage && shouldLoadSecondaryImage && (
                 <LazyImage
                   src={secondaryImage.url}
                   alt={secondaryImage.altText || `${productData.title} - hover`}

@@ -252,12 +252,17 @@ const ProductTabsContent = () => {
                 className="w-full"
               >
                 <CarouselContent className="ml-0">
-                {mainCollectionProducts.map((product) => (
+                {mainCollectionProducts.map((product, index) => (
                     <CarouselItem
                       key={product.node.id}
                       className="pl-0 pr-3 basis-[85%] md:basis-1/3 lg:basis-1/3"
                     >
-                      <ProductCard product={product} isWide={isWideProduct(product)} largeCarouselMobile />
+                      <ProductCard
+                        product={product}
+                        isWide={isWideProduct(product)}
+                        largeCarouselMobile
+                        imagePriority={index < 3}
+                      />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -286,12 +291,17 @@ const ProductTabsContent = () => {
                 className="w-full"
               >
                 <CarouselContent className="ml-0">
-                {displayProducts.map((product) => (
+                {displayProducts.map((product, index) => (
                     <CarouselItem
                       key={product.node.id}
                       className="pl-0 pr-3 basis-[85%] md:basis-1/3 lg:basis-1/3"
                     >
-                      <ProductCard product={product} isWide={isWideProduct(product)} largeCarouselMobile />
+                      <ProductCard
+                        product={product}
+                        isWide={isWideProduct(product)}
+                        largeCarouselMobile
+                        imagePriority={index < 3}
+                      />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
