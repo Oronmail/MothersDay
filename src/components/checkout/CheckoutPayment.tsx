@@ -7,12 +7,15 @@ interface CheckoutPaymentProps {
   isLoadingPayment?: boolean;
   /** Whether checkout is live */
   checkoutEnabled?: boolean;
+  /** Whether a fake payment flow is enabled for testing */
+  paymentSimulationEnabled?: boolean;
 }
 
 export function CheckoutPayment({
   paymentPageUrl,
   isLoadingPayment,
   checkoutEnabled = false,
+  paymentSimulationEnabled = false,
 }: CheckoutPaymentProps) {
   return (
     <section className="space-y-4">
@@ -51,10 +54,16 @@ export function CheckoutPayment({
         <div className="border border-dashed border-border p-8 flex flex-col items-center justify-center gap-3 bg-muted/30">
           <Lock className="h-6 w-6 text-muted-foreground" />
           <p className="text-sm text-muted-foreground text-center">
-            {checkoutEnabled ? "טופס תשלום מאובטח" : "התשלום ייפתח בקרוב"}
+            {paymentSimulationEnabled
+              ? "הדמיית תשלום פעילה"
+              : checkoutEnabled
+                ? "טופס תשלום מאובטח"
+                : "התשלום ייפתח בקרוב"}
           </p>
           <p className="text-xs text-muted-foreground text-center">
-            {checkoutEnabled
+            {paymentSimulationEnabled
+              ? "לחיצה על כפתור ההזמנה תדמה רכישה מלאה לצורכי בדיקה בלבד, כולל אישור הזמנה ומייל."
+              : checkoutEnabled
               ? "טופס התשלום יופיע לאחר מילוי פרטי המשלוח"
               : "אפשר להמשיך לבדוק את החנות, אבל עדיין לא ניתן להשלים הזמנה."}
           </p>
@@ -63,7 +72,9 @@ export function CheckoutPayment({
 
       <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
         <Lock className="h-3 w-3" />
-        תשלום מאובטח ומוצפן
+        {paymentSimulationEnabled
+          ? "הדמיית תשלום מאובטחת לצורכי בדיקה בלבד"
+          : "תשלום מאובטח ומוצפן"}
       </p>
     </section>
   );

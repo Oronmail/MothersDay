@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,8 +16,11 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import {
+  CAN_SUBMIT_CHECKOUT,
   CHECKOUT_DISABLED_MESSAGE,
   CHECKOUT_ENABLED,
+  PAYMENT_SIMULATION_ENABLED,
+  PAYMENT_SIMULATION_MESSAGE,
   getOrderAccessStorageKey,
 } from "@/lib/checkoutConfig";
 
@@ -44,6 +47,7 @@ export default function Checkout() {
   const { items, isLoading, createOrder } = useCartStore();
   const { data: settings } = useStoreSettings();
   const orderInProgress = useRef(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
   const subtotal = items.reduce(
     (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
@@ -83,7 +87,7 @@ export default function Checkout() {
   }, [user?.email, form]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (!CHECKOUT_ENABLED) {
+    if (!CAN_SUBMIT_CHECKOUT) {
       toast.error("הזמנות אונליין עדיין לא פעילות", {
         description: CHECKOUT_DISABLED_MESSAGE,
       });
@@ -92,6 +96,7 @@ export default function Checkout() {
 
     const email = user?.email || data.email;
     orderInProgress.current = true;
+    setIsSubmittingOrder(true);
 
     const streetFull = data.apartment
       ? `${data.street} ${data.house_number}, דירה ${data.apartment}`
@@ -118,7 +123,7 @@ export default function Checkout() {
 
       sessionStorage.setItem(getOrderAccessStorageKey(orderId), orderAccessToken);
 
-      toast.success("ההזמנה נוצרה בהצלחה!", {
+      toast.success(PAYMENT_SIMULATION_ENABLED ? "הזמנת הדוגמה נוצרה בהצלחה!" : "ההזמנה נוצרה בהצלחה!", {
         description: `מספר הזמנה: ${orderNumber}`,
       });
 
@@ -137,9 +142,49 @@ export default function Checkout() {
         });
       }
 
+      if (PAYMENT_SIMULATION_ENABLED) {
+        const simulationResponse = await fetch("/api/simulate-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        });
+
+        if (!simulationResponse.ok) {
+          const errorPayload = await simulationResponse
+            .json()
+            .catch(() => ({ error: "simulation_failed" }));
+
+          toast.error("ההזמנה נוצרה, אבל הדמיית התשלום נכשלה", {
+            description: "אפשר לבדוק את אישור ההזמנה, אבל המייל עדיין לא נשלח.",
+          });
+
+          console.error("Payment simulation failed:", errorPayload);
+          navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
+          return;
+        }
+
+        const simulationResult = (await simulationResponse.json()) as {
+          confirmationUrl?: string;
+          emailSent?: boolean;
+          emailError?: string | null;
+        };
+
+        if (simulationResult.emailSent === false) {
+          toast.warning("ההזמנה עברה בהדמיה, אבל המייל לא נשלח", {
+            description: "נבדוק את הגדרות Resend לפני העלייה לאוויר.",
+          });
+        }
+
+        if (simulationResult.confirmationUrl) {
+          window.location.assign(simulationResult.confirmationUrl);
+          return;
+        }
+      }
+
       navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
     } catch (error) {
       orderInProgress.current = false;
+      setIsSubmittingOrder(false);
       const message =
         error instanceof Error && error.message.includes("network")
           ? "בעיית תקשורת. בדוק את החיבור לאינטרנט"
@@ -171,7 +216,15 @@ export default function Checkout() {
                 userEmail={user?.email}
               />
               <CheckoutShippingForm form={form} />
-              <CheckoutPayment checkoutEnabled={CHECKOUT_ENABLED} />
+              <CheckoutPayment
+                checkoutEnabled={CHECKOUT_ENABLED}
+                paymentSimulationEnabled={PAYMENT_SIMULATION_ENABLED}
+              />
+              {PAYMENT_SIMULATION_ENABLED && (
+                <p className="text-sm text-muted-foreground">
+                  {PAYMENT_SIMULATION_MESSAGE}
+                </p>
+              )}
             </div>
 
             {/* Left column (RTL sidebar): order summary */}
@@ -181,8 +234,9 @@ export default function Checkout() {
                   items={items}
                   subtotal={subtotal}
                   shippingCost={shippingCost}
-                  isSubmitting={isLoading}
+                  isSubmitting={isLoading || isSubmittingOrder}
                   checkoutEnabled={CHECKOUT_ENABLED}
+                  paymentSimulationEnabled={PAYMENT_SIMULATION_ENABLED}
                   onSubmit={handleSubmit}
                 />
               </div>

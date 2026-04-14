@@ -13,6 +13,7 @@ interface CheckoutSummaryProps {
   shippingCost: number;
   isSubmitting: boolean;
   checkoutEnabled: boolean;
+  paymentSimulationEnabled?: boolean;
   onSubmit: () => void;
 }
 
@@ -22,6 +23,7 @@ export function CheckoutSummary({
   shippingCost,
   isSubmitting,
   checkoutEnabled,
+  paymentSimulationEnabled = false,
   onSubmit,
 }: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -29,6 +31,8 @@ export function CheckoutSummary({
   const removeItem = useCartStore((state) => state.removeItem);
 
   const totalPrice = subtotal + shippingCost;
+
+  const canSubmit = checkoutEnabled || paymentSimulationEnabled;
 
   return (
     <div className="space-y-4">
@@ -140,13 +144,15 @@ export function CheckoutSummary({
           onClick={onSubmit}
           className="w-full"
           size="lg"
-          disabled={items.length === 0 || isSubmitting || !checkoutEnabled}
+          disabled={items.length === 0 || isSubmitting || !canSubmit}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-              יוצר הזמנה...
+              {paymentSimulationEnabled ? "יוצר הזמנה לדוגמה..." : "יוצר הזמנה..."}
             </>
+          ) : paymentSimulationEnabled ? (
+            <>השלמת הזמנה לדוגמה — &#8362;{totalPrice.toFixed(2)}</>
           ) : !checkoutEnabled ? (
             <>הזמנות אונליין ייפתחו בקרוב</>
           ) : (
@@ -156,7 +162,7 @@ export function CheckoutSummary({
 
         <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
           <Lock className="h-3 w-3" />
-          תשלום מאובטח ומוצפן
+          {paymentSimulationEnabled ? "הדמיית תשלום לצורכי בדיקה. לא יבוצע חיוב." : "תשלום מאובטח ומוצפן"}
         </p>
       </div>
 

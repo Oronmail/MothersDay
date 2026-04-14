@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { isCheckoutEnabled } from "./_lib/checkout.js";
+import { canSubmitCheckout } from "./_lib/checkout.js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
 
 /**
@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!isCheckoutEnabled()) {
+  if (!canSubmitCheckout()) {
     return res.status(503).json({ error: "Checkout is currently disabled" });
   }
 

@@ -9,7 +9,10 @@ import { Footer } from "@/components/Footer";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
 import { SEO } from "@/components/SEO";
-import { getOrderAccessStorageKey } from "@/lib/checkoutConfig";
+import {
+  getOrderAccessStorageKey,
+  PAYMENT_SIMULATION_ENABLED,
+} from "@/lib/checkoutConfig";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 
 export default function CheckoutConfirmation() {
@@ -114,6 +117,11 @@ export default function CheckoutConfirmation() {
           <p className="text-muted-foreground">
             מספר הזמנה: <span className="font-medium text-foreground">{order.order_number}</span>
           </p>
+          {PAYMENT_SIMULATION_ENABLED && (
+            <p className="text-sm text-muted-foreground">
+              הזמנה זו נוצרה במסלול בדיקה. לא בוצע חיוב בפועל.
+            </p>
+          )}
         </div>
 
         {/* Order items */}
