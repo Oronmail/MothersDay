@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -18,6 +18,8 @@ interface ProductCardProps {
   showDescriptionFirstLine?: boolean;
   largeCarouselMobile?: boolean;
   imagePriority?: boolean;
+  preloadSecondaryImage?: boolean;
+  onPrimaryImageLoad?: () => void;
 }
 
 export const ProductCard = ({
@@ -26,9 +28,12 @@ export const ProductCard = ({
   showDescriptionFirstLine = false,
   largeCarouselMobile = false,
   imagePriority = false,
+  preloadSecondaryImage = false,
+  onPrimaryImageLoad,
 }: ProductCardProps) => {
   const isMobile = useIsMobile();
   const [isHovered, setIsHovered] = useState(false);
+  const [hasPrimaryImageLoaded, setHasPrimaryImageLoaded] = useState(false);
   const [shouldLoadSecondaryImage, setShouldLoadSecondaryImage] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const { node } = product;
@@ -74,6 +79,15 @@ export const ProductCard = ({
     handleAddToCart();
   };
 
+  const handlePrimaryImageLoad = () => {
+    setHasPrimaryImageLoaded(true);
+    onPrimaryImageLoad?.();
+
+    if (!isMobile && preloadSecondaryImage && secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+  };
+
   const handleCardMouseEnter = () => {
     if (isMobile) return;
     if (secondaryImage) {
@@ -92,6 +106,12 @@ export const ProductCard = ({
       setShouldLoadSecondaryImage(true);
     }
   };
+
+  useEffect(() => {
+    if (!isMobile && preloadSecondaryImage && hasPrimaryImageLoaded && secondaryImage) {
+      setShouldLoadSecondaryImage(true);
+    }
+  }, [hasPrimaryImageLoaded, isMobile, preloadSecondaryImage, secondaryImage]);
 
 
   return (
@@ -117,6 +137,7 @@ export const ProductCard = ({
                 alt={primaryImage.altText || node.title}
                 className={`absolute inset-0 transition-all duration-500 ${isHovered && secondaryImage ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
                 priority={imagePriority}
+                onLoad={handlePrimaryImageLoad}
               />
               {/* Hover Image - only if secondary image exists */}
               {secondaryImage && shouldLoadSecondaryImage && (

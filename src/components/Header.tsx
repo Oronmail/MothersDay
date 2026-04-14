@@ -18,6 +18,17 @@ export const Header = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const desktopNavTriggerClassName =
+    "relative flex items-center gap-1 pb-1 text-foreground/90 transition-colors hover:text-primary data-[state=open]:text-primary after:absolute after:-bottom-0.5 after:right-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-primary/35 after:transition-transform after:duration-200 hover:after:scale-x-100 data-[state=open]:after:scale-x-100";
+  const desktopNavMenuStyle = {
+    backgroundImage: `linear-gradient(rgba(247, 242, 239, 0.96), rgba(247, 242, 239, 0.96)), url(${headerTexture})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  } as const;
+  const desktopNavMenuClassName =
+    "z-[100] min-w-[220px] rounded-none border border-primary/10 p-2 shadow-[0_24px_48px_rgba(77,60,64,0.14)] backdrop-blur-sm";
+  const desktopNavMenuItemClassName =
+    "justify-end rounded-none px-4 py-3 text-[15px] text-foreground/85 transition-colors hover:text-primary focus:bg-white/70 focus:text-primary data-[highlighted]:bg-white/70 data-[highlighted]:text-primary cursor-pointer";
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -77,22 +88,43 @@ export const Header = () => {
             <nav className="flex items-center gap-6 text-base">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hover:text-primary transition-colors flex items-center gap-1">
+                  <button className={desktopNavTriggerClassName}>
                     מוצרים
                     <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-background z-[100]">
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(ROUTES.allProducts)}>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={14}
+                  className={desktopNavMenuClassName}
+                  style={desktopNavMenuStyle}
+                >
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(ROUTES.allProducts)}
+                  >
                     כל המוצרים
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.mothersPlanning))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.mothersPlanning))}
+                  >
                     מוצרי תכנון לאימהות
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.weeklyPlanning))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.weeklyPlanning))}
+                  >
                     מוצרי תכנון שבועיים
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.complementaryPlanning))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildCollectionPath(COLLECTION_HANDLES.complementaryPlanning))}
+                  >
                     מוצרי תכנון משלימים
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -100,31 +132,64 @@ export const Header = () => {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hover:text-primary transition-colors flex items-center gap-1">
+                  <button className={desktopNavTriggerClassName}>
                     מארזים
                     <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-background z-[100]">
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(ROUTES.allSets)}>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={14}
+                  className={desktopNavMenuClassName}
+                  style={desktopNavMenuStyle}
+                >
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(ROUTES.allSets)}
+                  >
                     כל המארזים
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.planningBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.planningBundle))}
+                  >
                     מארז תכנון
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.powderBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.powderBundle))}
+                  >
                     מארז פודרה
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.wineBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.wineBundle))}
+                  >
                     מארז יין
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.stoneBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.stoneBundle))}
+                  >
                     מארז אבן
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.blocksBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.blocksBundle))}
+                  >
                     מארז בלוקים
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.notebooksBundle))}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(buildProductPath(PRODUCT_HANDLES.notebooksBundle))}
+                  >
                     מארז מחברות
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -139,16 +204,29 @@ export const Header = () => {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hover:text-primary transition-colors flex items-center gap-1">
+                  <button className={desktopNavTriggerClassName}>
                     עוד
                     <ChevronDown className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-background z-[100]">
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(ROUTES.about)}>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={14}
+                  className={desktopNavMenuClassName}
+                  style={desktopNavMenuStyle}
+                >
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(ROUTES.about)}
+                  >
                     על יום האם
                   </DropdownMenuItem>
-                  <DropdownMenuItem dir="rtl" onClick={() => navigate(ROUTES.support)}>
+                  <DropdownMenuItem
+                    dir="rtl"
+                    className={desktopNavMenuItemClassName}
+                    onClick={() => navigate(ROUTES.support)}
+                  >
                     שירות לקוחות
                   </DropdownMenuItem>
                 </DropdownMenuContent>

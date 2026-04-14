@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getProducts,
@@ -44,6 +44,7 @@ const isWideProduct = (product: ProductEdge) => {
 
 const ProductTabsContent = () => {
   const [activeCollection, setActiveCollection] = useState<string | null>(null);
+  const [loadedPrimaryProductIds, setLoadedPrimaryProductIds] = useState<string[]>([]);
   
   // Fetch collections list for tabs
   const { data: collections, isLoading: collectionsLoading } = useQuery({
@@ -150,6 +151,27 @@ const ProductTabsContent = () => {
 
   // Use selected collection products when a tab is active, otherwise main collection
   const displayProducts = activeCollection !== null ? selectedCollectionProducts : mainCollectionProducts;
+  const priorityImageCount = useMemo(
+    () => Math.min(displayProducts?.length ?? 0, 3),
+    [displayProducts]
+  );
+  const preloadPriorityHoverImages =
+    priorityImageCount > 0 && loadedPrimaryProductIds.length >= priorityImageCount;
+
+  const displayProductsKey = useMemo(
+    () => (displayProducts || []).map((product) => product.node.id).join("|"),
+    [displayProducts]
+  );
+
+  useEffect(() => {
+    setLoadedPrimaryProductIds([]);
+  }, [activeCollection, displayProductsKey, priorityImageCount]);
+
+  const handlePrimaryImageLoad = (productId: string) => {
+    setLoadedPrimaryProductIds((current) =>
+      current.includes(productId) ? current : [...current, productId]
+    );
+  };
 
   if (isLoading) {
     return (
@@ -262,6 +284,12 @@ const ProductTabsContent = () => {
                         isWide={isWideProduct(product)}
                         largeCarouselMobile
                         imagePriority={index < 3}
+                        preloadSecondaryImage={index < priorityImageCount && preloadPriorityHoverImages}
+                        onPrimaryImageLoad={
+                          index < priorityImageCount
+                            ? () => handlePrimaryImageLoad(product.node.id)
+                            : undefined
+                        }
                       />
                     </CarouselItem>
                   ))}
@@ -301,6 +329,12 @@ const ProductTabsContent = () => {
                         isWide={isWideProduct(product)}
                         largeCarouselMobile
                         imagePriority={index < 3}
+                        preloadSecondaryImage={index < priorityImageCount && preloadPriorityHoverImages}
+                        onPrimaryImageLoad={
+                          index < priorityImageCount
+                            ? () => handlePrimaryImageLoad(product.node.id)
+                            : undefined
+                        }
                       />
                     </CarouselItem>
                   ))}
