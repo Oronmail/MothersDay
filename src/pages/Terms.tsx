@@ -23,7 +23,7 @@ const Terms = () => {
           {/* Introduction */}
           <section className="space-y-3">
             <p className="text-muted-foreground">
-              ברוכים הבאים לאתר <strong>יום האם</strong> (להלן: &quot;האתר&quot;). האתר מופעל על ידי עדן פרידמן, עוסק מורשה (להלן: &quot;העסק&quot; או &quot;החנות&quot;).
+              ברוכים הבאים לאתר <strong>יום האם</strong> (להלן: &quot;האתר&quot;). האתר מופעל על ידי עדן מזרחי, עוסק מורשה (להלן: &quot;העסק&quot; או &quot;החנות&quot;).
             </p>
             <p className="text-muted-foreground">
               תקנון זה מהווה הסכם מחייב בין המשתמש/ת באתר (להלן: &quot;המשתמש/ת&quot; או &quot;הלקוח/ה&quot;) לבין העסק. השימוש באתר, לרבות ביצוע הזמנות, מהווה הסכמה לכל התנאים המפורטים בתקנון זה. אם אינך מסכים/ה לתנאים אלה, אנא הימנע/י משימוש באתר.
@@ -41,10 +41,10 @@ const Terms = () => {
             <h2 className="text-xl text-foreground font-medium">1. פרטי העסק</h2>
             <ul className="text-muted-foreground space-y-1 list-none">
               <li>שם העסק: יום האם</li>
-              <li>בעלות ותפעול: עדן פרידמן</li>
+              <li>בעלות ותפעול: עדן מזרחי</li>
               <li>סוג העסק: עוסק מורשה</li>
               <li>כתובת דוא&quot;ל: support@mothersday.co.il</li>
-              <li>כתובת האתר: www.mothersdayil.co.il</li>
+              <li>כתובת האתר: mothersday.co.il</li>
             </ul>
           </section>
 

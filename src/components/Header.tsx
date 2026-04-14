@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartDrawer } from "./CartDrawer";
 import { MobileNav } from "./MobileNav";
 import { SearchModal } from "./SearchModal";
+import { AuthDialog } from "./AuthDialog";
 import { ChevronDown, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -15,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Header = () => {
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,9 +29,9 @@ export const Header = () => {
     backgroundPosition: "center",
   } as const;
   const desktopNavMenuClassName =
-    "z-[100] min-w-[220px] rounded-none border border-primary/10 p-2 shadow-[0_24px_48px_rgba(77,60,64,0.14)] backdrop-blur-sm";
+    "z-[100] min-w-[220px] rounded-none border border-primary/10 p-2 text-right shadow-[0_24px_48px_rgba(77,60,64,0.14)] backdrop-blur-sm";
   const desktopNavMenuItemClassName =
-    "w-full justify-end text-right rounded-none px-4 py-3 text-[15px] text-foreground/85 transition-colors hover:text-primary focus:bg-white/70 focus:text-primary data-[highlighted]:bg-white/70 data-[highlighted]:text-primary cursor-pointer";
+    "block w-full rounded-none px-4 py-3 text-right text-[15px] text-foreground/85 transition-colors hover:text-primary focus:bg-white/70 focus:text-primary data-[highlighted]:bg-white/70 data-[highlighted]:text-primary cursor-pointer";
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -43,7 +46,7 @@ export const Header = () => {
         title: "יצאת מהחשבון",
         description: "יצאת בהצלחה מהחשבון שלך.",
       });
-      navigate(ROUTES.auth);
+      navigate(ROUTES.home);
     }
   };
   return <header className="sticky top-0 z-50 backdrop-blur shadow-sm relative" style={{
@@ -266,12 +269,13 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" size="icon" className="p-0" onClick={() => navigate(ROUTES.auth)}>
+              <Button variant="ghost" size="icon" className="p-0" onClick={() => setIsAuthDialogOpen(true)}>
                 <img src={userIcon} alt="משתמש" className="h-[30px] w-[30px]" />
               </Button>
             )}
           </div>
         </div>
       </div>
+      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </header>;
 };

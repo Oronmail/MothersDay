@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, ChevronDown, User, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
+import { AuthDialog } from "./AuthDialog";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +23,7 @@ import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, build
 
 export const MobileNav = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [bundlesOpen, setBundlesOpen] = useState(false);
   const { user } = useAuth();
@@ -41,7 +43,7 @@ export const MobileNav = () => {
         description: "התנתקת בהצלחה מהמערכת.",
       });
       setIsOpen(false);
-      navigate(ROUTES.auth);
+      navigate(ROUTES.home);
     } catch (error) {
       toast({
         title: "שגיאה",
@@ -203,7 +205,10 @@ export const MobileNav = () => {
             </>
           ) : (
             <button
-              onClick={() => handleNavigate(ROUTES.auth)}
+              onClick={() => {
+                setIsOpen(false);
+                setIsAuthDialogOpen(true);
+              }}
               className="py-3 text-right font-medium hover:text-primary transition-colors"
             >
               התחבר
@@ -211,6 +216,7 @@ export const MobileNav = () => {
           )}
         </nav>
       </SheetContent>
+      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </Sheet>
   );
 };

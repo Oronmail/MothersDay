@@ -70,7 +70,7 @@ export const Footer = () => {
         </div>
 
         {/* Desktop Footer - Single Row RTL */}
-        <div dir="rtl" className="hidden md:flex gap-12 px-4 md:px-8 w-full items-center justify-between">
+        <div dir="rtl" className="hidden md:flex gap-12 px-4 md:px-8 w-full items-center">
           {/* Logo Box - Appears on Right in RTL */}
           <div className="flex flex-col items-center gap-2">
             <div className="bg-[#6B5B5A] p-4 px-0 py-0">
@@ -113,7 +113,7 @@ export const Footer = () => {
           </div>
 
           {/* Menu Items - Appears on Left in RTL */}
-          <nav className="text-lg items-center justify-start flex flex-row flex-wrap gap-x-10 gap-y-4">
+          <nav className="flex-1 text-lg items-center justify-center text-center flex flex-row flex-wrap gap-x-10 gap-y-4">
             <Link to={ROUTES.allProducts} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
               חנות
             </Link>
