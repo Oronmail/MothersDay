@@ -25,6 +25,7 @@ type OrderEmailPayload = {
 };
 
 const DEFAULT_SUPPORT_EMAIL = "support@mothersday.co.il";
+const DEFAULT_ORDER_CONFIRMATION_FROM = "יום האם <orders@noreply.mothersday.co.il>";
 
 const escapeHtml = (value: string) =>
   value
@@ -260,7 +261,10 @@ export const sendOrderConfirmationEmail = async (payload: OrderEmailPayload) => 
   const from =
     process.env.ORDER_CONFIRMATION_FROM_EMAIL ||
     process.env.RESEND_FROM_EMAIL ||
-    `יום האם <${supportEmail}>`;
+    DEFAULT_ORDER_CONFIRMATION_FROM;
+  const replyTo =
+    process.env.ORDER_CONFIRMATION_REPLY_TO ||
+    supportEmail;
 
   const subject = payload.simulated
     ? `הזמנה לדוגמה #${payload.orderNumber} התקבלה | יום האם`
@@ -279,6 +283,7 @@ export const sendOrderConfirmationEmail = async (payload: OrderEmailPayload) => 
         subject,
         html: buildHtml(payload),
         text: buildText(payload),
+        reply_to: replyTo,
       }),
     });
 
