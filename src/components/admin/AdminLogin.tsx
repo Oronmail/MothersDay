@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ export const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const { login } = useAdmin();
   const navigate = useNavigate();
 
@@ -22,6 +24,25 @@ export const AdminLogin = () => {
       toast.error('שגיאה בהתחברות');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error('יש להזין כתובת אימייל תחילה');
+      return;
+    }
+    setResetting(true);
+    try {
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+    } catch {
+      // Swallow errors so we never reveal whether an address is registered.
+    } finally {
+      // Neutral message regardless of outcome (avoids leaking account existence).
+      toast.success('אם הכתובת רשומה במערכת, נשלח אליה קישור לאיפוס סיסמה');
+      setResetting(false);
     }
   };
 
@@ -50,6 +71,14 @@ export const AdminLogin = () => {
             {loading ? 'מתחבר...' : 'התחבר'}
           </Button>
         </form>
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          disabled={resetting}
+          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+        >
+          {resetting ? 'שולח...' : 'שכחת סיסמה?'}
+        </button>
       </div>
     </div>
   );

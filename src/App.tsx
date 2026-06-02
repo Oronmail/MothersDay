@@ -36,6 +36,7 @@ const CheckoutConfirmation = lazy(() => import("./pages/CheckoutConfirmation"));
 // Admin
 const AdminLoginPage = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 
 // Track SPA route changes in Google Analytics
 function GaRouteTracker() {
@@ -105,6 +106,7 @@ const App = () => (
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/admin/*" element={<AdminDashboardPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
