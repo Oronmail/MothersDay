@@ -131,33 +131,33 @@ const AllProducts = () => {
       {/* Hero Section - 3 Images side by side */}
       <section className="pb-2 md:pb-6 -mt-6 md:-mt-10">
         <div className="w-full">
-          <div className="grid grid-cols-3 gap-0 items-end">
+          <div className="grid grid-cols-3 gap-0 items-end md:items-stretch md:grid-rows-1 md:w-full md:aspect-[2.2/1] md:max-h-[75vh]">
             {/* Left - Kitchen */}
-            <div className="aspect-[3/4] md:aspect-[4/5] overflow-hidden">
-              <img 
-                src={heroImage1} 
+            <div className="aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
+              <img
+                src={heroImage1}
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
                 loading="eager"
                 decoding="async"
               />
             </div>
-            
+
             {/* Middle - Calendar */}
-            <div className="aspect-[3/4] md:aspect-[4/5] overflow-hidden">
-              <img 
-                src={heroImage2} 
+            <div className="aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
+              <img
+                src={heroImage2}
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
                 loading="eager"
                 decoding="async"
               />
             </div>
-            
+
             {/* Right - Bedroom */}
-            <div className="aspect-[3/4] md:aspect-[4/5] overflow-hidden">
-              <img 
-                src={heroImage3} 
+            <div className="aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
+              <img
+                src={heroImage3}
                 alt="כל המוצרים"
                 className="w-full h-full object-cover"
                 loading="eager"

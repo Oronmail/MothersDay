@@ -82,11 +82,11 @@ export const Newsletter = () => {
         <div className="flex flex-col items-center mb-4 md:mb-6 relative z-10">
           <div className="flex items-center gap-1.5 md:gap-3 mb-1">
             <img src={heartIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">רוצה</span>
+            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">רוצה</span>
             <img src={smileyIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">מתכננת</span>
+            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">מתכננת</span>
             <img src={clockIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">עושה</span>
+            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">עושה</span>
             <img src={heartIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
           </div>
           <img 

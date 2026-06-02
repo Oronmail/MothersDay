@@ -11,7 +11,7 @@ const PRODUCT_IMAGES_BUCKET_PREFIX = "product-images/";
 
 export const getOptimizedProductImageUrl = (
   src: string | undefined,
-  { width, height, quality = 70, resize = "fill" }: ProductImageTransformOptions
+  { width, height, quality = 90, resize = "cover" }: ProductImageTransformOptions
 ) => {
   if (!src) return "";
 
@@ -44,35 +44,35 @@ export const getProductCardImageUrl = (src: string | undefined) =>
   getOptimizedProductImageUrl(src, {
     width: 720,
     height: 900,
-    quality: 70,
-    resize: "fill",
+    quality: 90,
+    resize: "cover",
   });
 
 export const getProductThumbnailImageUrl = (src: string | undefined) =>
   getOptimizedProductImageUrl(src, {
     width: 256,
     height: 256,
-    quality: 68,
-    resize: "fill",
+    quality: 86,
+    resize: "cover",
   });
 
 export const getProductDetailImageUrl = (src: string | undefined) =>
   getOptimizedProductImageUrl(src, {
     width: 1400,
-    quality: 78,
+    quality: 92,
     resize: "contain",
   });
 
 export const getProductDetailGridImageUrl = (src: string | undefined) =>
   getOptimizedProductImageUrl(src, {
     width: 1100,
-    quality: 76,
+    quality: 90,
     resize: "contain",
   });
 
 export const getProductDetailLightboxImageUrl = (src: string | undefined) =>
   getOptimizedProductImageUrl(src, {
     width: 1800,
-    quality: 82,
+    quality: 95,
     resize: "contain",
   });

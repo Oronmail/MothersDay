@@ -82,13 +82,13 @@ export const Header = () => {
 
         <div className="hidden md:flex items-center justify-between h-16" dir="rtl">
           <div className="flex items-center gap-6">
-            <div className="flex items-end gap-2">
-              <button onClick={() => navigate(ROUTES.home)} className="hover:opacity-80 transition-opacity mb-1">
-                <img src={homeIcon} alt="בית" className="h-8 w-8" />
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigate(ROUTES.home)} className="hover:opacity-80 transition-opacity">
+                <img src={homeIcon} alt="בית" className="h-6 w-6" />
               </button>
               <SearchModal />
             </div>
-            <nav className="flex items-center gap-6 text-base">
+            <nav className="flex items-center gap-6 text-lg font-display">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className={desktopNavTriggerClassName}>
@@ -200,9 +200,9 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <button 
+              <button
                 onClick={() => navigate(ROUTES.blog)}
-                className="hover:text-primary transition-colors"
+                className={desktopNavTriggerClassName}
               >
                 בלוג
               </button>
@@ -246,7 +246,7 @@ export const Header = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="p-0">
-                    <img src={userIcon} alt="משתמש" className="h-[30px] w-[30px]" />
+                    <img src={userIcon} alt="משתמש" className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -270,7 +270,7 @@ export const Header = () => {
               </DropdownMenu>
             ) : (
               <Button variant="ghost" size="icon" className="p-0" onClick={() => setIsAuthDialogOpen(true)}>
-                <img src={userIcon} alt="משתמש" className="h-[30px] w-[30px]" />
+                <img src={userIcon} alt="משתמש" className="h-6 w-6" />
               </Button>
             )}
           </div>

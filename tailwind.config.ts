@@ -14,7 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['FbEinstein', 'sans-serif'],
+        sans: ['Assistant', 'sans-serif'],
+        display: ['FbEinstein', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

@@ -41,7 +41,7 @@ export const Hero = () => {
   }, []);
 
   return (
-    <section className="relative w-full mb-2 md:mb-12">
+    <section className="relative w-full mb-2 md:mb-4">
       <Link
         to={ROUTES.allProducts}
         aria-label="צפי בכל המוצרים"
@@ -56,7 +56,7 @@ export const Hero = () => {
             צפה בכל המוצרים
           </span>
         </div>
-        <div className="relative w-full overflow-hidden bg-muted" style={isMobile ? { height: '66vh' } : { paddingTop: '45%' }}>
+        <div className="relative w-full overflow-hidden bg-muted" style={isMobile ? { height: '66vh' } : { aspectRatio: '16 / 9' }}>
           <video
             src={videoUrl}
             className={`absolute left-1/2 w-full h-full transition-transform duration-300 ${isMobile ? 'bottom-0' : 'top-1/2'} ${showHover ? 'scale-[1.02]' : 'scale-100'}`}

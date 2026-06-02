@@ -277,7 +277,7 @@ const ProductTabsContent = () => {
                 {mainCollectionProducts.map((product, index) => (
                     <CarouselItem
                       key={product.node.id}
-                      className="pl-0 pr-3 basis-[85%] md:basis-1/3 lg:basis-1/3"
+                      className="px-2 md:px-3 basis-[82%] md:basis-1/3 lg:basis-1/3"
                     >
                       <ProductCard
                         product={product}
@@ -294,8 +294,8 @@ const ProductTabsContent = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="hidden md:flex -left-4 md:-left-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[30%]" />
-                <CarouselNext className="hidden md:flex -right-4 md:-right-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[30%]" />
+                <CarouselPrevious className="hidden md:flex -left-4 md:-left-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[37%]" />
+                <CarouselNext className="hidden md:flex -right-4 md:-right-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[37%]" />
               </Carousel>
             </div>
           ) : selectedLoading ? (
@@ -322,7 +322,7 @@ const ProductTabsContent = () => {
                 {displayProducts.map((product, index) => (
                     <CarouselItem
                       key={product.node.id}
-                      className="pl-0 pr-3 basis-[85%] md:basis-1/3 lg:basis-1/3"
+                      className="px-2 md:px-3 basis-[82%] md:basis-1/3 lg:basis-1/3"
                     >
                       <ProductCard
                         product={product}
@@ -339,8 +339,8 @@ const ProductTabsContent = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="hidden md:flex -left-4 md:-left-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[30%]" />
-                <CarouselNext className="hidden md:flex -right-4 md:-right-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[30%]" />
+                <CarouselPrevious className="hidden md:flex -left-4 md:-left-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[37%]" />
+                <CarouselNext className="hidden md:flex -right-4 md:-right-6 bg-background/80 backdrop-blur-sm border-border shadow-lg top-[37%]" />
 
               </Carousel>
             </div>

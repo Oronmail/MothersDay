@@ -256,9 +256,9 @@ const Collection = () => {
       {/* Hero Section - Image + Video side by side */}
       <section className="pb-2 md:pb-6 -mt-6 md:-mt-10">
         <div className="w-full">
-          <div className={`grid ${hasVideo ? 'grid-cols-2' : 'grid-cols-1'} gap-0`} style={hasVideo ? { aspectRatio: '2 / 1' } : undefined}>
+          <div className={`grid gap-0 ${hasVideo ? 'grid-cols-2 items-stretch md:w-full aspect-[2/1] md:aspect-[2.2/1] md:grid-rows-1 md:max-h-[75vh]' : 'grid-cols-1'}`}>
             {/* Left side - Static Image */}
-            <div className={`overflow-hidden ${!hasVideo ? 'aspect-[4/3.75] md:aspect-[5/4.75] max-w-3xl mx-auto' : ''}`}>
+            <div className={`overflow-hidden ${!hasVideo ? 'aspect-[4/3.75] md:aspect-[2.2/1] md:max-h-[75vh] max-w-3xl md:max-w-none md:w-full mx-auto' : 'md:h-full'}`}>
               <img 
                 src={heroAssets.image} 
                 alt={title}

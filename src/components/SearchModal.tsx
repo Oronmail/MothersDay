@@ -45,7 +45,7 @@ export const SearchModal = () => {
   return <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="p-0" aria-label="פתחי חיפוש מוצרים">
-          <img src={searchIcon} alt="" aria-hidden="true" className="h-6 w-6 md:h-[30px] md:w-[30px]" />
+          <img src={searchIcon} alt="" aria-hidden="true" className="h-6 w-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col p-0">

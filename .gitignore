@@ -32,3 +32,6 @@ dist-ssr
 .env.production
 .env.staging
 .vercel
+
+# Claude tooling
+.claude/

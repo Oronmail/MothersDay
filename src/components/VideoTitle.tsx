@@ -9,11 +9,11 @@ export const VideoTitle = () => {
       <div className="container mx-auto px-4 flex flex-col items-center">
         <div className="flex items-center justify-center gap-1.5 md:gap-6">
           <img src={heartIcon} alt="" className="w-6 h-6 md:w-8 md:h-8" />
-          <span className="text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">בית</span>
+          <span className="font-display text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">בית</span>
           <img src={smileyIcon} alt="" className="w-6 h-6 md:w-8 md:h-8" />
-          <span className="text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">תכנון</span>
+          <span className="font-display text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">תכנון</span>
           <img src={clockIcon} alt="" className="w-6 h-6 md:w-8 md:h-8" />
-          <span className="text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">שגרה</span>
+          <span className="font-display text-[28px] md:text-4xl lg:text-5xl font-normal text-foreground">שגרה</span>
           <img src={heartIcon} alt="" className="w-6 h-6 md:w-8 md:h-8" />
         </div>
         <img 

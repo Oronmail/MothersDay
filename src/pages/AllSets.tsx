@@ -129,23 +129,23 @@ const AllSets = () => {
 
       {/* Hero Section - 3 Images side by side */}
       <section className="pb-2 md:pb-6 -mt-6 md:-mt-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 gap-1 items-end">
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-0 items-end md:items-stretch md:grid-rows-1 md:w-full md:aspect-[2.2/1] md:max-h-[75vh]">
             {/* Left */}
-            <div className="aspect-square overflow-hidden">
-              <img 
-                src={heroImage2} 
+            <div className="aspect-square md:aspect-auto md:h-full overflow-hidden">
+              <img
+                src={heroImage2}
                 alt="כל המארזים"
                 className="w-full h-full object-cover"
                 loading="eager"
                 decoding="async"
               />
             </div>
-            
+
             {/* Right */}
-            <div className="aspect-square overflow-hidden">
-              <img 
-                src={heroImage1} 
+            <div className="aspect-square md:aspect-auto md:h-full overflow-hidden">
+              <img
+                src={heroImage1}
                 alt="כל המארזים"
                 className="w-full h-full object-cover"
                 loading="eager"

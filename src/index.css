@@ -85,6 +85,12 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans;
   }
 
+  /* Headings keep the FbEinstein display font (brand look);
+     body text uses Assistant for readability. */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+
   a:not([class*="button"]):not([class*="btn"]) {
     @apply transition-colors duration-200;
   }

@@ -117,7 +117,7 @@ export const ProductCard = ({
   return (
     <>
       <div className="flex flex-col h-full w-full group animate-fade-in">
-      {/* Image Container - all products use 4/5 aspect ratio */}
+      {/* Image Container - portrait 4/5 (suits long A4-size products) */}
       <div
         className="relative overflow-hidden bg-secondary/30 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10 aspect-[4/5]"
         onMouseEnter={handleCardMouseEnter}
@@ -165,80 +165,81 @@ export const ProductCard = ({
 
       </div>
       {/* Product Info */}
-      <div className="pt-2 md:pt-4 flex flex-col gap-0.5 md:gap-1 flex-1" dir="rtl">
-        {/* Title Row - with price on left for mobile */}
-        <div className="flex items-start justify-between min-h-[2.5rem] md:min-h-0">
-          <div className="flex-1">
-            <h3 className={`font-medium leading-tight line-clamp-2 text-right transition-colors duration-200 group-hover:text-primary ${largeCarouselMobile ? 'text-lg md:text-lg' : 'text-base md:text-lg'}`}>{node.title}</h3>
-            {showDescriptionFirstLine && descriptionFirstLine && (
-              <p className="text-xs md:text-sm text-muted-foreground line-clamp-1 text-right">{descriptionFirstLine}</p>
-            )}
-          </div>
-          <span className={`font-medium text-foreground mr-2 md:hidden whitespace-nowrap ${largeCarouselMobile ? 'text-lg' : 'text-base'}`}>{parseFloat(price.amount).toFixed(0)} ש״ח</span>
-        </div>
+      <div className="pt-2 md:pt-3 flex flex-col flex-1" dir="rtl">
+        {/* Title - reserve 2 lines so specs/price align across all cards */}
+        <h3 className={`font-medium leading-tight line-clamp-2 text-right min-h-[2.75rem] md:min-h-[3.25rem] transition-colors duration-200 group-hover:text-primary ${largeCarouselMobile ? 'text-xl' : 'text-lg md:text-xl'}`}>
+          {node.title}
+        </h3>
+        {showDescriptionFirstLine && descriptionFirstLine && (
+          <p className="text-xs md:text-sm text-muted-foreground line-clamp-1 text-right -mt-1">{descriptionFirstLine}</p>
+        )}
 
-        {/* Product Properties - 2 rows: numbers on top, labels below */}
+        {/* Product Properties - size / pages / weight (mobile + desktop) */}
         {productProps && (
-          <div className="hidden md:flex gap-2 md:gap-3 mt-1 justify-start">
-            {/* גודל (Size) - rightmost in RTL */}
-            <div className="flex flex-col items-center leading-none gap-px">
+          <div className="flex gap-4 md:gap-5 mt-1 justify-start">
+            {/* גודל (Size) */}
+            <div className="flex flex-col items-center leading-none gap-1">
               <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">גודל</div>
+              <div className="text-xs text-muted-foreground leading-none">גודל</div>
             </div>
 
-            {/* דפים (Pages) - center */}
-            <div className="flex flex-col items-center leading-none gap-px">
+            {/* דפים (Pages) */}
+            <div className="flex flex-col items-center leading-none gap-1">
               <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">דפים</div>
+              <div className="text-xs text-muted-foreground leading-none">דפים</div>
             </div>
 
-            {/* עובי דף (Paper Weight) - leftmost in RTL */}
-            <div className="flex flex-col items-center leading-none gap-px">
+            {/* עובי דף (Paper Weight) */}
+            <div className="flex flex-col items-center leading-none gap-1">
               <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
-                {productProps.paperWeight} <span className="text-[9px] md:text-xs text-muted-foreground font-normal">גרם</span>
+                {productProps.paperWeight} <span className="text-xs text-muted-foreground font-normal">גרם</span>
               </div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">עובי דף</div>
+              <div className="text-xs text-muted-foreground leading-none">עובי דף</div>
             </div>
           </div>
         )}
 
-          {/* Spacer to push buttons to bottom */}
-          {!largeCarouselMobile && <div className="flex-1" />}
+        {/* Spacer pushes price + cart to the bottom for consistent alignment */}
+        <div className="flex-1 min-h-[0.25rem]" />
 
-          {/* Quantity Selector and Add to Cart */}
-          <div className={`flex gap-4 md:gap-6 items-center justify-end ${largeCarouselMobile ? 'mt-0.5 md:mt-3' : 'mt-1.5 md:mt-3'}`} dir="ltr">
-            {/* Quantity Selector - Left */}
-            <div className="flex items-center border border-border h-7 md:h-7 flex-1 md:flex-none justify-center">
-              <button
-                onClick={(e) => handleQuantityChange(-1, e)}
-                className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
-                aria-label={`הפחתי כמות עבור ${node.title}`}
-              >
-                <Minus className="w-3 h-3 md:w-3.5 md:h-3.5" />
-              </button>
-              <span className={`w-5 md:w-6 text-center font-medium ${largeCarouselMobile ? 'text-base md:text-sm' : 'text-sm md:text-sm'}`}>{quantity}</span>
-              <button
-                onClick={(e) => handleQuantityChange(1, e)}
-                className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
-                aria-label={`הגדילי כמות עבור ${node.title}`}
-              >
-                <Plus className="w-3 h-3 md:w-3.5 md:h-3.5" />
-              </button>
-            </div>
+        {/* Price - above the button, consistent on mobile + desktop
+            (kept smaller than the title so the product name stays the hero) */}
+        <div className="text-right font-medium text-foreground text-base md:text-lg mb-1.5">
+          {parseFloat(price.amount).toFixed(0)} ₪
+        </div>
 
-            {/* Add to Cart Button with Price - Right */}
-            <Button
-              onClick={onAddToCart}
-              className={`font-normal h-7 md:h-7 px-3 md:px-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] gap-0.5 flex-1 md:flex-none ${largeCarouselMobile ? 'text-base md:text-sm' : 'text-sm md:text-sm'}`}
-              variant="default"
-              size="sm"
-              aria-label={`הוסיפי את ${node.title} לעגלה`}
+        {/* Quantity Selector and Add to Cart */}
+        <div className="flex gap-3 items-stretch">
+          {/* Add to Cart Button - takes remaining width (right side in RTL) */}
+          <Button
+            onClick={onAddToCart}
+            className="font-normal h-9 px-4 flex-1 text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            variant="default"
+            size="sm"
+            aria-label={`הוסיפי את ${node.title} לעגלה`}
+          >
+            הוספה לעגלה
+          </Button>
+
+          {/* Quantity Selector */}
+          <div className="flex items-center border border-border h-9 shrink-0">
+            <button
+              onClick={(e) => handleQuantityChange(-1, e)}
+              className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+              aria-label={`הפחתי כמות עבור ${node.title}`}
             >
-              <span className="hidden md:inline">₪ {parseFloat(price.amount).toFixed(0)}</span>
-              <span className="hidden md:inline mx-0.5">-</span>
-              <span>הוספה לעגלה</span>
-            </Button>
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-6 text-center font-medium text-sm">{quantity}</span>
+            <button
+              onClick={(e) => handleQuantityChange(1, e)}
+              className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
+              aria-label={`הגדילי כמות עבור ${node.title}`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </div>
+        </div>
       </div>
     </div>
 
