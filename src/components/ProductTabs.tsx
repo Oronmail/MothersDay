@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getProducts,
-  getProductByHandle,
   getCollections,
   MAIN_COLLECTION_HANDLE,
 } from "@/lib/api";
-import { ProductEdge, CollectionEdge } from "@/lib/types";
+import { ProductEdge } from "@/lib/types";
 import { collectionQueryConfig, productQueryConfig } from "@/lib/queryConfig";
 import { ProductCard } from "./ProductCard";
 import { Loader2 } from "lucide-react";
@@ -34,10 +33,6 @@ const COLLECTION_TABS = [
   { label: "מוצרים", handle: null }, // null = show all (main collection)
 ];
 
-// Ensure these specific products show in the homepage carousel even if they
-// were not successfully added to the main collection yet.
-const HOMEPAGE_REQUIRED_PRODUCT_HANDLES = ["בלוק-תכנון-קטן", "בלוק-תכנון"] as const;
-
 const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
@@ -61,74 +56,20 @@ const ProductTabsContent = () => {
     ...collectionQueryConfig,
   });
 
-  // Fetch products from main collection (respects manual sort order)
-  // Falls back to all products if main collection doesn't exist
+  // Fetch products from "הכל" collection — order is exactly what admin set via drag-sort.
   const { data: mainCollectionProducts, isLoading: mainLoading } = useQuery({
     queryKey: ['homepage-products', MAIN_COLLECTION_HANDLE],
     queryFn: async () => {
-      // Try collection first for manual ordering
       try {
-        const products = await getProducts(MAIN_COLLECTION_HANDLE);
-        console.log('[ProductTabs] Got', products.length, 'products from collection');
-        if (products.length > 0) {
-          // Fetch required products by handle and append any missing ones.
-          const extras = (await Promise.all(
-            HOMEPAGE_REQUIRED_PRODUCT_HANDLES.map(async (handle) => {
-              try {
-                const product = await getProductByHandle(handle);
-                return product ? ({ node: product } as ProductEdge) : null;
-              } catch (error) {
-                console.error('[ProductTabs] Required product fetch failed:', handle, error);
-                return null;
-              }
-            })
-          )).filter(Boolean) as ProductEdge[];
-
-          if (extras.length === 0) return products;
-
-          const seen = new Set(products.map((p) => p.node.id));
-          const merged = [...products];
-          for (const extra of extras) {
-            if (!seen.has(extra.node.id)) {
-              merged.push(extra);
-              seen.add(extra.node.id);
-            }
-          }
-
-          if (merged.length !== products.length) {
-            console.log('[ProductTabs] Appended', merged.length - products.length, 'required products');
-          }
-
-          // Swap בלוק תכנון בינוני with בלוק תכנון קטן
-          const swapHandleA = 'בלוק-תכנון-בינוני';
-          const swapHandleB = 'בלוק-תכנון-קטן';
-          const indexA = merged.findIndex((p) => p.node.handle === swapHandleA);
-          const indexB = merged.findIndex((p) => p.node.handle === swapHandleB);
-          if (indexA !== -1 && indexB !== -1) {
-            [merged[indexA], merged[indexB]] = [merged[indexB], merged[indexA]];
-          }
-
-          return merged;
-        }
-        console.log('[ProductTabs] Main collection empty or not found, falling back to all products');
+        return await getProducts(MAIN_COLLECTION_HANDLE);
       } catch (e) {
         console.error('[ProductTabs] Main collection failed:', e);
-      }
-
-      // Fallback to all products - wrapped in try-catch to never throw
-      try {
-        console.log('[ProductTabs] Trying fallback to all products...');
-        const products = await getProducts();
-        console.log('[ProductTabs] Fallback got', products.length, 'products');
-        return products;
-      } catch (e) {
-        console.error('[ProductTabs] Fallback also failed:', e);
-        return []; // Return empty array instead of throwing
+        return [];
       }
     },
     retry: 1,
-    staleTime: 1000 * 60 * 2, // 2 minutes
-    gcTime: 1000 * 60 * 5,    // 5 minutes
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 5,
   });
 
   // Fetch products from selected collection when a tab is active
