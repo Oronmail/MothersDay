@@ -48,6 +48,13 @@
   - וריאנט ריפיל (sort_order=1): "ריפיל — דפים בלבד" — 180₪
   - 4 תמונות ה"לוח עם מסגרת" הועברו ל-p2 (positions 11-14).
 
+### 14. ✅ טאב "מוצרים" — סדר מהאדמין בלבד (`src/components/ProductTabs.tsx`)
+- הוסרו שתי חתיכות לוגיקה קשיחה שעקפו את סדר האדמין:
+  - **Hardcoded swap** של `בלוק-תכנון-בינוני` ↔ `בלוק-תכנון-קטן` (שורות שנמחקו)
+  - **Auto-append** של `HOMEPAGE_REQUIRED_PRODUCT_HANDLES` (מוצרים שנוספו בכוח לסוף)
+- כעת: לחיצה על "מוצרים" = **בדיוק** הסדר שנקבע בניהול → קולקציה "הכל" → גרירה.
+- commit: `8166722`
+
 ### 13. 📸 תמונת "מארז תכנון" (image 1) הוחלפה
 - תמונת position=1 (1.jpg) של מוצר `8b5c274f` ("מארז תכנון") הוחלפה.
 - **קובץ מקור:** `GoogleDrive/…/סשן 2 ערוכות/drive-download-20260217T071804Z-1-001/_S2A5455-אורך.jpg`
@@ -138,4 +145,5 @@ CLAUDE.md (חדש), .claude/launch.json (חדש)
 src/components/admin/CollectionList.tsx — תיקון is_published
 src/components/admin/CollectionForm.tsx — כתיבה מחדש עם drag+sort
 src/lib/api.ts — תיקון שורה אחת (קרוסלה לפי סדר "הכל")
+src/components/ProductTabs.tsx — הסרת hardcoded swaps/appends, סדר מהאדמין בלבד
 SESSION-NOTES.md — עדכון
