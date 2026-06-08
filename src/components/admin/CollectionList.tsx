@@ -27,7 +27,7 @@ export const CollectionList = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('collections')
-        .select('id, title, handle, published, collection_products(id)')
+        .select('id, title, handle, is_published, collection_products(id)')
         .order('sort_order');
       if (error) throw error;
       return data ?? [];
@@ -50,7 +50,7 @@ export const CollectionList = () => {
     },
   });
 
-  const filtered = collections?.filter((c: any) =>
+  const filtered = collections?.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
   ) ?? [];
 
@@ -99,7 +99,7 @@ export const CollectionList = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((collection: any) => (
+                {filtered.map((collection) => (
                   <TableRow key={collection.id}>
                     <TableCell className="font-medium">{collection.title}</TableCell>
                     <TableCell className="text-muted-foreground" dir="ltr">
@@ -107,8 +107,8 @@ export const CollectionList = () => {
                     </TableCell>
                     <TableCell>{collection.collection_products?.length ?? 0}</TableCell>
                     <TableCell>
-                      <Badge variant={collection.published ? 'default' : 'secondary'}>
-                        {collection.published ? 'מפורסם' : 'טיוטה'}
+                      <Badge variant={collection.is_published ? 'default' : 'secondary'}>
+                        {collection.is_published ? 'מפורסם' : 'טיוטה'}
                       </Badge>
                     </TableCell>
                     <TableCell>

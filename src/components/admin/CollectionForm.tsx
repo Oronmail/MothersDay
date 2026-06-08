@@ -12,8 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, GripVertical, X, Plus } from 'lucide-react';
+import {
+  DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, sortableKeyboardCoordinates, arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const collectionSchema = z.object({
   title: z.string().min(1, 'שדה חובה'),
@@ -24,28 +31,77 @@ const collectionSchema = z.object({
 
 type CollectionFormValues = z.infer<typeof collectionSchema>;
 
-interface ProductAssignment {
+interface SelectedProduct {
   productId: string;
   title: string;
-  selected: boolean;
-  position: number;
 }
 
 function toKebab(str: string): string {
   return str
     .trim()
     .toLowerCase()
-    .replace(/[^\u0590-\u05FFa-z0-9\s-]/g, '')
+    .replace(/[^֐-׿a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
+
+// A single product row inside the collection: drag handle + position number + remove.
+type SortableProductRowProps = {
+  product: SelectedProduct;
+  position: number;
+  onRemove: () => void;
+};
+
+const SortableProductRow = ({ product, position, onRemove }: SortableProductRowProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: product.productId,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex items-center justify-between gap-2 p-2 rounded-md border bg-card ${
+        isDragging ? 'opacity-50' : ''
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground shrink-0"
+          aria-label="גרור לסידור"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+        <span className="text-sm font-medium text-muted-foreground tabular-nums w-6 text-center shrink-0">
+          {position}
+        </span>
+        <span className="font-medium truncate">{product.title}</span>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={onRemove}
+        aria-label="הסר מהקולקציה"
+        className="shrink-0"
+      >
+        <X className="w-4 h-4 text-muted-foreground" />
+      </Button>
+    </div>
+  );
+};
 
 export const CollectionForm = () => {
   const { id } = useParams();
   const isEdit = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [productAssignments, setProductAssignments] = useState<ProductAssignment[]>([]);
+  // Products in the collection, kept in display/persist order.
+  const [selectedItems, setSelectedItems] = useState<SelectedProduct[]>([]);
+  const [productSearch, setProductSearch] = useState('');
 
   const form = useForm<CollectionFormValues>({
     resolver: zodResolver(collectionSchema),
@@ -85,7 +141,7 @@ export const CollectionForm = () => {
     },
   });
 
-  // Fetch products in collection
+  // Fetch products in collection (ordered)
   const { data: collectionProducts } = useQuery({
     queryKey: ['admin', 'collection-products', id],
     enabled: isEdit,
@@ -106,39 +162,29 @@ export const CollectionForm = () => {
         title: existingCollection.title ?? '',
         handle: existingCollection.handle ?? '',
         description: existingCollection.description ?? '',
-        published: existingCollection.published ?? false,
+        published: existingCollection.is_published ?? false,
       });
     }
   }, [existingCollection, form]);
 
-  // Build product assignments list
+  // Build the ordered selected-products list once products + memberships are loaded.
   useEffect(() => {
-    if (allProducts) {
-      const cpMap = new Map<string, number>();
-      (collectionProducts ?? []).forEach((cp: any, i: number) => {
-        cpMap.set(cp.product_id, cp.position ?? i);
-      });
+    if (!allProducts) return;
+    const titleMap = new Map<string, string>(allProducts.map((p) => [p.id, p.title]));
 
-      const assignments: ProductAssignment[] = allProducts.map((p: any) => ({
-        productId: p.id,
-        title: p.title,
-        selected: cpMap.has(p.id),
-        position: cpMap.get(p.id) ?? 999,
-      }));
-
-      // Sort selected ones first by position, then unselected alphabetically
-      assignments.sort((a, b) => {
-        if (a.selected && !b.selected) return -1;
-        if (!a.selected && b.selected) return 1;
-        if (a.selected && b.selected) return a.position - b.position;
-        return 0;
-      });
-
-      setProductAssignments(assignments);
+    if (isEdit) {
+      if (!collectionProducts) return; // wait for memberships
+      const ordered: SelectedProduct[] = [...collectionProducts]
+        .filter((cp) => titleMap.has(cp.product_id))
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((cp) => ({ productId: cp.product_id, title: titleMap.get(cp.product_id)! }));
+      setSelectedItems(ordered);
+    } else {
+      setSelectedItems([]);
     }
-  }, [allProducts, collectionProducts]);
+  }, [allProducts, collectionProducts, isEdit]);
 
-  // Auto-generate handle
+  // Auto-generate handle from title for new collections
   const watchTitle = form.watch('title');
   useEffect(() => {
     if (!isEdit && watchTitle) {
@@ -146,20 +192,37 @@ export const CollectionForm = () => {
     }
   }, [watchTitle, isEdit, form]);
 
-  const toggleProduct = (productId: string) => {
-    setProductAssignments((prev) =>
-      prev.map((p) =>
-        p.productId === productId ? { ...p, selected: !p.selected } : p
-      )
+  const selectedIds = new Set(selectedItems.map((s) => s.productId));
+  const availableProducts = (allProducts ?? [])
+    .filter((p) => !selectedIds.has(p.id))
+    .filter((p) => p.title?.toLowerCase().includes(productSearch.trim().toLowerCase()));
+
+  const addProduct = (product: { id: string; title: string }) => {
+    setSelectedItems((prev) =>
+      prev.some((s) => s.productId === product.id)
+        ? prev
+        : [...prev, { productId: product.id, title: product.title }]
     );
   };
 
-  const updatePosition = (productId: string, position: number) => {
-    setProductAssignments((prev) =>
-      prev.map((p) =>
-        p.productId === productId ? { ...p, position } : p
-      )
-    );
+  const removeProduct = (productId: string) => {
+    setSelectedItems((prev) => prev.filter((s) => s.productId !== productId));
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setSelectedItems((prev) => {
+      const oldIndex = prev.findIndex((s) => s.productId === active.id);
+      const newIndex = prev.findIndex((s) => s.productId === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
   };
 
   const saveMutation = useMutation({
@@ -168,7 +231,7 @@ export const CollectionForm = () => {
         title: values.title,
         handle: values.handle,
         description: values.description || null,
-        published: values.published,
+        is_published: values.published,
       };
 
       let collectionId: string;
@@ -190,16 +253,12 @@ export const CollectionForm = () => {
         collectionId = data.id;
       }
 
-      // Save product assignments
+      // Replace product assignments, persisting the dragged order as position 0..N-1.
       await supabase.from('collection_products').delete().eq('collection_id', collectionId);
 
-      const selectedProducts = productAssignments
-        .filter((p) => p.selected)
-        .sort((a, b) => a.position - b.position);
-
-      if (selectedProducts.length > 0) {
+      if (selectedItems.length > 0) {
         const { error: insertError } = await supabase.from('collection_products').insert(
-          selectedProducts.map((p, i) => ({
+          selectedItems.map((p, i) => ({
             collection_id: collectionId,
             product_id: p.productId,
             position: i,
@@ -212,10 +271,11 @@ export const CollectionForm = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'collections'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'collection-products', id] });
       toast.success(isEdit ? 'הקולקציה עודכנה בהצלחה' : 'הקולקציה נוצרה בהצלחה');
       navigate('/admin/collections');
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast.error(`שגיאה בשמירת הקולקציה: ${err.message}`);
     },
   });
@@ -286,43 +346,65 @@ export const CollectionForm = () => {
           <CardHeader>
             <CardTitle>מוצרים בקולקציה</CardTitle>
           </CardHeader>
-          <CardContent>
-            {productAssignments.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">טוען מוצרים...</p>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {productAssignments.map((product) => (
-                  <div
-                    key={product.productId}
-                    className="flex items-center justify-between p-2 rounded-md hover:bg-accent/50"
+          <CardContent className="space-y-6">
+            {/* Selected products — ordered, draggable */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">
+                בקולקציה ({selectedItems.length}) — גרור כדי לשנות את הסדר
+              </Label>
+              {selectedItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center border border-dashed rounded-md">
+                  עדיין אין מוצרים בקולקציה. הוסף מהרשימה למטה.
+                </p>
+              ) : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext
+                    items={selectedItems.map((s) => s.productId)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={product.selected}
-                        onCheckedChange={() => toggleProduct(product.productId)}
-                      />
-                      <span className={product.selected ? 'font-medium' : 'text-muted-foreground'}>
-                        {product.title}
-                      </span>
-                    </div>
-                    {product.selected && (
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground">סדר:</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={product.position}
-                          onChange={(e) =>
-                            updatePosition(product.productId, parseInt(e.target.value) || 0)
-                          }
-                          className="w-16 h-8 text-sm"
+                    <div className="space-y-2">
+                      {selectedItems.map((product, index) => (
+                        <SortableProductRow
+                          key={product.productId}
+                          product={product}
+                          position={index + 1}
+                          onRemove={() => removeProduct(product.productId)}
                         />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              )}
+            </div>
+
+            {/* Available products — add to collection */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">הוסף מוצרים</Label>
+              <Input
+                placeholder="חיפוש מוצר..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+              />
+              <div className="space-y-1 max-h-64 overflow-y-auto">
+                {allProducts == null ? (
+                  <p className="text-center text-muted-foreground py-4">טוען מוצרים...</p>
+                ) : availableProducts.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4 text-sm">אין מוצרים נוספים להוספה</p>
+                ) : (
+                  availableProducts.map((p) => (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onClick={() => addProduct(p)}
+                      className="w-full flex items-center justify-between gap-2 p-2 rounded-md hover:bg-accent/50 text-right"
+                    >
+                      <span className="text-muted-foreground truncate">{p.title}</span>
+                      <Plus className="w-4 h-4 text-muted-foreground shrink-0" />
+                    </button>
+                  ))
+                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 

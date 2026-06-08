@@ -82,7 +82,7 @@ const PRODUCT_SELECT = `
 
 export async function getProducts(collectionHandle?: string): Promise<ProductEdge[]> {
   return startSpan({ op: 'db.query', name: 'getProducts' }, async () => {
-    if (collectionHandle && collectionHandle !== MAIN_COLLECTION_HANDLE) {
+    if (collectionHandle) {
       const { data: collection } = await supabase
         .from('collections')
         .select('id')
