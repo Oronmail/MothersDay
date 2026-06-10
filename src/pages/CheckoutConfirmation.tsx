@@ -101,6 +101,12 @@ export default function CheckoutConfirmation() {
     );
   }
 
+  const itemsSubtotal = order.line_items.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
+  const shippingCost = order.shipping_cost ?? 0;
+
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       <SEO
@@ -144,9 +150,19 @@ export default function CheckoutConfirmation() {
               <p className="text-sm">&#8362;{(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
             </div>
           ))}
-          <div className="border-t border-border pt-3 flex justify-between">
-            <span>סה״כ</span>
-            <span className="font-medium">&#8362;{order.total_price.toFixed(2)}</span>
+          <div className="border-t border-border pt-3 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">סכום ביניים</span>
+              <span>&#8362;{itemsSubtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">משלוח</span>
+              <span>{shippingCost === 0 ? "חינם" : `₪${shippingCost.toFixed(2)}`}</span>
+            </div>
+            <div className="border-t border-border pt-3 flex justify-between">
+              <span>סה״כ</span>
+              <span className="font-medium">&#8362;{order.total_price.toFixed(2)}</span>
+            </div>
           </div>
         </div>
 

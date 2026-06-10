@@ -41,21 +41,15 @@ export const FounderStory = () => {
             <p>
               כשהפכתי להיות אמא המשימה הזו הלכה ונהייתה הרבה יותר קשה-
             </p>
-            <p>
-              הילדים, הבית, העבודה, הזוגיות המשפחה, אני!
-            </p>
-            <p>
-              כל אחד מביא אתו כל כך הרבה משימות, שגם אם לא אני זו שעושה אותם, אני צריכה לנהל ולפקח עליהן.
-            </p>
           </div>
 
           {/* Call to action */}
           <div className="pt-1 md:pt-8">
-            <h4 className="text-lg md:text-xl font-normal text-foreground mb-4">
+            <h4 className="text-2xl font-normal text-foreground mb-4">
               אז מה עשיתי?
             </h4>
             <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base" onClick={() => navigate(ROUTES.about)}>
-              קראי עוד... 
+              קראי עוד...
             </Button>
           </div>
         </div>

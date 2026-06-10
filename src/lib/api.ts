@@ -138,6 +138,42 @@ export async function getProductByHandle(handle: string): Promise<Product | null
   });
 }
 
+export interface CarouselProductCard {
+  handle: string;
+  title: string;
+  price: string;
+}
+
+/**
+ * Lightweight fetch of title + price for a set of product handles, keyed by handle.
+ * Used by the homepage shoppable video carousel so the displayed name/price always
+ * reflect the real product and can never drift from a hardcoded label.
+ */
+export async function getProductCardsByHandles(
+  handles: string[],
+): Promise<Record<string, CarouselProductCard>> {
+  const unique = [...new Set(handles)].filter(Boolean);
+  if (unique.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('handle, title, price')
+    .in('handle', unique)
+    .eq('status', 'active');
+
+  if (error) throw error;
+
+  const map: Record<string, CarouselProductCard> = {};
+  for (const row of data || []) {
+    map[row.handle] = {
+      handle: row.handle,
+      title: row.title,
+      price: String(row.price ?? ''),
+    };
+  }
+  return map;
+}
+
 export async function getProductRecommendations(productId: string): Promise<ProductEdge[]> {
   return startSpan({ op: 'db.query', name: 'getProductRecommendations' }, async () => {
     const { data: cpRows } = await supabase

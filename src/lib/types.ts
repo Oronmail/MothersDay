@@ -122,6 +122,7 @@ export interface Order {
   line_items: OrderLineItem[];
   shipping_address: ShippingAddress | null;
   total_price: number;
+  shipping_cost: number | null;
   currency_code: string;
   financial_status: 'pending' | 'paid' | 'refunded';
   fulfillment_status: 'unfulfilled' | 'shipped' | 'delivered';

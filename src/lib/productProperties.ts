@@ -26,7 +26,7 @@ export const PRODUCT_PROPERTIES: Record<string, ProductProperties> = {
     isWide: true,
     size: "A4",
     pages: "50",
-    paperWeight: "90",
+    paperWeight: "120",
   },
   "תכנון ארוחות משפחתי שבועי": {
     isWide: true,

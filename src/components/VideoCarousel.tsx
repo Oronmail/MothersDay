@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel";
 import { Pause, Play } from "lucide-react";
 import { buildProductPath } from "@/lib/routes";
+import { getProductCardsByHandles } from "@/lib/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface VideoFile {
@@ -11,18 +13,26 @@ interface VideoFile {
   poster: string;
 }
 
-// Hardcoded mapping: video filename -> product info with custom delay
-const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; delay: number; cropBorder?: boolean }> = {
-  "HP_VCarousel_1": { title: "מחברת יום האם לניהול משימות קבועות", handle: "p1", delay: 2500 },
-  "HP_VCarousel_2": { title: "לוח משפחתי", handle: "p2", delay: 3000 },
-  "HP_VCarousel_3": { title: "תכנון ארוחות משפחתי שבועי", handle: "p3", delay: 2000 },
-  
-  "HP_VCarousel_4": { title: "תכנון ארוחות", handle: "p4", delay: 2500, cropBorder: true },
-  "HP_VCarousel_5": { title: "רשימת קניות / סידורים", handle: "p5", delay: 3000 },
-  "HP_VCarousel_6": { title: "בלוק תכנון", handle: "p6", delay: 1000 },
+// Maps each carousel video -> its product handle.
+// `title` is only a fallback for the brief loading moment — the real title and price
+// are pulled live from Supabase by handle (see getProductCardsByHandles), so the label
+// can never drift from the actual product again.
+const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; cropBorder?: boolean }> = {
+  "HP_VCarousel_1": { title: "מחברת יום האם לניהול משימות קבועות", handle: "p1" },
+  "HP_VCarousel_2": { title: "לוח משפחתי שבועי", handle: "לוח-משפחתי-שבועי" },
+  "HP_VCarousel_3": { title: "תכנון ארוחות משפחתי שבועי", handle: "p3" },
+  "HP_VCarousel_4": { title: "לוח שבועי", handle: "p4", cropBorder: true },
+  "HP_VCarousel_5": { title: "רשימת קניות / סידורים", handle: "p5" },
 };
 
+// Display order = the order of this array (RTL direction handled by the carousel).
+// To reorder the carousel, just move items up/down in this list.
 const CAROUSEL_VIDEOS: VideoFile[] = [
+  {
+    name: 'HP_VCarousel_5',
+    url: '/videos/HomeVideoCarousel/HP_VCarousel_5.mp4',
+    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_5.webp',
+  },
   {
     name: 'HP_VCarousel_1',
     url: '/videos/HomeVideoCarousel/HP_VCarousel_1.mp4',
@@ -43,120 +53,65 @@ const CAROUSEL_VIDEOS: VideoFile[] = [
     url: '/videos/HomeVideoCarousel/HP_VCarousel_4.mp4',
     poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_4.webp',
   },
-  {
-    name: 'HP_VCarousel_5',
-    url: '/videos/HomeVideoCarousel/HP_VCarousel_5.mp4',
-    poster: '/videos/HomeVideoCarousel/posters/HP_VCarousel_5.webp',
-  },
 ];
 
-// Manual order for carousel (right to left in RTL)
-const CAROUSEL_ORDER = [
-  'רשימת קניות',
-  'מחברת',
-  'בלוק תכנון',
-];
-
-const sortVideosByOrder = (videos: VideoFile[]): VideoFile[] => {
-  return [...videos].sort((a, b) => {
-    const keyA = a.name.replace(/\.[^/.]+$/, "");
-    const keyB = b.name.replace(/\.[^/.]+$/, "");
-    const infoA = VIDEO_PRODUCT_MAP[keyA];
-    const infoB = VIDEO_PRODUCT_MAP[keyB];
-
-    const indexA = CAROUSEL_ORDER.findIndex(title => infoA?.title.includes(title));
-    const indexB = CAROUSEL_ORDER.findIndex(title => infoB?.title.includes(title));
-
-    // If both are in the order list, sort by their position
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    // If only one is in the list, prioritize it
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    // Otherwise keep original order
-    return 0;
-  });
-};
-
-const VideoItem = ({ video }: { video: VideoFile }) => {
+const VideoItem = ({
+  video,
+  card,
+}: {
+  video: VideoFile;
+  card?: { title: string; price: string };
+}) => {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showProductName, setShowProductName] = useState(false);
   const isMobile = useIsMobile();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Extract filename without extension to match with map
   const videoKey = video.name.replace(/\.[^/.]+$/, "");
   const productInfo = VIDEO_PRODUCT_MAP[videoKey];
+  const handle = productInfo?.handle;
+  // Live product data (from Supabase) wins; the map title is only a loading fallback.
+  const title = card?.title || productInfo?.title;
+  const price = card?.price;
 
-  const clearRevealTimeout = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+  const goToProduct = () => {
+    if (handle) navigate(buildProductPath(handle));
   };
 
   const handleMouseEnter = () => {
-    if (videoRef.current) {
-      clearRevealTimeout();
-      videoRef.current.play();
-      setIsPlaying(true);
-      // Show product name after custom delay for each video
-      if (productInfo) {
-        timeoutRef.current = setTimeout(() => {
-          setShowProductName(true);
-        }, productInfo.delay);
-      }
-    }
+    if (isMobile || !videoRef.current) return;
+    videoRef.current.play();
+    setIsPlaying(true);
   };
 
   const handleMouseLeave = () => {
-    clearRevealTimeout();
-
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      setIsPlaying(false);
-      setShowProductName(false);
-    }
-  };
-
-  const handleProductClick = (e: React.MouseEvent) => {
-    if (productInfo) {
-      navigate(buildProductPath(productInfo.handle));
-    }
+    if (isMobile || !videoRef.current) return;
+    videoRef.current.pause();
+    videoRef.current.currentTime = 0;
+    setIsPlaying(false);
   };
 
   const handleMobileToggle = () => {
     if (!isMobile || !videoRef.current) return;
-
-    clearRevealTimeout();
-
     if (isPlaying) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
       setIsPlaying(false);
-      setShowProductName(false);
     } else {
       videoRef.current.play();
       setIsPlaying(true);
-      if (productInfo) {
-        timeoutRef.current = setTimeout(() => setShowProductName(true), productInfo.delay);
-      }
     }
   };
 
-  useEffect(() => {
-    return () => {
-      clearRevealTimeout();
-    };
-  }, []);
-
   return (
     <div
-      className="aspect-[9/16] bg-muted overflow-hidden relative group"
+      className={`aspect-[9/16] bg-muted overflow-hidden relative group ${
+        !isMobile && handle ? "cursor-pointer" : ""
+      }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={!isMobile ? goToProduct : undefined}
     >
       <video
         ref={videoRef}
@@ -169,14 +124,15 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
         preload="none"
       />
 
+      {/* Mobile: tap the video area to preview the clip */}
       {isMobile && (
         <button
           type="button"
           onClick={handleMobileToggle}
           aria-label={
             isPlaying
-              ? `עצרי סרטון של ${productInfo?.title || "המוצר"}`
-              : `נגני סרטון של ${productInfo?.title || "המוצר"}`
+              ? `עצרי סרטון של ${title || "המוצר"}`
+              : `נגני סרטון של ${title || "המוצר"}`
           }
           className={`absolute z-10 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/45 ${
             isPlaying
@@ -192,21 +148,38 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
         </button>
       )}
 
-      {/* Product name overlay - appears after custom delay */}
-      {productInfo && (
+      {/* Always-visible shoppable caption: product name + price, links to the product */}
+      {(title || price) && (
         <div
-          className={`absolute bottom-2 right-2 transition-all duration-500 ease-in-out ${
-            showProductName ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-x-0 bottom-0 z-20 pointer-events-none bg-gradient-to-t from-black/75 via-black/30 to-transparent pt-10 pb-2 px-2.5"
           dir="rtl"
         >
           <button
             type="button"
-            onClick={handleProductClick}
-            className="text-white/50 text-[9px] hover:text-white/70 hover:underline transition-all duration-200 bg-black/15 px-1.5 py-0.5 backdrop-blur-sm"
-            aria-label={`עברי לעמוד המוצר ${productInfo.title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              goToProduct();
+            }}
+            className="pointer-events-auto block w-full text-right text-white focus:outline-none"
+            aria-label={title ? `עברי לעמוד המוצר ${title}` : "עברי לעמוד המוצר"}
           >
-            {productInfo.title}
+            {title && (
+              <span className="block text-[13px] md:text-sm font-medium leading-tight line-clamp-2">
+                {title}
+              </span>
+            )}
+            <span className="mt-0.5 flex items-center justify-between gap-2">
+              {price ? (
+                <span className="text-xs md:text-sm font-semibold">
+                  ₪{parseFloat(price).toFixed(0)}
+                </span>
+              ) : (
+                <span />
+              )}
+              <span className="text-[11px] text-white/90 transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                לעמוד המוצר ←
+              </span>
+            </span>
           </button>
         </div>
       )}
@@ -215,7 +188,18 @@ const VideoItem = ({ video }: { video: VideoFile }) => {
 };
 
 export const VideoCarousel = ({ className }: { className?: string }) => {
-  const videos = sortVideosByOrder(CAROUSEL_VIDEOS);
+  const videos = CAROUSEL_VIDEOS;
+
+  // Pull the real title + price for every mapped product in one query, keyed by handle.
+  const handles = videos
+    .map((v) => VIDEO_PRODUCT_MAP[v.name.replace(/\.[^/.]+$/, "")]?.handle)
+    .filter((h): h is string => Boolean(h));
+
+  const { data: cards } = useQuery({
+    queryKey: ["carousel-product-cards", handles],
+    queryFn: () => getProductCardsByHandles(handles),
+    staleTime: 1000 * 60 * 5,
+  });
 
   if (videos.length === 0) {
     return (
@@ -257,11 +241,14 @@ export const VideoCarousel = ({ className }: { className?: string }) => {
           className="w-full"
         >
           <CarouselContent className="-ml-3 md:-ml-4">
-            {videos.map((video) => (
-              <CarouselItem key={video.name} className="pl-3 md:pl-4 basis-[65%] md:basis-1/5">
-                <VideoItem video={video} />
-              </CarouselItem>
-            ))}
+            {videos.map((video) => {
+              const handle = VIDEO_PRODUCT_MAP[video.name.replace(/\.[^/.]+$/, "")]?.handle;
+              return (
+                <CarouselItem key={video.name} className="pl-3 md:pl-4 basis-[65%] md:basis-1/5">
+                  <VideoItem video={video} card={handle ? cards?.[handle] : undefined} />
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex left-0" />
           <CarouselNext className="hidden md:flex right-0" />

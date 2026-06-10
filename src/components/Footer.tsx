@@ -26,7 +26,7 @@ export const Footer = () => {
               </div>
               <p className="text-sm text-foreground whitespace-nowrap max-w-[80px] text-center leading-tight">מוצרי תכנון לאימהות</p>
             </div>
-            <nav className="text-sm items-center flex flex-row flex-wrap gap-x-2 gap-y-2 pt-2">
+            <nav className="text-sm items-center flex flex-row flex-wrap gap-x-2 gap-y-2 pt-2 font-display">
               <Link to={ROUTES.allProducts} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">חנות</Link>
               <Link to={ROUTES.about} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">יום האם</Link>
               <Link to={ROUTES.blog} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">בלוג</Link>
@@ -113,7 +113,7 @@ export const Footer = () => {
           </div>
 
           {/* Menu Items - Appears on Left in RTL */}
-          <nav className="flex-1 text-lg items-center justify-center text-center flex flex-row flex-wrap gap-x-10 gap-y-4">
+          <nav className="flex-1 text-lg items-center justify-center text-center flex flex-row flex-wrap gap-x-10 gap-y-4 font-display">
             <Link to={ROUTES.allProducts} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
               חנות
             </Link>

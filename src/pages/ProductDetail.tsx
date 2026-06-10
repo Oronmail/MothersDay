@@ -13,7 +13,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { ArrowRight, Loader2, Minus, Plus, ShoppingBag, Package } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
@@ -32,6 +32,7 @@ import {
   getProductDetailLightboxImageUrl,
 } from "@/lib/imageTransforms";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
+import { getProductProperties } from "@/lib/productProperties";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
 import {
@@ -73,6 +74,9 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const descContentRef = useRef<HTMLDivElement>(null);
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [descCanExpand, setDescCanExpand] = useState(false);
 
   // Fetch main product
   const { data, isLoading, error } = useQuery({
@@ -114,6 +118,18 @@ export default function ProductDetail() {
     },
     enabled: !!data?.id
   });
+
+  // Measure whether the description is long enough to warrant a "read more" toggle.
+  // scrollHeight reports full content height even while clamped, so this works in either state.
+  useEffect(() => {
+    const el = descContentRef.current;
+    if (!el) return;
+    setDescExpanded(false);
+    const check = () => setDescCanExpand(el.scrollHeight > 340);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [data?.id]);
 
   const handleAddToCart = () => {
     if (!data) return;
@@ -179,6 +195,7 @@ export default function ProductDetail() {
   }
 
   const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
+  const productProps = getProductProperties(data.title);
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
   const bundles = bundlesData || [];
@@ -270,15 +287,23 @@ export default function ProductDetail() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
           <div className="grid md:grid-cols-12 gap-6 lg:gap-10">
             {/* Left Column - Product Info (visually on right in RTL) */}
-            <div className="order-2 md:order-1 md:col-span-3 space-y-5" dir="rtl">
+            <div className="order-2 md:order-1 md:col-span-4 space-y-5" dir="rtl">
               <div>
                 <div className="flex items-start justify-between gap-2">
                   <h1 className="text-[28px] md:text-3xl mb-1">{data.title}</h1>
                   <WishlistButton productId={data.id} size={24} className="mt-1 flex-shrink-0" />
                 </div>
-                {data.vendor && (
+                {productProps ? (
+                  <p className="text-muted-foreground text-base flex flex-wrap items-center gap-x-1.5" dir="rtl">
+                    <span>{productProps.size}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{productProps.pages} דפים</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{productProps.paperWeight} גרם</span>
+                  </p>
+                ) : data.vendor ? (
                   <p className="text-muted-foreground text-base">{data.vendor}</p>
-                )}
+                ) : null}
                 <p className="text-xl md:text-2xl mt-3">₪{price.toFixed(0)}</p>
               </div>
 
@@ -336,10 +361,16 @@ export default function ProductDetail() {
               {/* Description */}
               {(data.descriptionHtml || data.description) && (
                 <div className="pt-4 border-t border-border">
+                  <div className="relative">
+                    <div
+                      ref={descContentRef}
+                      className="overflow-hidden"
+                      style={{ maxHeight: descExpanded || !descCanExpand ? undefined : '280px' }}
+                    >
                   {data.descriptionHtml ? (
                     <div 
                       dir="rtl"
-                      className="text-muted-foreground text-lg leading-snug prose prose-lg max-w-none [&>p]:mb-0 [&>br]:block [&>br]:mb-0 [&_a]:text-foreground [&_a]:underline [&_a]:hover:opacity-70 [&_a]:transition-opacity [&_ul]:list-none [&_ul]:p-0 [&_li]:block [&_li]:mb-0 [&_.desc-highlight]:bg-muted/50 [&_.desc-highlight]:p-3 [&_.desc-highlight]:-mx-1 [&_.desc-highlight]:rounded-sm [&_.desc-highlight]:my-2"
+                      className="text-muted-foreground text-lg leading-relaxed prose prose-lg max-w-none [&>p]:mb-3 [&>br]:block [&>br]:mb-0 [&_a]:text-foreground [&_a]:underline [&_a]:hover:opacity-70 [&_a]:transition-opacity [&_ul]:list-none [&_ul]:p-0 [&_li]:block [&_li]:mb-0 [&_.desc-highlight]:bg-muted/50 [&_.desc-highlight]:p-3 [&_.desc-highlight]:-mx-1 [&_.desc-highlight]:rounded-sm [&_.desc-highlight]:my-2"
                       dangerouslySetInnerHTML={{ 
                         __html: (() => {
                           const sanitized = DOMPurify.sanitize(data.descriptionHtml, {
@@ -389,13 +420,28 @@ export default function ProductDetail() {
                       {data.description}
                     </p>
                   )}
+                    </div>
+                    {descCanExpand && !descExpanded && (
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent" />
+                    )}
+                  </div>
+                  {descCanExpand && (
+                    <button
+                      type="button"
+                      onClick={() => setDescExpanded((v) => !v)}
+                      className="mt-3 text-base font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity"
+                      dir="rtl"
+                    >
+                      {descExpanded ? 'הצג פחות' : 'קרא עוד'}
+                    </button>
+                  )}
                 </div>
               )}
 
             </div>
 
             {/* Right Column - Images Grid (visually on left in RTL) */}
-            <div className="order-1 md:order-2 md:col-span-9">
+            <div className="order-1 md:order-2 md:col-span-8">
               <ProductImageLayout
                 images={images}
                 productTitle={data.title}

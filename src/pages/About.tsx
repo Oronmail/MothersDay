@@ -7,7 +7,11 @@ import titleUnderline from "@/assets/title-underline.png";
 import smileyIcon from "@/assets/smiley-icon.png";
 import { SEO } from "@/components/SEO";
 import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES, buildProductPath } from "@/lib/routes";
+import { Link } from "react-router-dom";
+
+const PRODUCT_LINK_CLASS =
+  "text-foreground underline underline-offset-[3px] decoration-foreground/30 hover:decoration-foreground transition-colors";
 
 const About = () => {
   return (
@@ -42,10 +46,10 @@ const About = () => {
       </section>
 
       {/* Founder Image */}
-      <div className="w-full">
-        <img 
-          src={aboutHero} 
-          alt="המייסדת" 
+      <div className="max-w-3xl mx-auto px-4">
+        <img
+          src={aboutHero}
+          alt="המייסדת"
           className="w-full h-auto"
           loading="eager"
           decoding="async"
@@ -59,7 +63,7 @@ const About = () => {
           {/* מי אני */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">מי אני?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               הי, נעים מאוד
               <br /><br />
               אני עדן, ואם את כאן יש לנו לפחות 2 דברים במשותף- שתינו אימהות ושתינו רוצות קצת סדר.
@@ -68,7 +72,7 @@ const About = () => {
               <br /><br />
               כשהפכתי להיות אמא המשימה הזו הלכה ונהייתה הרבה יותר קשה-
               <br /><br />
-              הילדים, הבית, העבודה, הזוגיות המשפחה, אני!
+              הילדים, הבית, העבודה, הזוגיות, המשפחה, אני!
               <br /><br />
               כל אחד מביא אתו כל כך הרבה משימות, שגם אם לא אני זו שעושה אותם, אני צריכה לנהל ולפקח עליהן.
             </p>
@@ -77,7 +81,7 @@ const About = () => {
           {/* אז מה עשיתי */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">אז מה עשיתי?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               הרגשתי שאני צריכה לעצור רגע ולעשות סדר.
               <br /><br />
               לקח לי זמן אבל פיצחתי את השיטה.
@@ -89,7 +93,7 @@ const About = () => {
           {/* מה מיוחד במוצרים */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">מה מיוחד במוצרים של יום האם?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               יום האם הוא מותג מוצרי נייר לאימהות שמנהלות את הבית, ששואפות לסדר וארגון בחיי היומיום המשפחתי.
               <br /><br />
               מה שמייחד את המוצרים של יום האם, זה שהם פונים ספציפית לאימהות ומתייחסים לריבוי התחומים והמשימות שאנחנו עוסקות בהן.
@@ -105,12 +109,12 @@ const About = () => {
           {/* איך השיטה עזרה */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">איך השיטה והמוצרים עזרו לי?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               המוצרים של יום האם עזרו לי להיות האמא שאני רוצה להיות,
               <br /><br />
-              לתעדף, לתכנן להיות בשליטה, לנהל את הזמן בדרך שמתאימה לי,
+              לתעדף, לתכנן, להיות בשליטה, לנהל את הזמן בדרך שמתאימה לי,
               <br /><br />
-              ולחבר את את בני הבית להיות שותפים ומעורבים בחיי היומיום המשפחתי,
+              ולחבר את בני הבית להיות שותפים ומעורבים בחיי היומיום המשפחתי,
               <br /><br />
               לכן זה גם לא פתרון דיגיטלי, אלא מוצרים מודפסים שנגישים לכל המשפחה.
             </p>
@@ -119,7 +123,7 @@ const About = () => {
           {/* למה קראתי לה */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">למה קראתי לה יום האם?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               כי ברגע שהפכתי להיות אמא- אני קודם כל אמא
               <br /><br />
               אבל אני לא רק אמא
@@ -133,22 +137,22 @@ const About = () => {
           {/* איזה מוצרי תכנון */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">איזה מוצרי תכנון יש לנו?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
-              בין המוצרים תמצאי את המוצרים הייחודיים ליום האם,-
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
+              בין המוצרים תמצאי את המוצרים הייחודיים ליום האם-
               <br /><br />
-              מחברת לניהול משימות קבועות ולוח משפחתי שבועי,
+              <Link to={buildProductPath("p1")} className={PRODUCT_LINK_CLASS}>מחברת לניהול משימות קבועות</Link> ו<Link to={buildProductPath("לוח-משפחתי-שבועי")} className={PRODUCT_LINK_CLASS}>לוח משפחתי שבועי</Link>,
               <br /><br />
-              לצד מוצרי תכנון נוספים שמקלים על השבוע שלך כמו: תכנון שבועי, לוח ארוחות ורשימת קניות וסידורים.
+              לצד מוצרי תכנון נוספים שמקלים על השבוע שלך כמו: <Link to={buildProductPath("p4")} className={PRODUCT_LINK_CLASS}>לוח שבועי</Link>, <Link to={buildProductPath("p3")} className={PRODUCT_LINK_CLASS}>תכנון ארוחות</Link> ו<Link to={buildProductPath("p5")} className={PRODUCT_LINK_CLASS}>רשימת קניות וסידורים</Link>.
             </p>
           </section>
 
           {/* איך המוצרים משתלבים */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">איך המוצרים משתלבים בבית?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               כל המוצרים בעיצוב קלאסי, נקי ושקט בהשראה מהעיצוב הסקנדינבי שיכול להשתלב בחלל המרכזי של הבית.
               <br /><br />
-              המוצרים מודפסים על נייר עבה, נעים לכתיבה,ללא כותרות. 
+              המוצרים מודפסים על נייר עבה, נעים לכתיבה, ללא כותרות.
               <br /><br />
               כך שיכולים להתאים לצורך של כל אמא ומשפחה.
             </p>
@@ -157,7 +161,7 @@ const About = () => {
           {/* מותג ישראלי */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">ובסוף זה מותג ישראלי</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               מיוצר בישראל, בעברית,
               <br /><br />
               ומתחיל את השבוע ביום ראשון
@@ -167,7 +171,7 @@ const About = () => {
           {/* ומה איתך */}
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">ומה איתך?</h2>
-            <p className="text-muted-foreground text-[17px] leading-[1.7]">
+            <p className="text-foreground/80 text-[17px] leading-[1.7]">
               השיטה של יום האם עזרה לי לעשות סדר
               <br /><br />
               ואני מאמינה שהיא יכולה לעזור גם לך
