@@ -54,8 +54,8 @@ export function WishlistButton({ productId, className, size = 20 }: WishlistButt
         className={cn(
           'transition-colors duration-200',
           isInWishlist
-            ? 'fill-red-500 text-red-500'
-            : 'fill-transparent text-gray-500 hover:text-red-400',
+            ? 'fill-primary text-primary'
+            : 'fill-transparent text-gray-500 hover:text-primary',
         )}
         style={{ width: size, height: size }}
       />

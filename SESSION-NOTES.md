@@ -147,3 +147,24 @@ src/components/admin/CollectionForm.tsx — כתיבה מחדש עם drag+sort
 src/lib/api.ts — תיקון שורה אחת (קרוסלה לפי סדר "הכל")
 src/components/ProductTabs.tsx — הסרת hardcoded swaps/appends, סדר מהאדמין בלבד
 SESSION-NOTES.md — עדכון
+
+---
+
+## סשן 2026-06-11/12 (עם עדן) — עיצוב לפי אופי המותג
+
+כל השינויים **מקומיים בלבד, לא הועלו**. המשך ישיר של עבודת העיצוב.
+
+**מה נעשה:**
+- **Footer.tsx** — נבנה מחדש: לוגו "מבצבץ" מעל הפס (מימין ב-RTL), ניווט ממורכז, שורת תחתית עם קישורי מדיניות + ©. אייקון אינסטגרם בנוי ב-`Socials` אבל מוסתר (אין `VITE_INSTAGRAM_URL`).
+- **Support.tsx** — עוצב מחדש לאופי המותג (אמבלם לב מצויר, כותרת ממורכזת font-display + קו סקיצה).
+- **Newsletter.tsx** (בלוג) — שדה אימייל בצבע פודרה `#a998a2`, כפתור `primary`.
+- **Collection.tsx** — מקרוסלה לגריד סטטי `grid-cols-2 md:grid-cols-3` זהה ל-AllSets (`px-4 md:px-6`, תא ~395px). 3 בשורה, פחות מ-3 לא נמתח.
+- **api.ts + ProductDetail.tsx** — "המוצר זמין גם במארזים" מסונן למארזים שמכילים את המוצר (`getBundlesContainingProduct` דרך `bundle_items`).
+- **Header.tsx** — אייקון לב (מצויר, צבוע חום `#3c2a2e` ב-CSS mask, `h-7 w-7`, `top-[2px]`) בצד שמאל ליד עגלה+משתמש → `/wishlist`.
+- **WishlistButton.tsx** — בכרטיסי מוצר לב סטנדרטי (lucide), מילוי חום `fill-primary` (לא אדום), `block` (עיגול עגול).
+- **Wishlist.tsx** — עוצב מחדש לאופי המותג (אמבלם לב מצויר, כותרת ממורכזת, קו סקיצה).
+- **AuthCard.tsx** — כפתור Google אוחד מ-`#5E4A50` ל-`primary` (אחידות צבע כפתורים).
+
+**כללים שעדן אמרה:** בלי אדום (חום במקום), בלי לב צהוב 💛, פינות חדות, `primary` לכל הכפתורים, צבע הלוגו `#6B5B5A` ללוגו בלבד.
+
+**ממתין:** עדן רוצה את אייקון האינסטגרם גלוי בפוטר — חסום על `VITE_INSTAGRAM_URL` ריק. צריך ממנה כתובת/שם משתמש (ואז `.env` + Vercel), או להציג עם placeholder זמני.

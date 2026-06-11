@@ -11,6 +11,7 @@ import headerTexture from "@/assets/header-texture.png";
 import logo from "@/assets/logo-new.png";
 import userIcon from "@/assets/user-icon.png";
 import homeIcon from "@/assets/home-icon.png";
+import heartIcon from "@/assets/heart-icon.png";
 import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, buildProductPath } from "@/lib/routes";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -241,6 +242,26 @@ export const Header = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(ROUTES.wishlist)}
+              aria-label="רשימת המשאלות"
+              className="flex items-center hover:opacity-80 transition-opacity"
+            >
+              <span
+                aria-hidden="true"
+                className="block h-7 w-7 bg-[#3c2a2e] relative top-[2px]"
+                style={{
+                  WebkitMaskImage: `url(${heartIcon})`,
+                  maskImage: `url(${heartIcon})`,
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                }}
+              />
+            </button>
             <CartDrawer />
             {user ? (
               <DropdownMenu>

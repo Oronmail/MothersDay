@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   getProductByHandle,
-  getProducts,
+  getBundlesContainingProduct,
   getProductRecommendations,
   getBundleItems,
   MAIN_COLLECTION_HANDLE
@@ -90,13 +90,14 @@ export default function ProductDetail() {
   // Check if this product is a bundle
   const isBundle = data?.title?.includes('מארז');
 
-  // Fetch bundles (מארזים collection) - only for non-bundle products
+  // Fetch only the bundles that actually contain this product - only for non-bundle products
   const { data: bundlesData } = useQuery({
-    queryKey: ['bundles-collection'],
+    queryKey: ['bundles-containing', data?.id],
     queryFn: async () => {
-      return await getProducts('מארזים');
+      if (!data?.id) return [];
+      return await getBundlesContainingProduct(data.id);
     },
-    enabled: !isBundle
+    enabled: !isBundle && !!data?.id
   });
 
   // Fetch bundle items from DB (for bundle contents)
@@ -533,7 +534,7 @@ export default function ProductDetail() {
       {/* Section 5: Frequently Bought Together */}
       {relatedProducts.length > 0 && (
         <ErrorBoundary fallback={<div className="py-8"><ErrorFallback message="שגיאה בטעינת המוצרים הקשורים" /></div>}>
-          <section className="py-12 md:py-16 bg-secondary/20">
+          <section className="py-12 md:py-16 bg-primary/[0.06]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" dir="rtl">
             <h2 className="text-[28px] md:text-3xl text-right mb-8">
               אימהות מוסיפות גם

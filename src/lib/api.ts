@@ -268,6 +268,34 @@ export async function getBundleItems(bundleProductId: string): Promise<BundleIte
   }));
 }
 
+/**
+ * Returns the bundle products that actually contain the given product,
+ * based on the bundle_items relationship (not just the "מארזים" collection).
+ */
+export async function getBundlesContainingProduct(productId: string): Promise<ProductEdge[]> {
+  return startSpan({ op: 'db.query', name: 'getBundlesContainingProduct' }, async () => {
+    const { data: itemRows, error: itemsError } = await supabase
+      .from('bundle_items')
+      .select('bundle_id')
+      .eq('product_id', productId);
+
+    if (itemsError) throw itemsError;
+
+    const bundleIds = [...new Set((itemRows || []).map((row: any) => row.bundle_id))];
+    if (bundleIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .in('id', bundleIds)
+      .eq('status', 'active')
+      .order('sort_order');
+
+    if (error) throw error;
+    return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+  });
+}
+
 export async function createOrder(
   items: Array<{
     title: string;

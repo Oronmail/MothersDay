@@ -8,129 +8,113 @@ import {
   SUPPORT_EMAIL,
   WHATSAPP_URL,
 } from "@/lib/siteConfig";
+
+const NAV_LINKS = [
+  { to: ROUTES.allProducts, label: "חנות" },
+  { to: ROUTES.about, label: "יום האם" },
+  { to: ROUTES.blog, label: "בלוג" },
+  { to: ROUTES.support, label: "שירות לקוחות" },
+];
+
+const POLICY_LINKS = [
+  { to: ROUTES.shipping, label: "משלוחים" },
+  { to: ROUTES.returns, label: "החזרות והחלפות" },
+  { to: ROUTES.privacy, label: "מדיניות פרטיות" },
+  { to: ROUTES.terms, label: "תקנון האתר" },
+];
+
+const Socials = ({ size }: { size: number }) => (
+  <div className="flex items-center gap-3">
+    {INSTAGRAM_URL && (
+      <a
+        href={INSTAGRAM_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="עמוד האינסטגרם של יום האם"
+        className="text-foreground/80 hover:text-primary transition-colors"
+      >
+        <Instagram size={size} />
+      </a>
+    )}
+    <a
+      href={WHATSAPP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="שלחי הודעת וואטסאפ ליום האם"
+      className="text-foreground/80 hover:text-primary transition-colors"
+    >
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+      </svg>
+    </a>
+    <a
+      href={`mailto:${SUPPORT_EMAIL}`}
+      aria-label="שלחי אימייל ליום האם"
+      className="text-foreground/80 hover:text-primary transition-colors"
+    >
+      <Mail size={size} />
+    </a>
+  </div>
+);
+
 export const Footer = () => {
-  return <footer className="py-6 md:py-12 relative" style={{
-    backgroundImage: `url(${footerTexture})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center'
-  }}>
-      <div className="max-w-7xl mx-auto">
+  const year = new Date().getFullYear();
 
-        {/* Mobile Footer */}
-        <div className="md:hidden flex flex-col items-center gap-2 px-4" dir="rtl">
-          {/* Top row: Logo + tagline + Menu */}
-          <div className="flex flex-row items-start gap-6 w-full">
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              <div className="bg-[#6B5B5A] p-4 px-0 py-0">
-                <img src={footerLogo} alt="יום האם" className="h-16" />
-              </div>
-              <p className="text-sm text-foreground whitespace-nowrap max-w-[80px] text-center leading-tight">מוצרי תכנון לאימהות</p>
+  return (
+    <footer
+      className="relative"
+      style={{
+        backgroundImage: `url(${footerTexture})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 md:px-8" dir="rtl">
+        {/* Main row: brand pinned right (RTL), nav centered on the page */}
+        <div className="relative flex flex-col md:block items-center gap-6 py-8 md:py-10">
+          {/* Brand block */}
+          <div className="flex flex-col items-center md:items-start gap-3 shrink-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2">
+            <div className="bg-[#6B5B5A] rounded-md overflow-hidden">
+              <img src={footerLogo} alt="יום האם" className="h-16 w-16 md:h-[72px] md:w-[72px] object-cover" />
             </div>
-            <nav className="text-sm items-center flex flex-row flex-wrap gap-x-2 gap-y-2 pt-2 font-display">
-              <Link to={ROUTES.allProducts} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">חנות</Link>
-              <Link to={ROUTES.about} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">יום האם</Link>
-              <Link to={ROUTES.blog} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">בלוג</Link>
-              <Link to={ROUTES.terms} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">תקנון האתר</Link>
-              <Link to={ROUTES.support} className="hover:bg-primary hover:text-primary-foreground px-1.5 py-1 transition-colors text-foreground whitespace-nowrap">שירות לקוחות</Link>
-            </nav>
-          </div>
-
-          {/* Icons centered, aligned with tagline text */}
-          <div className="flex items-center gap-3 -mt-1">
-            {INSTAGRAM_URL && (
-              <a
-                href={INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="עמוד האינסטגרם של יום האם"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                <Instagram size={28} />
-              </a>
-            )}
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="שלחי הודעת וואטסאפ ליום האם"
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
-            </a>
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              aria-label="שלחי אימייל ליום האם"
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              <Mail size={28} />
-            </a>
-          </div>
-        </div>
-
-        {/* Desktop Footer - Single Row RTL */}
-        <div dir="rtl" className="hidden md:flex gap-12 px-4 md:px-8 w-full items-center">
-          {/* Logo Box - Appears on Right in RTL */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="bg-[#6B5B5A] p-4 px-0 py-0">
-              <img src={footerLogo} alt="יום האם" className="h-14" />
-            </div>
-            <p className="text-xs text-foreground text-center whitespace-nowrap">
+            <p className="text-xs text-foreground/80 text-center md:text-right">
               מוצרי תכנון לאימהות
             </p>
-            <div className="flex items-center gap-3">
-              {INSTAGRAM_URL && (
-                <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="עמוד האינסטגרם של יום האם"
-                  className="text-foreground hover:text-primary transition-colors"
-                >
-                  <Instagram size={20} />
-                </a>
-              )}
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="שלחי הודעת וואטסאפ ליום האם"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-              </a>
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                aria-label="שלחי אימייל ליום האם"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                <Mail size={20} />
-              </a>
-            </div>
+            <Socials size={20} />
           </div>
 
-          {/* Menu Items - Appears on Left in RTL */}
-          <nav className="flex-1 text-lg items-center justify-center text-center flex flex-row flex-wrap gap-x-10 gap-y-4 font-display">
-            <Link to={ROUTES.allProducts} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
-              חנות
-            </Link>
-            <Link to={ROUTES.about} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
-              יום האם
-            </Link>
-            <Link to={ROUTES.blog} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
-              בלוג
-            </Link>
-            <Link to={ROUTES.terms} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
-              תקנון האתר
-            </Link>
-            <Link to={ROUTES.support} className="hover:text-foreground transition-colors text-foreground whitespace-nowrap">
-              שירות לקוחות
-            </Link>
+          {/* Primary navigation */}
+          <nav className="flex flex-row flex-wrap items-center justify-center gap-x-8 gap-y-3 text-base md:text-lg font-display">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-foreground hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Bottom strip: policy links + copyright */}
+        <div className="border-t border-foreground/15 py-4 flex flex-col-reverse md:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-foreground/70">
+            © {year} יום האם · כל הזכויות שמורות
+          </p>
+          <nav className="flex flex-row flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+            {POLICY_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-foreground/70 hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };

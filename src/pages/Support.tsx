@@ -2,7 +2,7 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -17,8 +17,53 @@ import {
   getAbsoluteSiteUrl,
 } from "@/lib/siteConfig";
 import titleUnderline from "@/assets/title-underline.png";
+import heartIcon from "@/assets/heart-icon.png";
 import { SEO } from "@/components/SEO";
 import { ROUTES } from "@/lib/routes";
+
+// Same hand-drawn WhatsApp glyph used in the footer's social row.
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const contactChannels = [
+  {
+    icon: WhatsAppIcon,
+    title: "וואטסאפ",
+    description: "הדרך הכי מהירה לקבל מענה",
+    cta: "שלחי הודעה",
+    href: WHATSAPP_URL,
+    external: true,
+  },
+  {
+    icon: Mail,
+    title: "אימייל",
+    description: "נחזור אליך תוך 24 שעות",
+    cta: "שלחי מייל",
+    href: `mailto:${SUPPORT_EMAIL}`,
+    external: false,
+  },
+  {
+    icon: Phone,
+    title: "טלפון",
+    description: "א׳-ה׳ 9:00-17:00",
+    cta: SUPPORT_PHONE_DISPLAY,
+    href: `tel:${SUPPORT_PHONE_E164}`,
+    external: false,
+  },
+];
+
 const faqItems = [
   {
     question: "כמה זמן לוקחת המשלוח?",
@@ -65,94 +110,76 @@ const Support = () => {
       <div className="min-h-screen bg-background">
         <AnnouncementBanner />
         <Header />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12" dir="rtl">
-          <h1 className="text-4xl text-foreground">תמיכה</h1>
-          <img 
-            src={titleUnderline} 
-            alt="" 
-            className="mx-auto h-4 w-64 object-contain -mt-1 mb-4" 
-          />
-          <p className="text-muted-foreground">
-            אנחנו כאן לעזור! בחרי את הדרך הנוחה לך ליצור קשר
-          </p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-6 mb-16" dir="rtl">
-          <div className="bg-card p-8 border border-border text-center">
-            <div className="bg-muted p-4 rounded-full w-fit mx-auto mb-4">
-              <MessageCircle className="h-8 w-8 text-foreground" />
-            </div>
-            <h2 className="text-xl mb-2 text-foreground">וואטסאפ</h2>
-            <p className="text-foreground/70 mb-4">
-              הדרך הכי מהירה לקבל מענה
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+          {/* Branded header */}
+          <div className="text-center mb-14" dir="rtl">
+            <img src={heartIcon} alt="" className="w-10 h-10 mx-auto mb-3" />
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
+              שירות לקוחות
+            </h1>
+            <img
+              src={titleUnderline}
+              alt=""
+              className="mx-auto h-4 w-56 object-contain mt-1 mb-5"
+            />
+            <p className="text-foreground/70 max-w-md mx-auto leading-relaxed">
+              אנחנו כאן בשבילך. בחרי את הדרך הנוחה לך ליצור קשר, ונשמח לעזור.
             </p>
-            <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                שלחי הודעה
-              </a>
-            </Button>
           </div>
-          
-          <div className="bg-card p-8 border border-border text-center">
-            <div className="bg-muted p-4 rounded-full w-fit mx-auto mb-4">
-              <Mail className="h-8 w-8 text-foreground" />
-            </div>
-            <h2 className="text-xl mb-2 text-foreground">אימייל</h2>
-            <p className="text-foreground/70 mb-4">
-              נחזור אליך תוך 24 שעות
-            </p>
-            <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href={`mailto:${SUPPORT_EMAIL}`}>
-                שלחי מייל
-              </a>
-            </Button>
-          </div>
-          
-          <div className="bg-card p-8 border border-border text-center">
-            <div className="bg-muted p-4 rounded-full w-fit mx-auto mb-4">
-              <Phone className="h-8 w-8 text-foreground" />
-            </div>
-            <h2 className="text-xl mb-2 text-foreground">טלפון</h2>
-            <p className="text-foreground/70 mb-4">
-              א׳-ה׳ 9:00-17:00
-            </p>
-            <Button variant="outline" className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors" asChild>
-              <a href={`tel:${SUPPORT_PHONE_E164}`}>
-                {SUPPORT_PHONE_DISPLAY}
-              </a>
-            </Button>
-          </div>
-        </div>
 
-        {/* FAQ Section */}
-        <div dir="rtl">
-          <h2 className="text-2xl text-foreground text-center mb-8">שאלות נפוצות</h2>
-          <Accordion type="single" collapsible className="w-full">
-            {faqItems.map((item, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-right text-[17px] hover:no-underline">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-[16px] leading-[1.7]">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
+          {/* Contact channels */}
+          <div className="grid md:grid-cols-3 gap-5 mb-20" dir="rtl">
+            {contactChannels.map(({ icon: Icon, title, description, cta, href, external }) => (
+              <div
+                key={title}
+                className="group bg-card border border-border p-8 text-center transition-all duration-200 hover:border-primary/40 hover:shadow-sm"
+              >
+                <div className="bg-secondary/30 group-hover:bg-secondary/50 transition-colors w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <Icon className="h-7 w-7 text-foreground" />
+                </div>
+                <h2 className="font-display text-xl font-bold mb-1 text-foreground">{title}</h2>
+                <p className="text-foreground/60 text-sm mb-5">{description}</p>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                  asChild
+                >
+                  <a
+                    href={href}
+                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
+                    {cta}
+                  </a>
+                </Button>
+              </div>
             ))}
-          </Accordion>
-        </div>
+          </div>
 
-        <div className="mt-12 bg-secondary/20 rounded-2xl p-8 text-center" dir="rtl">
-          <h2 className="text-xl mb-4">לא מצאת תשובה?</h2>
-          <p className="text-muted-foreground mb-6">
-            שלחי לנו הודעה ונחזור אליך בהקדם
-          </p>
-          <Button asChild>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              דברי איתנו בוואטסאפ
-            </a>
-          </Button>
-        </div>
+          {/* FAQ */}
+          <div dir="rtl" className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                שאלות נפוצות
+              </h2>
+              <img
+                src={titleUnderline}
+                alt=""
+                className="mx-auto h-3 w-40 object-contain mt-1"
+              />
+            </div>
+            <Accordion type="single" collapsible className="w-full">
+              {faqItems.map((item, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-b border-border">
+                  <AccordionTrigger className="font-display text-right text-[17px] text-foreground hover:no-underline hover:text-primary transition-colors">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-foreground/70 text-[16px] leading-[1.8]">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
         </main>
         <Footer />
       </div>

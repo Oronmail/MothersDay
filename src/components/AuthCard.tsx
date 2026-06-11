@@ -139,7 +139,7 @@ export const AuthCard = ({
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="h-12 w-full rounded-none bg-[#5E4A50] text-base text-white hover:bg-[#4D3C40] hover:text-white focus:text-white"
+          className="h-12 w-full rounded-none bg-primary text-base text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground focus:text-primary-foreground"
         >
           <Chrome className="h-5 w-5" />
           המשיכי עם Google

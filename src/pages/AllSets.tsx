@@ -168,16 +168,14 @@ const AllSets = () => {
       {/* Description Text */}
       <section className="py-2 md:py-4" dir="rtl">
         <div className="max-w-2xl mx-auto px-4 text-center space-y-2 md:space-y-3">
-          <p className="text-lg md:text-2xl text-foreground leading-relaxed font-medium">
+          <p className="text-lg md:text-xl text-foreground leading-relaxed font-medium">
             מה את מתכננת?
           </p>
-          <p className="text-lg md:text-2xl text-foreground leading-relaxed">
-            בחרי את המארז שמתאים לך
+          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+            בחרי את המארז שמתאים לך,
           </p>
-          <p className="text-lg md:text-2xl text-foreground leading-relaxed inline-flex items-center justify-center gap-1">
-            ותהני מ<span className="font-medium">פיתרון שלם</span> במחיר משתלם (חרוז
-            <img src={smileyIcon} alt="" className="w-5 h-5 md:w-7 md:h-7 inline-block" />
-            )
+          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+            ותהני מ<span className="font-medium">פתרון שלם</span> במחיר משתלם.
           </p>
         </div>
       </section>

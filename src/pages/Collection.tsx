@@ -15,7 +15,6 @@ import { WIDE_PRODUCT_TITLES } from "@/lib/constants";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorFallback } from "@/components/ErrorFallback";
 import { collectionQueryConfig, productQueryConfig } from "@/lib/queryConfig";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import collectionHeroComplementary from "@/assets/collection-hero-complementary-new.webp";
 import collectionHeroWeekly from "@/assets/collection-hero-weekly.webp";
 import collectionHeroFrontpage from "@/assets/collection-hero-frontpage.webp";
@@ -54,26 +53,23 @@ const getCollectionDescription = (handle: string): string[] => {
       'העבודה, הבית, הילדים, הזוגיות, אני...',
       'איך נכון לחלק את הזמן?',
       'אין נוסחה אחת שמתאימה לכולן.',
-      'אבל אם כרגע משהו לא עובד לי,',
-      'בטוח יש אחת טובה יותר בשבילי.',
-      'מוצרי התכנון לאימהות של יום האם עזרו לי למצוא',
+      'אבל יש אחת שמתאימה לי.',
+      'מוצרי התכנון של יום האם עזרו לי למצוא אותה,',
       'את הנוסחה שמתאימה לי ולמשפחה שלי.'
     ],
     'מוצרי-תכנון-שבועיים': [
-      'מוצרי התכנון השבועיים של יום האם מאפשרים לי לתכנן את השבוע שלך,',
-      'כך שבמקום לרוץ במרוץ בין משימה למשימה,',
-      'אני בוחרת את המסלול, לומדת אותו,',
-      'יודעת מתי להגביר קצב ומתי לעצור לקחת אוויר,',
-      'מתי לבקש עזרה,',
-      'וחשוב לא פחות, באיזו "נעל" הכי נכון לי לצעוד השבוע.'
+      'השבוע שלך לא חייב להיות מרוץ בין משימה למשימה.',
+      'כשהוא מתוכנן מראש, את מכירה את המסלול ובוחרת את הקצב:',
+      'מתי להאיץ, מתי לעצור, ומתי לבקש עזרה.',
+      'וחשוב לא פחות, באיזו נעל תצעדי השבוע.'
     ],
     'מוצרי-תכנון-משלימים': [
       'השבוע נשאר אותו שבוע, והימים עדיין עם 24 שעות',
       'אבל מאז שהפכתי לאמא, רשימת המשימות רק הלכה והתארכה.',
       'כשאני מתכננת, אני זו שמנהלת את המשימות,',
       'ולא הן שמנהלות אותי.',
-      'מוצרי התכנון המשלימים של יום האם משלימים את חוויית התכנון שלי',
-      'מהאירועים הקטנים ועד הגדולים'
+      'המוצרים המשלימים משלימים את חוויית התכנון,',
+      'מהרשימה הקטנה ועד האירוע הגדול.'
     ]
   };
   
@@ -343,14 +339,14 @@ const Collection = () => {
         </div>
       </section>
 
-      {/* Products Carousel */}
+      {/* Products Grid */}
       <ErrorBoundary fallback={<ErrorFallback message="שגיאה בטעינת המוצרים" />}>
         <section className="py-8 md:py-12">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
             {isLoading ? (
-              <div className="flex gap-4 justify-center" dir="rtl">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6" dir="rtl">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="min-w-[200px] md:min-w-[280px]">
+                  <div key={i}>
                     <Skeleton className="aspect-[3/4]" />
                     <div className="pt-2 md:pt-4 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
@@ -360,40 +356,13 @@ const Collection = () => {
                 ))}
               </div>
             ) : sortedProducts.length > 0 ? (
-              <>
-                {/* Mobile: Grid layout */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-16 md:hidden" dir="rtl">
-                  {sortedProducts.map((product) => (
-                    <div key={product.node.id}>
-                      <ProductCard product={product} isWide={isWideProduct(product)} />
-                    </div>
-                  ))}
-                </div>
-                {/* Desktop: Carousel */}
-                <div className="hidden md:block">
-                  <Carousel
-                    opts={{
-                      align: "center",
-                      direction: "rtl",
-                    }}
-                    className="w-full"
-                    dir="rtl"
-                  >
-                    <CarouselContent className="-ml-4">
-                      {sortedProducts.map((product) => (
-                        <CarouselItem 
-                          key={product.node.id}
-                          className={`pl-4 ${isWideProduct(product) ? "basis-[40%] lg:basis-[30%]" : "basis-[28%] lg:basis-[22%]"}`}
-                        >
-                          <ProductCard product={product} isWide={isWideProduct(product)} />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="-left-4" />
-                    <CarouselNext className="-right-4" />
-                  </Carousel>
-                </div>
-              </>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-16 md:gap-x-6 md:gap-y-20" dir="rtl">
+                {sortedProducts.map((product) => (
+                  <div key={product.node.id}>
+                    <ProductCard product={product} isWide={isWideProduct(product)} />
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-16" dir="rtl">
                 <div className="bg-secondary/20 p-12 max-w-md mx-auto space-y-4">

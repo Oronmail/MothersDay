@@ -116,14 +116,14 @@ export const Newsletter = () => {
             placeholder="הכניסי את האימייל שלך"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-48 md:w-64 text-right bg-[#A89A9A] text-white placeholder:text-white/70 border-0 h-9 md:h-10 text-base md:text-sm"
+            className="w-48 md:w-64 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
             dir="rtl"
             maxLength={255}
           />
-          <Button 
-            type="submit" 
-            disabled={isLoading} 
-            className="whitespace-nowrap bg-[#4A4A4A] hover:bg-[#3A3A3A] hover:text-white focus:text-white text-white text-base md:text-sm px-4 md:px-6 h-9 md:h-10 border-0"
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="whitespace-nowrap bg-primary hover:bg-primary/90 text-primary-foreground rounded-none text-base md:text-sm px-5 md:px-7 h-9 md:h-10 border-0"
           >
             {isLoading ? "שולח..." : "הרשמה"}
           </Button>
