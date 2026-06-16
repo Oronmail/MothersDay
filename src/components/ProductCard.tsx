@@ -8,7 +8,7 @@ import { buildProductPath } from "@/lib/routes";
 import { QuickViewModal } from "./QuickViewModal";
 import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
-import { getProductProperties } from "@/lib/productProperties";
+import { getProductSpecs } from "@/lib/productProperties";
 import { WishlistButton } from "./WishlistButton";
 import { getProductCardImageUrl } from "@/lib/imageTransforms";
 
@@ -42,7 +42,7 @@ export const ProductCard = ({
   const secondaryImage = node.images.edges[1]?.node;
   const price = node.priceRange.minVariantPrice;
   const variant = node.variants.edges[0]?.node;
-  const productProps = getProductProperties(node.title);
+  const productProps = getProductSpecs(node);
   
   // Extract first bolded text from HTML description for bundles/sets
   const getFirstBoldText = () => {
@@ -174,28 +174,43 @@ export const ProductCard = ({
           <p className="text-xs md:text-sm text-muted-foreground line-clamp-1 text-right -mt-1">{descriptionFirstLine}</p>
         )}
 
+        {/* Bundles: what's inside, inline on one line (fills the otherwise-empty spec area). */}
+        {node.isBundle && node.bundleContents?.length ? (
+          <p className="mt-1 text-xs md:text-sm text-muted-foreground text-right leading-relaxed">
+            {node.bundleContents
+              .map((item) => (item.quantity > 1 ? `${item.quantity}× ` : '') + item.title)
+              .join(' | ')}
+          </p>
+        ) : null}
+
         {/* Product Properties - size / pages / weight (mobile + desktop) */}
-        {productProps && (
+        {!node.isBundle && productProps && (
           <div className="flex gap-4 md:gap-5 mt-1 justify-start">
             {/* גודל (Size) */}
-            <div className="flex flex-col items-center leading-none gap-1">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
-              <div className="text-xs text-muted-foreground leading-none">גודל</div>
-            </div>
+            {productProps.size && (
+              <div className="flex flex-col items-center leading-none gap-1">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
+                <div className="text-xs text-muted-foreground leading-none">גודל</div>
+              </div>
+            )}
 
             {/* דפים (Pages) */}
-            <div className="flex flex-col items-center leading-none gap-1">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
-              <div className="text-xs text-muted-foreground leading-none">דפים</div>
-            </div>
+            {productProps.pages && (
+              <div className="flex flex-col items-center leading-none gap-1">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
+                <div className="text-xs text-muted-foreground leading-none">דפים</div>
+              </div>
+            )}
 
             {/* עובי דף (Paper Weight) */}
-            <div className="flex flex-col items-center leading-none gap-1">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
-                {productProps.paperWeight} <span className="text-xs text-muted-foreground font-normal">גרם</span>
+            {productProps.paperWeight && (
+              <div className="flex flex-col items-center leading-none gap-1">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
+                  {productProps.paperWeight} <span className="text-xs text-muted-foreground font-normal">גרם</span>
+                </div>
+                <div className="text-xs text-muted-foreground leading-none">עובי דף</div>
               </div>
-              <div className="text-xs text-muted-foreground leading-none">עובי דף</div>
-            </div>
+            )}
           </div>
         )}
 

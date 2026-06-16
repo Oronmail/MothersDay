@@ -46,6 +46,8 @@ export interface Product {
   paperType: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  /** For bundle products: the products it contains (name + handle + qty), for display on cards. */
+  bundleContents?: Array<{ title: string; handle: string; quantity: number }>;
 }
 
 /**

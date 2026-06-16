@@ -32,7 +32,7 @@ import {
   getProductDetailLightboxImageUrl,
 } from "@/lib/imageTransforms";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
-import { getProductProperties } from "@/lib/productProperties";
+import { getProductSpecs } from "@/lib/productProperties";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
 import {
@@ -196,7 +196,7 @@ export default function ProductDetail() {
   }
 
   const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
-  const productProps = getProductProperties(data.title);
+  const productProps = getProductSpecs(data);
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
   const bundles = bundlesData || [];
@@ -296,11 +296,18 @@ export default function ProductDetail() {
                 </div>
                 {productProps ? (
                   <p className="text-muted-foreground text-base flex flex-wrap items-center gap-x-1.5" dir="rtl">
-                    <span>{productProps.size}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{productProps.pages} דפים</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{productProps.paperWeight} גרם</span>
+                    {[
+                      productProps.size,
+                      productProps.pages ? `${productProps.pages} דפים` : null,
+                      productProps.paperWeight ? `${productProps.paperWeight} גרם` : null,
+                    ]
+                      .filter(Boolean)
+                      .map((part, i) => (
+                        <span key={i} className="flex items-center gap-x-1.5">
+                          {i > 0 && <span aria-hidden="true">·</span>}
+                          <span>{part}</span>
+                        </span>
+                      ))}
                   </p>
                 ) : data.vendor ? (
                   <p className="text-muted-foreground text-base">{data.vendor}</p>

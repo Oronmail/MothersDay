@@ -9,12 +9,21 @@ export const MAIN_COLLECTION_HANDLE = 'הכל';
  * Transforms a Supabase product row into the Product shape
  * that all existing components expect.
  */
-function transformProduct(row: any): Product {
+function transformProduct(
+  row: any,
+  bundleContents?: Array<{ title: string; handle: string; quantity: number }>,
+): Product {
+  // Descriptions may be stored either as legacy HTML (`<p>…</p>`) or as plain text
+  // (the admin now edits/saves plain text). Detect which, so plain text renders
+  // through the `whitespace-pre-line` branch (preserving line breaks) instead of
+  // being injected as raw HTML on a single line.
+  const rawDescription = row.description_html || '';
+  const descriptionIsHtml = /<[a-z][\s\S]*>/i.test(rawDescription);
   return {
     id: row.id,
     title: row.title,
-    description: row.description_html?.replace(/<[^>]*>/g, '') || '',
-    descriptionHtml: row.description_html || '',
+    description: descriptionIsHtml ? rawDescription.replace(/<[^>]*>/g, '') : rawDescription,
+    descriptionHtml: descriptionIsHtml ? rawDescription : '',
     handle: row.handle,
     tags: row.tags || [],
     vendor: row.vendor || 'MothersDay',
@@ -57,7 +66,42 @@ function transformProduct(row: any): Product {
     paperType: row.paper_type,
     seoTitle: row.seo_title || null,
     seoDescription: row.seo_description || null,
+    bundleContents: bundleContents || undefined,
   };
+}
+
+/**
+ * Fetches the contents (contained product name + handle + qty) for a set of bundle
+ * product ids in a single query, keyed by bundle id. Used to show "what's inside"
+ * on bundle cards in grids/carousels without an N+1 query per card.
+ */
+async function getBundleContentsMap(
+  bundleIds: string[],
+): Promise<Record<string, Array<{ title: string; handle: string; quantity: number }>>> {
+  if (bundleIds.length === 0) return {};
+  const { data, error } = await supabase
+    .from('bundle_items')
+    .select('bundle_id, quantity, position, product:product_id(title, handle)')
+    .in('bundle_id', bundleIds)
+    .order('position');
+  if (error || !data) return {};
+  const map: Record<string, Array<{ title: string; handle: string; quantity: number }>> = {};
+  for (const item of data as any[]) {
+    if (!item.product) continue;
+    (map[item.bundle_id] ||= []).push({
+      title: item.product.title,
+      handle: item.product.handle,
+      quantity: item.quantity,
+    });
+  }
+  return map;
+}
+
+/** Wraps a product-row list into ProductEdges, attaching bundle contents to bundle rows. */
+async function toProductEdgesWithBundles(rows: any[]): Promise<ProductEdge[]> {
+  const bundleIds = rows.filter((r) => r.is_bundle).map((r) => r.id);
+  const contentsMap = await getBundleContentsMap(bundleIds);
+  return rows.map((row) => ({ node: transformProduct(row, contentsMap[row.id]) }));
 }
 
 function buildOptions(variants: any[]): Array<{ name: string; values: string[] }> {
@@ -111,7 +155,7 @@ export async function getProducts(collectionHandle?: string): Promise<ProductEdg
       const posMap = new Map(cpRows.map(cp => [cp.product_id, cp.position]));
       data?.sort((a: any, b: any) => (posMap.get(a.id) || 0) - (posMap.get(b.id) || 0));
 
-      return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+      return await toProductEdgesWithBundles(data || []);
     }
 
     const { data, error } = await supabase
@@ -121,7 +165,7 @@ export async function getProducts(collectionHandle?: string): Promise<ProductEdg
       .order('sort_order');
 
     if (error) throw error;
-    return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+    return await toProductEdgesWithBundles(data || []);
   });
 }
 

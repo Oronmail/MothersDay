@@ -6,7 +6,7 @@ import { ProductEdge } from "@/lib/types";
 import { buildProductPath } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { useAddToCart } from "@/hooks/useAddToCart";
-import { getProductProperties } from "@/lib/productProperties";
+import { getProductSpecs } from "@/lib/productProperties";
 import { WishlistButton } from "./WishlistButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getProductCardImageUrl } from "@/lib/imageTransforms";
@@ -26,7 +26,7 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
   const secondaryImage = productData.images.edges[1]?.node;
   const variant = productData.variants.edges[0]?.node;
   const price = parseFloat(variant?.price.amount || productData.priceRange.minVariantPrice.amount);
-  const productProps = getProductProperties(productData.title);
+  const productProps = getProductSpecs(productData);
 
   // Use the custom add-to-cart hook
   const { quantity, incrementQuantity, decrementQuantity, handleAddToCart } = useAddToCart({
@@ -130,24 +130,30 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
         {productProps && (
           <div className="flex gap-2 md:gap-3 mt-1 justify-start">
             {/* גודל (Size) - rightmost in RTL */}
-            <div className="flex flex-col items-center leading-none gap-px">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">גודל</div>
-            </div>
+            {productProps.size && (
+              <div className="flex flex-col items-center leading-none gap-px">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
+                <div className="text-[9px] md:text-xs text-muted-foreground leading-none">גודל</div>
+              </div>
+            )}
 
             {/* דפים (Pages) - center */}
-            <div className="flex flex-col items-center leading-none gap-px">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">דפים</div>
-            </div>
+            {productProps.pages && (
+              <div className="flex flex-col items-center leading-none gap-px">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
+                <div className="text-[9px] md:text-xs text-muted-foreground leading-none">דפים</div>
+              </div>
+            )}
 
             {/* עובי דף (Paper Weight) - leftmost in RTL */}
-            <div className="flex flex-col items-center leading-none gap-px">
-              <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
-                {productProps.paperWeight} <span className="text-[9px] md:text-xs text-muted-foreground font-normal">גרם</span>
+            {productProps.paperWeight && (
+              <div className="flex flex-col items-center leading-none gap-px">
+                <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
+                  {productProps.paperWeight} <span className="text-[9px] md:text-xs text-muted-foreground font-normal">גרם</span>
+                </div>
+                <div className="text-[9px] md:text-xs text-muted-foreground leading-none">עובי דף</div>
               </div>
-              <div className="text-[9px] md:text-xs text-muted-foreground leading-none">עובי דף</div>
-            </div>
+            )}
           </div>
         )}
         
