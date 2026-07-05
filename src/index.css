@@ -114,6 +114,13 @@ All colors MUST be HSL.
     scrollbar-width: none;
   }
 
+  /* Mobile hero height — svh stays fixed when the browser toolbar shows/hides,
+     so the video doesn't re-crop ("zoom") on scroll. vh is the older fallback. */
+  .hero-mobile-height {
+    height: 66vh;
+    height: 66svh;
+  }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

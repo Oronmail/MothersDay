@@ -183,32 +183,37 @@ export const ProductCard = ({
           </p>
         ) : null}
 
-        {/* Product Properties - size / pages / weight (mobile + desktop) */}
+        {/* Product Properties - size / pages / weight (mobile + desktop).
+            Each value sits in a fixed-height, centered box so the labels below
+            always align across cells — even the עובי דף value mixes font sizes
+            (number + smaller "גרם"), which would otherwise shift its label down.
+            Mobile keeps this row light (smaller, lighter text + tighter gaps);
+            desktop stays at the original weight. */}
         {!node.isBundle && productProps && (
-          <div className="flex gap-4 md:gap-5 mt-1 justify-start">
+          <div className="flex gap-3 md:gap-5 mt-1 justify-start">
             {/* גודל (Size) */}
             {productProps.size && (
-              <div className="flex flex-col items-center leading-none gap-1">
-                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.size}</div>
-                <div className="text-xs text-muted-foreground leading-none">גודל</div>
+              <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                <div className="flex items-center h-3.5 md:h-5 text-xs md:text-base font-normal md:font-medium text-foreground leading-none">{productProps.size}</div>
+                <div className="text-[0.625rem] md:text-xs text-muted-foreground leading-none">גודל</div>
               </div>
             )}
 
             {/* דפים (Pages) */}
             {productProps.pages && (
-              <div className="flex flex-col items-center leading-none gap-1">
-                <div className="text-sm md:text-base font-medium text-foreground leading-none">{productProps.pages}</div>
-                <div className="text-xs text-muted-foreground leading-none">דפים</div>
+              <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                <div className="flex items-center h-3.5 md:h-5 text-xs md:text-base font-normal md:font-medium text-foreground leading-none">{productProps.pages}</div>
+                <div className="text-[0.625rem] md:text-xs text-muted-foreground leading-none">דפים</div>
               </div>
             )}
 
             {/* עובי דף (Paper Weight) */}
             {productProps.paperWeight && (
-              <div className="flex flex-col items-center leading-none gap-1">
-                <div className="text-sm md:text-base font-medium text-foreground leading-none" dir="rtl">
-                  {productProps.paperWeight} <span className="text-xs text-muted-foreground font-normal">גרם</span>
+              <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                <div className="flex items-center h-3.5 md:h-5 text-xs md:text-base font-normal md:font-medium text-foreground leading-none whitespace-nowrap" dir="rtl">
+                  <span>{productProps.paperWeight} <span className="text-[0.625rem] md:text-xs text-muted-foreground font-normal">גרם</span></span>
                 </div>
-                <div className="text-xs text-muted-foreground leading-none">עובי דף</div>
+                <div className="text-[0.625rem] md:text-xs text-muted-foreground leading-none">עובי דף</div>
               </div>
             )}
           </div>
@@ -223,12 +228,14 @@ export const ProductCard = ({
           {parseFloat(price.amount).toFixed(0)} ₪
         </div>
 
-        {/* Quantity Selector and Add to Cart */}
-        <div className="flex gap-3 items-stretch">
+        {/* Quantity Selector and Add to Cart.
+            Wide carousel cards keep the row layout; narrow grid cards (collection pages)
+            would overflow, so on mobile they stack: quantity on top, full-width button below. */}
+        <div className={`flex gap-3 ${largeCarouselMobile ? "items-stretch" : "flex-col-reverse items-center gap-2.5 md:flex-row md:items-stretch md:gap-3"}`}>
           {/* Add to Cart Button - takes remaining width (right side in RTL) */}
           <Button
             onClick={onAddToCart}
-            className="font-normal h-9 px-4 flex-1 text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className={`font-normal h-9 px-4 text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${largeCarouselMobile ? "flex-1" : "w-full md:w-auto md:flex-1"}`}
             variant="default"
             size="sm"
             aria-label={`הוסיפי את ${node.title} לעגלה`}
@@ -236,8 +243,9 @@ export const ProductCard = ({
             הוספה לעגלה
           </Button>
 
-          {/* Quantity Selector */}
-          <div className="flex items-center border border-border h-9 shrink-0">
+          {/* Quantity Selector — hidden on the narrow mobile grid cards (adds to cart as 1;
+              adjustable in the cart), shown on desktop and the wide home carousel. */}
+          <div className={`items-center border border-border h-9 shrink-0 ${largeCarouselMobile ? "flex" : "hidden md:flex"}`}>
             <button
               onClick={(e) => handleQuantityChange(-1, e)}
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"

@@ -50,10 +50,10 @@ export const ContentSquares = ({
               
               {/* Text content */}
               <div className="text-center space-y-1">
-                <p className="text-lg font-normal text-foreground">
+                <p className="text-sm md:text-lg font-normal text-foreground">
                   {square.title}
                 </p>
-                {square.subtitle && square.subtitle.map((line, idx) => <p key={idx} className="text-lg font-normal text-foreground">
+                {square.subtitle && square.subtitle.map((line, idx) => <p key={idx} className="text-sm md:text-lg font-normal text-foreground">
                     {line}
                   </p>)}
               </div>

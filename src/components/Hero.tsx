@@ -2,29 +2,31 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@/lib/routes";
 import { useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HeroNewsletterCard } from "./HeroNewsletterCard";
-
-// The hero card has its own dismiss key (independent of the global popup) so it
-// shows fresh. Dismissing it also writes the global popup's key, so signing up /
-// closing here suppresses the popup on other pages too.
-const HERO_NEWSLETTER_KEY = "hero_newsletter_dismissed_at";
-const POPUP_DISMISS_KEY = "newsletter_popup_dismissed_at";
-const NEWSLETTER_DISMISS_MS = 1000 * 60 * 60 * 24 * 14;
-// Delay before the signup card rises over the hero (tuned to the loop).
-const NEWSLETTER_DELAY_MS = 17000;
-
-const heroNewsletterDismissed = () => {
-  const stored = localStorage.getItem(HERO_NEWSLETTER_KEY);
-  if (!stored) return false;
-  const at = Number(stored);
-  return Number.isFinite(at) && Date.now() - at < NEWSLETTER_DISMISS_MS;
-};
 
 export const Hero = () => {
   const [showHover, setShowHover] = useState(false);
-  const [showNewsletter, setShowNewsletter] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isMobile = useIsMobile();
+
+  // Mobile browsers pause off-screen videos and don't always auto-resume, leaving the
+  // hero frozen on a cropped frame after you scroll away and back. Replay on re-entry.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [isMobile]);
 
   const handleMouseMove = () => {
     setShowHover(true);
@@ -44,27 +46,8 @@ export const Hero = () => {
     }
   };
 
-  const dismissNewsletter = () => {
-    setShowNewsletter(false);
-    const now = String(Date.now());
-    localStorage.setItem(HERO_NEWSLETTER_KEY, now);
-    localStorage.setItem(POPUP_DISMISS_KEY, now);
-  };
-
-  // Show the signup card a few seconds before the hero loop restarts.
-  useEffect(() => {
-    if (heroNewsletterDismissed()) return;
-    const timer = window.setTimeout(() => setShowNewsletter(true), NEWSLETTER_DELAY_MS);
-    return () => {
-      clearTimeout(timer);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
   return (
-    <section className="relative w-full mb-2 md:mb-4">
+    <section className="relative w-full mb-0 md:mb-4">
       <Link
         to={ROUTES.allProducts}
         aria-label="צפי בכל המוצרים"
@@ -79,8 +62,9 @@ export const Hero = () => {
             צפה בכל המוצרים
           </span>
         </div>
-        <div className="relative w-full overflow-hidden bg-muted" style={isMobile ? { height: '66vh' } : { aspectRatio: '16 / 9' }}>
+        <div className={`relative w-full overflow-hidden bg-muted ${isMobile ? 'hero-mobile-height' : ''}`} style={isMobile ? undefined : { aspectRatio: '16 / 9' }}>
           <video
+            ref={videoRef}
             key={isMobile ? 'hero-mobile' : 'hero-desktop'}
             className={`absolute left-1/2 w-full h-full transition-transform duration-300 ${isMobile ? 'bottom-0' : 'top-1/2'} ${showHover ? 'scale-[1.02]' : 'scale-100'}`}
             style={{ objectFit: 'cover', objectPosition: isMobile ? 'center bottom' : 'center center', transform: isMobile ? 'translateX(-50%)' : 'translate(-50%, -50%)' }}
@@ -92,7 +76,10 @@ export const Hero = () => {
             aria-hidden="true"
           >
             {isMobile ? (
-              <source src="/videos/Hero/hero mobile 2.mp4" type="video/mp4" />
+              <>
+                <source src="/videos/Hero/hero-mobile.webm" type="video/webm" />
+                <source src="/videos/Hero/hero-mobile.mp4" type="video/mp4" />
+              </>
             ) : (
               <>
                 <source src="/videos/Hero/hero-drawer.webm" type="video/webm" />
@@ -102,8 +89,6 @@ export const Hero = () => {
           </video>
         </div>
       </Link>
-
-      {showNewsletter && <HeroNewsletterCard onDismiss={dismissNewsletter} />}
     </section>
   );
 };

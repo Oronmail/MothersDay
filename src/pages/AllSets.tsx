@@ -127,12 +127,14 @@ const AllSets = () => {
         </div>
       </section>
 
-      {/* Hero Section - 3 Images side by side */}
+      {/* Hero Section — mobile shows only the box image (full width); the stickers
+          image moves to its own section below the products (mobile only), mirroring
+          the collection pages' video. Desktop (md+) keeps both images side by side. */}
       <section className="pb-2 md:pb-6 -mt-6 md:-mt-10">
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-0 items-end md:items-stretch md:grid-rows-1 md:w-full md:aspect-[2.2/1] md:max-h-[75vh]">
-            {/* Left */}
-            <div className="aspect-square md:aspect-auto md:h-full overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-end md:items-stretch md:grid-rows-1 md:w-full md:aspect-[2.2/1] md:max-h-[75vh]">
+            {/* Box — full-width hero on mobile; left on desktop */}
+            <div className="aspect-[4/5] md:aspect-auto md:h-full overflow-hidden">
               <img
                 src={heroImage2}
                 alt="כל המארזים"
@@ -142,8 +144,8 @@ const AllSets = () => {
               />
             </div>
 
-            {/* Right */}
-            <div className="aspect-square md:aspect-auto md:h-full overflow-hidden">
+            {/* Stickers — desktop only (mobile shows it below the products) */}
+            <div className="hidden md:block aspect-square md:aspect-auto md:h-full overflow-hidden">
               <img
                 src={heroImage1}
                 alt="כל המארזים"
@@ -168,13 +170,13 @@ const AllSets = () => {
       {/* Description Text */}
       <section className="py-2 md:py-4" dir="rtl">
         <div className="max-w-2xl mx-auto px-4 text-center space-y-2 md:space-y-3">
-          <p className="text-lg md:text-xl text-foreground leading-relaxed font-medium">
+          <p className="text-base md:text-xl text-foreground leading-relaxed font-medium">
             מה את מתכננת?
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             בחרי את המארז שמתאים לך,
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             ותהני מ<span className="font-medium">פתרון שלם</span> במחיר משתלם.
           </p>
         </div>
@@ -245,6 +247,20 @@ const AllSets = () => {
           </div>
         </section>
       </ErrorBoundary>
+
+      {/* Stickers image — mobile only, below the products (on desktop it lives in
+          the hero beside the box), mirroring the collection pages' video. */}
+      <section className="md:hidden pb-4">
+        <div className="w-full aspect-[4/5] overflow-hidden">
+          <img
+            src={heroImage1}
+            alt="מדבקות יום האם"
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </section>
 
       <div className="pb-12 md:pb-16" />
 

@@ -134,9 +134,9 @@ const VideoItem = ({
               ? `עצרי סרטון של ${title || "המוצר"}`
               : `נגני סרטון של ${title || "המוצר"}`
           }
-          className={`absolute z-10 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/45 ${
+          className={`absolute z-10 flex items-center justify-center rounded-full bg-black/30 text-white transition-colors hover:bg-black/45 ${
             isPlaying
-              ? "top-2 left-2 h-10 w-10"
+              ? "top-2 left-2 h-10 w-10 backdrop-blur-sm"
               : "inset-0 h-full w-full rounded-none"
           }`}
         >
@@ -237,6 +237,7 @@ export const VideoCarousel = ({ className }: { className?: string }) => {
             align: "start",
             loop: true,
             dragFree: true,
+            direction: "rtl",
           }}
           className="w-full"
         >

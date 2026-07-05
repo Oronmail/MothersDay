@@ -76,6 +76,16 @@ const getCollectionDescription = (handle: string): string[] => {
   return descriptions[handle] || descriptions['מוצרי-תכנון-משלימים'];
 };
 
+// Clean display titles per handle — take precedence over the DB title so the
+// heading is always correct and consistent (matches the filter labels on the
+// All Products page) and never shows the raw handle (dashes / English
+// "frontpage") during load.
+const COLLECTION_DISPLAY_TITLES: Record<string, string> = {
+  'frontpage': 'מוצרי תכנון לאימהות',
+  'מוצרי-תכנון-שבועיים': 'מוצרי תכנון שבועיים',
+  'מוצרי-תכנון-משלימים': 'מוצרי תכנון משלימים',
+};
+
 const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
@@ -162,13 +172,7 @@ const Collection = () => {
       const orderB = orderMap.get(b.node.id) ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
     });
-    
-    // Swap בלוק תכנון בינוני with בלוק תכנון קטן
-    const idxA = sorted.findIndex(p => p.node.handle === 'בלוק-תכנון-בינוני');
-    const idxB = sorted.findIndex(p => p.node.handle === 'בלוק-תכנון-קטן');
-    if (idxA !== -1 && idxB !== -1) {
-      [sorted[idxA], sorted[idxB]] = [sorted[idxB], sorted[idxA]];
-    }
+
     return sorted;
   }, [products, sortBy, allCollectionProducts]);
 
@@ -201,7 +205,10 @@ const Collection = () => {
     );
   }
 
-  const title = collection?.node.title || handle;
+  const title =
+    COLLECTION_DISPLAY_TITLES[handle || ''] ||
+    collection?.node.title ||
+    (handle ? handle.replace(/-/g, ' ') : '');
   const collectionUrl = getAbsoluteSiteUrl(ROUTES.allProducts);
   const collectionPathUrl = handle
     ? getAbsoluteSiteUrl(`/collection/${handle}`)
@@ -252,9 +259,13 @@ const Collection = () => {
       {/* Hero Section - Image + Video side by side */}
       <section className="pb-2 md:pb-6 -mt-6 md:-mt-10">
         <div className="w-full">
-          <div className={`grid gap-0 ${hasVideo ? 'grid-cols-2 items-stretch md:w-full aspect-[2/1] md:aspect-[2.2/1] md:grid-rows-1 md:max-h-[75vh]' : 'grid-cols-1'}`}>
-            {/* Left side - Static Image */}
-            <div className={`overflow-hidden ${!hasVideo ? 'aspect-[4/3.75] md:aspect-[2.2/1] md:max-h-[75vh] max-w-3xl md:max-w-none md:w-full mx-auto' : 'md:h-full'}`}>
+          {/* Mobile: single full-width still image — the side-by-side image+video
+              split is a desktop pattern that cramps both on a narrow screen. The
+              video moves to its own section below the products (mobile only).
+              Desktop (md+) keeps the original image + video pairing in the hero. */}
+          <div className={`grid gap-0 ${hasVideo ? 'grid-cols-1 md:grid-cols-2 md:items-stretch md:w-full md:aspect-[2.2/1] md:grid-rows-1 md:max-h-[75vh]' : 'grid-cols-1'}`}>
+            {/* Static Image — full-width hero on mobile; left half on desktop */}
+            <div className={`overflow-hidden ${!hasVideo ? 'aspect-[4/3.75] md:aspect-[2.2/1] md:max-h-[75vh] max-w-3xl md:max-w-none md:w-full mx-auto' : 'aspect-[4/5] md:aspect-auto md:h-full'}`}>
               <img 
                 src={heroAssets.image} 
                 alt={title}
@@ -266,7 +277,7 @@ const Collection = () => {
             
             {/* Right side - Video (only if video exists) */}
             {hasVideo && (
-              <div className="overflow-hidden relative bg-muted">
+              <div className="hidden md:block overflow-hidden relative bg-muted md:h-full">
                 <video
                   ref={videoRef}
                   src={heroAssets.video!}
@@ -322,7 +333,7 @@ const Collection = () => {
           {descriptionLines.map((line, index) => (
             <p 
               key={index} 
-              className={`text-lg md:text-xl text-foreground leading-relaxed ${index === descriptionLines.length - 2 ? 'font-medium pt-4 md:pt-6' : ''}`}
+              className={`text-base md:text-xl text-foreground leading-relaxed ${index === descriptionLines.length - 2 ? 'font-medium pt-4 md:pt-6' : ''}`}
             >
               {line}
             </p>
@@ -377,6 +388,24 @@ const Collection = () => {
           </div>
         </section>
       </ErrorBoundary>
+
+      {/* Collection video — mobile only, below the products (on desktop it lives in
+          the hero beside the image). Loops silently as a closing "in-use" moment. */}
+      {hasVideo && (
+        <section className="md:hidden pb-4">
+          <div className="w-full aspect-[4/5] overflow-hidden bg-muted">
+            <video
+              src={heroAssets.video!}
+              className="w-full h-full object-cover"
+              playsInline
+              loop
+              muted
+              autoPlay
+              preload="metadata"
+            />
+          </div>
+        </section>
+      )}
 
       <Newsletter />
         <Footer />

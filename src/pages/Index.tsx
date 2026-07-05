@@ -1,6 +1,7 @@
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { HeroNewsletterCard } from "@/components/HeroNewsletterCard";
 import { BrandMission } from "@/components/BrandMission";
 import { ProductTabs } from "@/components/ProductTabs";
 import { CollectionsBanner } from "@/components/CollectionsBanner";
@@ -34,11 +35,12 @@ const Index = () => {
         <AnnouncementBanner />
         <Header />
         <Hero />
+        <HeroNewsletterCard />
         <BrandMission />
+        <ProductTabs />
         <div className="w-full pt-12 md:hidden">
           <CollectionsBanner />
         </div>
-        <ProductTabs />
         <VideoTitle />
         <VideoCarousel />
         <FounderStory />

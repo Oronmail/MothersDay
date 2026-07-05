@@ -28,7 +28,7 @@ export const FounderStory = () => {
         <div className="max-w-3xl mx-auto text-center space-y-4 md:space-y-6">
           <h3 className="text-2xl md:text-2xl font-normal text-foreground">מי אני?</h3>
           
-          <div className="space-y-1 md:space-y-3 text-lg text-foreground leading-relaxed">
+          <div className="space-y-1 md:space-y-3 text-base md:text-lg text-foreground leading-relaxed">
             <p>
               הי, נעים מאוד אני עדן,
             </p>

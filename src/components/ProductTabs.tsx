@@ -33,6 +33,15 @@ const COLLECTION_TABS = [
   { label: "מוצרים", handle: null }, // null = show all (main collection)
 ];
 
+// Mobile filter tabs — short labels that fit the frame, "הכל" first for quick reset
+const MOBILE_TABS = [
+  { label: "הכל", handle: null }, // null = show all (main collection)
+  { label: "לאימהות", handle: COLLECTION_HANDLES.mothersPlanning },
+  { label: "שבועיים", handle: COLLECTION_HANDLES.weeklyPlanning },
+  { label: "משלימים", handle: COLLECTION_HANDLES.complementaryPlanning },
+  { label: "מארזים", handle: COLLECTION_HANDLES.bundles },
+];
+
 const isWideProduct = (product: ProductEdge) => {
   return WIDE_PRODUCT_TITLES.includes(product.node.title);
 };
@@ -183,6 +192,23 @@ const ProductTabsContent = () => {
               alt="" 
               className="w-48 md:w-72 lg:w-80 -mt-1"
             />
+          </div>
+
+          {/* Mobile collection filter tabs — short labels, horizontally scrollable */}
+          <div className="flex md:hidden justify-center gap-4 overflow-x-auto scrollbar-hide mb-4 px-1" dir="rtl">
+            {MOBILE_TABS.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => setActiveCollection(tab.handle)}
+                className={`shrink-0 whitespace-nowrap text-sm transition-colors ${
+                  activeCollection === tab.handle
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Desktop collection filter tabs */}

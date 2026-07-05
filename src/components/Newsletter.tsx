@@ -98,13 +98,13 @@ export const Newsletter = () => {
 
         {/* Description text */}
         <div className="text-center space-y-0.5 md:space-y-1 mb-5 md:mb-6 relative z-10">
-          <p className="text-lg md:text-base text-foreground">
+          <p className="text-sm md:text-base text-foreground">
             הבלוג של יום האם
           </p>
-          <p className="text-lg md:text-base text-foreground">
+          <p className="text-sm md:text-base text-foreground">
             לתכנון וניהול זמן לאימהות
           </p>
-          <p className="text-lg md:text-base text-foreground">
+          <p className="text-sm md:text-base text-foreground">
             הירשמי לניוזלטר ותהני גם מפעילויות שוות
           </p>
         </div>

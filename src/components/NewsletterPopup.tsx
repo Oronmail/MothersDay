@@ -1,82 +1,51 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-const STORAGE_KEY = "newsletter_popup_dismissed_at";
+const SUBSCRIBED_KEY = "newsletter_subscribed";
 const POPUP_DELAY_MS = 15000;
-const DISMISS_DURATION_MS = 1000 * 60 * 60 * 24 * 14;
-const SCROLL_THRESHOLD = 0.35;
 const EXIT_INTENT_Y = 24;
 
-const wasDismissedRecently = () => {
-  const storedValue = localStorage.getItem(STORAGE_KEY);
-  if (!storedValue) return false;
-
-  const dismissedAt = Number(storedValue);
-  if (!Number.isFinite(dismissedAt)) return false;
-
-  return Date.now() - dismissedAt < DISMISS_DURATION_MS;
-};
+const hasSubscribed = () => localStorage.getItem(SUBSCRIBED_KEY) === "true";
 
 export const NewsletterPopup = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEligibleToOpen, setIsEligibleToOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  // Once dismissed (X / backdrop) we keep it closed for THIS visit only, so the
+  // delay timer / exit-intent listener don't immediately reopen it. A fresh page
+  // load (next visit) shows it again — it only stops permanently after subscribing.
+  const dismissedRef = useRef(false);
 
   useEffect(() => {
-    if (wasDismissedRecently()) return;
+    if (hasSubscribed()) return;
 
-    const timer = window.setTimeout(() => setIsEligibleToOpen(true), POPUP_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!isEligibleToOpen || isOpen) return;
-
-    const openPopup = () => setIsOpen(true);
-    const hasScrollablePage =
-      document.documentElement.scrollHeight > window.innerHeight + 120;
-
-    const maybeOpenFromScroll = () => {
-      const scrollableHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const scrollProgress =
-        scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
-
-      if (scrollProgress >= SCROLL_THRESHOLD) {
-        openPopup();
-      }
+    const open = () => {
+      if (!dismissedRef.current) setIsOpen(true);
     };
+
+    const timer = window.setTimeout(open, POPUP_DELAY_MS);
 
     const handleMouseOut = (event: MouseEvent) => {
       if (window.matchMedia("(pointer: coarse)").matches) return;
       if (event.relatedTarget) return;
       if (event.clientY > EXIT_INTENT_Y) return;
-      openPopup();
+      open();
     };
-
-    if (!hasScrollablePage) {
-      openPopup();
-      return;
-    }
-
-    maybeOpenFromScroll();
-    window.addEventListener("scroll", maybeOpenFromScroll, { passive: true });
     document.addEventListener("mouseout", handleMouseOut);
 
     return () => {
-      window.removeEventListener("scroll", maybeOpenFromScroll);
+      clearTimeout(timer);
       document.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [isEligibleToOpen, isOpen]);
+  }, []);
 
   const handleDismiss = () => {
+    dismissedRef.current = true;
     setIsOpen(false);
-    localStorage.setItem(STORAGE_KEY, String(Date.now()));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,6 +70,8 @@ export const NewsletterPopup = () => {
           window.gtag('event', 'generate_lead', { method: 'newsletter_popup' });
         }
       }
+      // Subscribed (or already a subscriber) → don't show the popup again.
+      localStorage.setItem(SUBSCRIBED_KEY, "true");
       handleDismiss();
     } catch {
       toast.error("משהו השתבש, נסי שוב");
