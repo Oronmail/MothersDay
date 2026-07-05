@@ -180,28 +180,28 @@ const AllProducts = () => {
       {/* Description Text */}
       <section className="py-2 md:py-4" dir="rtl">
         <div className="max-w-2xl mx-auto px-4 text-center space-y-2 md:space-y-3">
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             המוצרים של יום האם עזרו לי להיות האמא שאני רוצה להיות.
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             להיות בטוחה באימהות שלי.
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             לתעדף,
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             לתכנן להיות בשליטה,
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             לנהל את הזמן בדרך שמתאימה לי,
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed font-medium pt-4 md:pt-6">
-            והכי חשוב-
+          <p className="text-base md:text-xl text-foreground leading-relaxed font-medium pt-4 md:pt-6">
+            והכי חשוב,
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
-            לחבר את את שאר בני הבית להיות שותפים ומעורבים בחיי היומיום המשפחתי.
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
+            לחבר את שאר בני הבית להיות שותפים ומעורבים בחיי היומיום המשפחתי.
           </p>
-          <p className="text-lg md:text-xl text-foreground leading-relaxed">
+          <p className="text-base md:text-xl text-foreground leading-relaxed">
             ולכוון אותם להיות האנשים הבוגרים שהייתי רוצה שיהיו.
           </p>
         </div>
