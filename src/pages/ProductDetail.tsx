@@ -19,13 +19,14 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ProductCardCompact } from "@/components/ProductCardCompact";
+import { ProductCard } from "@/components/ProductCard";
 import { BundleContentCard } from "@/components/BundleContentCard";
 import { ROUTES, buildCollectionPath, buildProductPath } from "@/lib/routes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorFallback } from "@/components/ErrorFallback";
 import { LazyImage } from "@/components/LazyImage";
 import { ProductImageLayout } from "@/components/ProductImageLayout";
+import { ProductImageMobileGallery } from "@/components/ProductImageMobileGallery";
 import { ProductExtraCarousel } from "@/components/ProductExtraCarousel";
 import { NotebookStory } from "@/components/NotebookStory";
 import {
@@ -34,6 +35,8 @@ import {
 } from "@/lib/imageTransforms";
 import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverride } from "@/lib/productImageLayouts";
 import { getProductSpecs } from "@/lib/productProperties";
+import { ProductReviews } from "@/components/ProductReviews";
+import { getProductReviews } from "@/data/productReviews";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
 import {
@@ -111,14 +114,19 @@ export default function ProductDetail() {
     enabled: isBundle && !!data?.id
   });
 
-  // Fetch product recommendations (for "אימהות מוסיפות גם" section)
+  // Bundles already shown in the "זמין גם במארזים" section — excluded from the
+  // recommendations below so the same bundle never appears in both sections.
+  const shownBundleIds = (bundlesData || []).slice(0, 4).map((b: ProductEdge) => b.node.id);
+
+  // Fetch product recommendations (for "אימהות מוסיפות גם" section).
+  // For non-bundle products we wait for bundlesData so we know which bundles to exclude.
   const { data: relatedProductsData } = useQuery({
-    queryKey: ['product-recommendations', data?.id],
+    queryKey: ['product-recommendations', data?.id, shownBundleIds.join(',')],
     queryFn: async () => {
       if (!data?.id) return [];
-      return await getProductRecommendations(data.id);
+      return await getProductRecommendations(data.id, shownBundleIds);
     },
-    enabled: !!data?.id
+    enabled: !!data?.id && (isBundle || bundlesData !== undefined),
   });
 
   // Measure whether the description is long enough to warrant a "read more" toggle.
@@ -198,6 +206,9 @@ export default function ProductDetail() {
 
   const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
   const productProps = getProductSpecs(data);
+  // Reviews with content sit high on the page (before cross-sell); the empty
+  // "כתבי לנו" state is moved to the very bottom so it doesn't interrupt shopping.
+  const hasReviews = getProductReviews(handle).length > 0;
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
   const bundles = bundlesData || [];
@@ -219,6 +230,28 @@ export default function ProductDetail() {
   const imageLayout = isBundle
     ? { type: "grid-2-left-carousel-right" as const, mainImages: [2, 3], carouselImages: [4, 5, 6], aspectRatios: ["4/3", "4/3"], description: "2 stacked left, carousel right" }
     : getProductImageLayoutOverride(handle || '') || parseImageLayout(data.imageLayout);
+
+  // Mobile: planning products & bundles get an enlarged swipe gallery instead of the
+  // cramped mosaic. Slide 1 = the two landscape shots stacked; then one slide per
+  // remaining image (the portrait shot for planning products, or the three individual
+  // shots for bundles — the old right-hand carousel broken out into separate slides).
+  // p1 is the unique task-notebook with its own presentation — left as-is for now.
+  let galleryStacked: number[] = [];
+  let gallerySingles: number[] = [];
+  if (handle !== "p1") {
+    if (imageLayout.type === "grid-2-left-1-right" && imageLayout.mainImages.length >= 3) {
+      galleryStacked = imageLayout.mainImages.slice(0, 2);
+      gallerySingles = [imageLayout.mainImages[2]];
+    } else if (isBundle && imageLayout.type === "grid-2-left-carousel-right") {
+      galleryStacked = imageLayout.mainImages.slice(0, 2);
+      gallerySingles = imageLayout.carouselImages || [];
+    }
+  }
+  gallerySingles = gallerySingles.filter((i) => !!images[i]);
+  const useMobileGallery =
+    galleryStacked.length === 2 &&
+    galleryStacked.every((i) => !!images[i]) &&
+    gallerySingles.length > 0;
 
   // Get carousel configuration if this product has extra carousel
   const carouselConfig = getProductCarouselConfig(handle || '');
@@ -460,13 +493,28 @@ export default function ProductDetail() {
 
             {/* Right Column - Images Grid (visually on left in RTL) */}
             <div className="order-1 md:order-2 md:col-span-8">
-              <ProductImageLayout
-                images={images}
-                productTitle={data.title}
-                layout={imageLayout}
-                selectedImageIndex={selectedImageIndex}
-                onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
-              />
+              {/* Planning products: mobile gets an enlarged swipe gallery with a peek
+                  of the next image; desktop keeps the mosaic. Other products unchanged. */}
+              {useMobileGallery && (
+                <div className="md:hidden">
+                  <ProductImageMobileGallery
+                    images={images}
+                    stackedIndices={galleryStacked}
+                    singleIndices={gallerySingles}
+                    productTitle={data.title}
+                    onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
+                  />
+                </div>
+              )}
+              <div className={useMobileGallery ? 'hidden md:block' : undefined}>
+                <ProductImageLayout
+                  images={images}
+                  productTitle={data.title}
+                  layout={imageLayout}
+                  selectedImageIndex={selectedImageIndex}
+                  onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
+                />
+              </div>
               {/* Extra row of images 6-9 for p1 only — removed; these domain photos now live in NotebookStory */}
               {false && images.length >= 9 && (
                 <>
@@ -540,6 +588,14 @@ export default function ProductDetail() {
         )}
 
 
+      {/* Section 3.5: Customer reviews — only when there ARE reviews.
+          Empty state is rendered at the very end of the page instead (below). */}
+      {hasReviews && (
+        <ErrorBoundary fallback={null}>
+          <ProductReviews handle={handle} productTitle={data.title} />
+        </ErrorBoundary>
+      )}
+
       {/* Section 4: Product in Bundles (only for non-bundle products) */}
       {!isBundle && bundles.length > 0 && (
         <ErrorBoundary fallback={<div className="py-8"><ErrorFallback message="שגיאה בטעינת המארזים" /></div>}>
@@ -550,7 +606,7 @@ export default function ProductDetail() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {bundles.slice(0, 4).map((bundle: ProductEdge) => (
-                <ProductCardCompact key={bundle.node.id} product={bundle} />
+                <ProductCard key={bundle.node.id} product={bundle} />
               ))}
             </div>
           </div>
@@ -568,14 +624,22 @@ export default function ProductDetail() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((product: ProductEdge) => (
-                <ProductCardCompact key={product.node.id} product={product} alignment="end" />
+                <ProductCard key={product.node.id} product={product} />
               ))}
             </div>
           </div>
         </section>
         </ErrorBoundary>
       )}
-      
+
+      {/* Reviews empty state — lives at the very bottom so the "כתבי לנו"
+          prompt doesn't take prime space when there are no reviews yet. */}
+      {!hasReviews && (
+        <ErrorBoundary fallback={null}>
+          <ProductReviews handle={handle} productTitle={data.title} />
+        </ErrorBoundary>
+      )}
+
         {/* Mobile Sticky Add to Cart Bar */}
         <div className="fixed bottom-0 left-0 right-0 md:hidden bg-background border-t shadow-lg z-50">
           <div className="flex items-center gap-3 p-4" dir="rtl">

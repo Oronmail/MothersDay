@@ -159,8 +159,9 @@ export function ProductCardCompact({ product, alignment = 'center' }: ProductCar
         
         {/* Quantity Selector and Add to Cart */}
         <div className={`flex gap-4 md:gap-6 mt-1.5 md:mt-3 items-center ${alignment === 'end' ? 'justify-end' : 'justify-center'} px-2 md:px-4`} dir="ltr">
-          {/* Quantity Selector */}
-          <div className="flex items-center border border-border h-6 md:h-7">
+          {/* Quantity Selector — hidden on mobile (adds to cart as 1; adjustable in
+              the cart), shown on desktop. */}
+          <div className="hidden md:flex items-center border border-border h-6 md:h-7">
             <button
               onClick={(e) => handleQuantityChange(e, -1)}
               className="w-6 md:w-7 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"

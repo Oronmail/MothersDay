@@ -168,7 +168,13 @@ export const ProductCard = ({
       <div className="pt-2 md:pt-3 flex flex-col flex-1" dir="rtl">
         {/* Title - reserve 2 lines so specs/price align across all cards */}
         <h3 className={`font-medium leading-tight line-clamp-2 text-right min-h-[2.75rem] md:min-h-[3.25rem] transition-colors duration-200 group-hover:text-primary ${largeCarouselMobile ? 'text-xl' : 'text-lg md:text-xl'}`}>
-          {node.title}
+          <Link
+            to={productPath}
+            aria-label={`עבור לעמוד המוצר ${node.title}`}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+          >
+            {node.title}
+          </Link>
         </h3>
         {showDescriptionFirstLine && descriptionFirstLine && (
           <p className="text-xs md:text-sm text-muted-foreground line-clamp-1 text-right -mt-1">{descriptionFirstLine}</p>
@@ -243,9 +249,9 @@ export const ProductCard = ({
             הוספה לעגלה
           </Button>
 
-          {/* Quantity Selector — hidden on the narrow mobile grid cards (adds to cart as 1;
-              adjustable in the cart), shown on desktop and the wide home carousel. */}
-          <div className={`items-center border border-border h-9 shrink-0 ${largeCarouselMobile ? "flex" : "hidden md:flex"}`}>
+          {/* Quantity Selector — hidden on mobile everywhere (adds to cart as 1;
+              adjustable in the cart), shown on desktop. */}
+          <div className="items-center border border-border h-9 shrink-0 hidden md:flex">
             <button
               onClick={(e) => handleQuantityChange(-1, e)}
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"

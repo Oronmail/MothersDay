@@ -105,13 +105,13 @@ const AllProducts = () => {
 
       {/* Breadcrumbs - top right */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 -mb-8 md:-mb-10">
-        <Breadcrumbs 
+        <Breadcrumbs
           items={[
             { label: "כל המוצרים" }
-          ]} 
+          ]}
         />
       </div>
-      
+
       {/* Title Section */}
       <section className="pt-12 md:pt-14 pb-8 md:pb-12 relative z-10" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
@@ -119,9 +119,9 @@ const AllProducts = () => {
             <h1 className="text-[28px] md:text-4xl font-normal text-center">
               כל המוצרים
             </h1>
-            <img 
-              src={titleUnderline} 
-              alt="" 
+            <img
+              src={titleUnderline}
+              alt=""
               className="h-2 md:h-3 -mt-1 w-auto max-w-[200px] md:max-w-[300px]"
             />
           </div>

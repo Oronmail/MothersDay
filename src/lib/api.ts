@@ -218,40 +218,77 @@ export async function getProductCardsByHandles(
   return map;
 }
 
-export async function getProductRecommendations(productId: string): Promise<ProductEdge[]> {
+// Flagship products always surfaced first in "אימהות מוסיפות גם" (on every OTHER
+// product page). Order here = display order (first handle shows first / rightmost in RTL).
+const RECOMMENDATION_ANCHOR_HANDLES = ['לוח-משפחתי-שבועי', 'p1'];
+const RECOMMENDATION_LIMIT = 4;
+
+export async function getProductRecommendations(
+  productId: string,
+  excludeIds: string[] = [],
+): Promise<ProductEdge[]> {
   return startSpan({ op: 'db.query', name: 'getProductRecommendations' }, async () => {
+    // Ids already shown elsewhere on the page (e.g. the "זמין גם במארזים" bundles) —
+    // kept out of the recommendations so nothing appears in two sections at once.
+    const excluded = new Set(excludeIds);
+
+    // 1. Anchor products — pinned first, excluding the one currently being viewed.
+    const { data: anchorRows } = await supabase
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .in('handle', RECOMMENDATION_ANCHOR_HANDLES)
+      .eq('status', 'active')
+      .neq('id', productId);
+
+    const orderedAnchors = (anchorRows || [])
+      .filter((r: any) => !excluded.has(r.id))
+      .sort(
+        (a: any, b: any) =>
+          RECOMMENDATION_ANCHOR_HANDLES.indexOf(a.handle) -
+          RECOMMENDATION_ANCHOR_HANDLES.indexOf(b.handle),
+      );
+    const anchorIds = new Set(orderedAnchors.map((r: any) => r.id));
+
+    // 2. Collection siblings — fill the remaining slots after the anchors.
     const { data: cpRows } = await supabase
       .from('collection_products')
       .select('collection_id')
       .eq('product_id', productId);
 
-    if (!cpRows || cpRows.length === 0) {
+    let siblingRows: any[] = [];
+    if (cpRows && cpRows.length > 0) {
+      const collectionIds = cpRows.map(cp => cp.collection_id);
+      const { data: siblingCpRows } = await supabase
+        .from('collection_products')
+        .select('product_id')
+        .in('collection_id', collectionIds)
+        .neq('product_id', productId);
+
+      const siblingIds = [...new Set((siblingCpRows || []).map(cp => cp.product_id))].filter(
+        (id) => !anchorIds.has(id) && !excluded.has(id),
+      );
+      if (siblingIds.length > 0) {
+        const { data } = await supabase
+          .from('products')
+          .select(PRODUCT_SELECT)
+          .in('id', siblingIds)
+          .eq('status', 'active');
+        siblingRows = data || [];
+      }
+    } else {
+      // Product isn't in any collection — fall back to any active products for the fill.
       const { data } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .eq('status', 'active')
         .neq('id', productId)
-        .limit(4);
-      return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+        .limit(RECOMMENDATION_LIMIT);
+      siblingRows = (data || []).filter((r: any) => !anchorIds.has(r.id) && !excluded.has(r.id));
     }
 
-    const collectionIds = cpRows.map(cp => cp.collection_id);
-    const { data: siblingCpRows } = await supabase
-      .from('collection_products')
-      .select('product_id')
-      .in('collection_id', collectionIds)
-      .neq('product_id', productId);
-
-    const siblingIds = [...new Set((siblingCpRows || []).map(cp => cp.product_id))];
-    if (siblingIds.length === 0) return [];
-
-    const { data } = await supabase
-      .from('products')
-      .select(PRODUCT_SELECT)
-      .in('id', siblingIds.slice(0, 4))
-      .eq('status', 'active');
-
-    return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+    // 3. Anchors first, then siblings, capped at the limit.
+    const combined = [...orderedAnchors, ...siblingRows].slice(0, RECOMMENDATION_LIMIT);
+    return toProductEdgesWithBundles(combined);
   });
 }
 
@@ -336,7 +373,7 @@ export async function getBundlesContainingProduct(productId: string): Promise<Pr
       .order('sort_order');
 
     if (error) throw error;
-    return (data || []).map((row: any) => ({ node: transformProduct(row) }));
+    return toProductEdgesWithBundles(data || []);
   });
 }
 

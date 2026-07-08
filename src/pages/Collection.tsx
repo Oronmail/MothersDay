@@ -247,9 +247,9 @@ const Collection = () => {
             <h1 className="text-[28px] md:text-4xl font-normal text-center">
               {title}
             </h1>
-            <img 
-              src={titleUnderline} 
-              alt="" 
+            <img
+              src={titleUnderline}
+              alt=""
               className="h-2 md:h-3 -mt-1 w-auto max-w-[200px] md:max-w-[300px]"
             />
           </div>
