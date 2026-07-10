@@ -7,6 +7,7 @@ import { ProductTabs } from "@/components/ProductTabs";
 import { CollectionsBanner } from "@/components/CollectionsBanner";
 import { VideoCarousel } from "@/components/VideoCarousel";
 import { VideoTitle } from "@/components/VideoTitle";
+import { Testimonials } from "@/components/Testimonials";
 import { FounderStory } from "@/components/FounderStory";
 import { ContentSquares } from "@/components/ContentSquares";
 import { Newsletter } from "@/components/Newsletter";
@@ -43,6 +44,7 @@ const Index = () => {
         </div>
         <VideoTitle />
         <VideoCarousel />
+        <Testimonials />
         <FounderStory />
         <ContentSquares />
         <Newsletter />

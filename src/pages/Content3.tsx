@@ -4,6 +4,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Newsletter } from "@/components/Newsletter";
 import titleUnderline from "@/assets/title-underline.png";
+import soccerCake from "@/assets/blog3-soccer-cake.jpg";
+import { LazyImage } from "@/components/LazyImage";
 import { ROUTES } from "@/lib/routes";
 
 const Content3 = () => {
@@ -82,57 +84,60 @@ const Content3 = () => {
             <p>ולהשרות וודאות, ביטחון ושקט.</p>
           </div>
 
+          {/* Soccer-field cake — planning = boundaries & goals */}
+          <figure className="bg-[#a89a9e] p-4 mt-8">
+            <LazyImage
+              src={soccerCake}
+              alt="עוגת יום הולדת בצורת מגרש כדורגל עם קווים ושערים"
+              className="w-full aspect-[4/3]"
+            />
+            <figcaption className="text-center text-white/95 text-sm mt-3 italic">
+              לכל עוגה מתכון, לכל משחק כללים ומטרות.
+            </figcaption>
+          </figure>
+
           <p className="font-medium mt-8">איזה משמעויות נוספות יש לתכנון ביום האם?</p>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">1. בראש ובראשונה להיות מוכנה.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">1. בראש ובראשונה להיות מוכנה.</h3>
             <p>כשאת יודעת מה צפוי לך היום, גם אם זה יום עמוס במיוחד, את ניגשת אליו אחרת.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">2. צעד חשוב בלגרום למשהו לקרות הוא לתכנן אותו.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">2. צעד חשוב בלגרום למשהו לקרות הוא לתכנן אותו.</h3>
             <p>אחרי שאני מבינה שאני רוצה שמשהו יקרה, אני שואלת ״איך?״ ומכינה תוכנית אפשרית.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">3. תזמון- להתאים את המשימה לזמן הנכון.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">3. תזמון- להתאים את המשימה לזמן הנכון.</h3>
             <p>למה אומרים להכין בגדים מהערב, ולא בבוקר? במיוחד עם ילדים הטיימינג יכול להיות גיים צ׳נג׳ר</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">4. יעול זמן- כשאני מתכננת נכון, אני מנצלת את הזמן בצורה הרבה יותר יעילה.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">4. יעול זמן- כשאני מתכננת נכון, אני מנצלת את הזמן בצורה הרבה יותר יעילה.</h3>
             <p>למשל אני יכולה לעשות קניות בזמן שאני מחכה שהבת שלי תסיים את החוג.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">5. תכנון עוזר לי להבין את המגבלות שלי.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">5. תכנון עוזר לי להבין את המגבלות שלי.</h3>
             <p>להיות מציאותית. לתכנן משהו שאכן אפשרי במסגרת המגבלות.</p>
             <p className="mt-2">גם עייפות היא מגבלה, ולכן לתכנן להספיק ״הכל״ אחרי שהילדים הולכים לישון, זה לא תמיד ריאלי.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">6. תכנון עוזר לי להתמקד ולא להתפזר.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">6. תכנון עוזר לי להתמקד ולא להתפזר.</h3>
             <p>תכננתי לעשות עכשיו משהו- אם מישהו יפנה אלי, אוכל להגיד לו בביטחון, ״כרגע אני לא פנויה״/ ״אני עסוקה כרגע״.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">7. כשאני מתכננת, אני מציבה לעצמי מטרות.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">7. כשאני מתכננת, אני מציבה לעצמי מטרות.</h3>
             <p>וכשאני עומדת בתוכנית (משיגה את המטרות) אני מרגישה הצלחה. במקום להרגיש שאני לא מספיקה, אני מרגישה שאני כן מספיקה ואפילו הרבה.</p>
             <p className="mt-2">מטרות קטנות שאני מסוגלת לעמוד בהן מייצרות מוטיבציה ותחושת מסוגלות.</p>
           </section>
 
           <section className="mt-6 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">8. וכמובן! כדי לא לשכוח.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">8. וכמובן! כדי לא לשכוח.</h3>
           </section>
-
-          {/* Photo Grid */}
-          <div className="bg-[#a89a9e] p-4 mt-8">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="aspect-[3/4] bg-muted"></div>
-              <div className="aspect-[3/4] bg-muted"></div>
-              <div className="aspect-[3/4] bg-muted"></div>
-            </div>
-          </div>
 
           <div className="bg-muted/30 p-6 rounded-lg mt-8 space-y-2">
             <p>בים המשימות של יום האם, התכנון עלול להרגיש כמו עוד משימה שדורשת ממני זמן,</p>
@@ -153,6 +158,17 @@ const Content3 = () => {
             <p className="mt-2">איך מתכננים? online או נייר</p>
           </div>
         </article>
+        </div>
+
+        {/* Back to all chapters */}
+        <div className="mt-10 flex justify-center">
+          <Link
+            to={ROUTES.blog}
+            className="group flex items-center gap-2 text-lg text-foreground transition-colors hover:text-primary"
+          >
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+            חזרה לכל הפרקים
+          </Link>
         </div>
       </main>
       <Newsletter />

@@ -4,6 +4,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Newsletter } from "@/components/Newsletter";
 import titleUnderline from "@/assets/title-underline.png";
+import fourGenerations from "@/assets/blog-four-generations.jpg";
+import { LazyImage } from "@/components/LazyImage";
 import { ROUTES } from "@/lib/routes";
 
 const Content1 = () => {
@@ -61,12 +63,28 @@ const Content1 = () => {
             אם אני חונכתי לעצמאות והשכלה, והיום אני אמא קרייריסטית, אבל גדלתי בבית שבו אמא הייתה עקרת בית, או במקרה הפוך, אם אמא שלי הייתה קרייריסטית, ואני בחרתי להתמקד בגידול הילדים וניהול הבית, אין לי באמת מודל מהבית לאיך להיות האמא שאני.
           </p>
 
+          {/* Family Photo — four generations */}
+          <figure className="bg-[#a89a9e] p-4">
+            <LazyImage
+              src={fourGenerations}
+              alt="ארבעה דורות של אימהות במשפחה אחת"
+              className="w-full aspect-[1185/1300]"
+            />
+            <figcaption className="text-center text-white/95 text-sm leading-relaxed mt-3 italic">
+              סבתא שלי הייתה אמא במשרה מלאה, וחלק משמעותי מהגידול שלנו.
+              <br />
+              אמא שלי הייתה קרייריסטית שחזרה הביתה בשמונה בערב.
+              <br />
+              שתיהן, כל אחת בדרכה, הן השראה לאמא שאני.
+            </figcaption>
+          </figure>
+
           <p>
             השילוב בין עבודה לבית הוא רק חלק מהמורכבות. אנחנו בעידן אחר, עידן של מודעות. ואנחנו בוודאי מודעות- כי יש המון ספרים, קבוצות אמהות, רשתות חברתיות… אנחנו חשופות לכל כך הרבה מידע כל הזמן.
           </p>
 
           <section className="mt-8 mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">תזונה, למשל.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">תזונה, למשל.</h3>
             <p>
               זה כבר לא סבבה לתת לילד לאכול מנה חמה או מנה כזו שמחוררים ומחממים צריך בריא, מאוזן, ביתי.
             </p>
@@ -76,16 +94,19 @@ const Content1 = () => {
           </section>
 
           <section className="mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">ומסכים?</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">ומסכים?</h3>
             <p>
               פעם הייתה רק טלוויזיה וגם אם היה מותר לצפות בלי סוף, לא היה מה לראות. היום- טלפון, טאבלט, מחשב, קונסולות, מסכים ותוכן זמינים בכל זמן ובכל מקום. ואם אנחנו רוצות להגביל, אנחנו צריכות לדאוג לאלטרנטיבה.
             </p>
           </section>
 
           <section className="mb-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">חוגים?</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">חוגים?</h3>
             <p>
               זה כבר לא רק כדורגל ובלט. יש אינסוף אפשרויות: התעמלות אומנותית, היפ הופ, טיפוס, מבוכים ודרקונים, רובוטיקה, אומנות...
+            </p>
+            <p className="mt-4">
+              וגם ההתפתחות הרגשית והחברתית חשובה. לקבוע עם חברים, גם להזמין וגם שיזמינו.
             </p>
             <p className="mt-4">
               ואנחנו רוצות לחשוף, לפתח, לאפשר. בקיצור: דרושה חברת הסעות.
@@ -93,11 +114,7 @@ const Content1 = () => {
           </section>
 
           <p>
-            וגם ההתפתחות הרגשית חשובה. חשוב לקבוע עם חברים- גם להזמין וגם שיזמינו.
-          </p>
-
-          <p>
-            אז לא היו כל כך הרבה אנשי מקצוע, מומחים ומטפלים: מטפלים רגשיים, מדריכות הורים, קלינאית תקשורת… איתם נפתחה קשת שלמה של אבחונים, טיפולים, ריצות בין טיפולים ורצפים של אותיות: C.B.T, A.D.D, O.D.D, A.D.H.D
+            פעם לא היו כל כך הרבה אנשי מקצוע ומטפלים. היום יש מומחה לכל דבר, וקשת שלמה של אבחונים, טיפולים וריצות בין טיפול לטיפול.
           </p>
 
           <p>
@@ -105,7 +122,7 @@ const Content1 = () => {
           </p>
 
           <p>
-            אההה גם הבית דורש יותר: יותר בגדים, יותר כביסות. יותר משחקים, יותר בלאגן. הבתים גדולים יותר, עם יותר חדרים ויש יותר מה לנקות.
+            אההה, וגם הבית דורש יותר: יותר בגדים, יותר כביסות, יותר משחקים, יותר בלאגן, יותר מה לנקות.
           </p>
 
           <p>
@@ -124,15 +141,6 @@ const Content1 = () => {
             האמהות של היום הן לא האמהות של פעם! המציאות השתנתה, אנחנו נדרשות לשלב בין כמה תחומים, כשכל תחום בפני עצמו כולל היום הרבה יותר משימות
           </p>
 
-          {/* Photo Grid */}
-          <div className="bg-[#a89a9e] p-4 mt-8">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="aspect-[3/4] bg-muted"></div>
-              <div className="aspect-[3/4] bg-muted"></div>
-              <div className="aspect-[3/4] bg-muted"></div>
-            </div>
-          </div>
-
           <div className="bg-muted/30 p-6 rounded-lg mt-8 space-y-2">
             <p className="font-medium">מה לא השתנה?</p>
             <p>יש 7 ימים בשבוע ו 24 שעות ביממה.</p>
@@ -148,6 +156,20 @@ const Content1 = () => {
             <p>על כך כמובן בפרק הבא...</p>
           </div>
         </article>
+        </div>
+
+        {/* Next chapter */}
+        <div className="mt-10 flex justify-center">
+          <Link
+            to={ROUTES.content2}
+            className="group flex flex-col items-center gap-1 text-center"
+          >
+            <span className="text-sm text-muted-foreground">הפרק הבא</span>
+            <span className="flex items-center gap-2 text-lg text-foreground transition-colors group-hover:text-primary">
+              הזמן שלי, כבר לא רק שלי
+              <span className="transition-transform group-hover:-translate-x-1">←</span>
+            </span>
+          </Link>
         </div>
       </main>
       <Newsletter />
