@@ -84,9 +84,9 @@ const collectionDescriptionMap: Record<string, string> = {
 const staticRoutes: StaticRoute[] = [
   {
     route: "/",
-    title: "דף הבית | יום האם Mother's Day",
+    title: "יום האם | מוצרי תכנון לאימהות",
     description:
-      "יום האם - מוצרי תכנון איכותיים לאימהות. בלוקי תכנון, לוחות משפחתיים, מחברות ומארזים מיוחדים. תכנון פשוט ויעיל עם עיצוב נקי ונעים בנייר באיכות פרימיום.",
+      "לוחות, מחברות ובלוקי תכנון מעוצבים, שעוזרים לאימהות לדייק את היום, את השבוע ואת הזמן שלהן.",
     structuredData: {
       "@context": "https://schema.org",
       "@graph": [

@@ -21,8 +21,8 @@ interface SEOProps {
 
 const defaultSEO = {
   siteName: SITE_NAME,
-  defaultTitle: "יום האם | מוצרי תכנון איכותיים לאימהות",
-  defaultDescription: "יום האם הוא מותג מוצרי תכנון עם מטרה ברורה! לדייק את היום, את השבוע ואת הזמן שלנו האימהות. מוצרי נייר איכותיים בעיצוב נקי ומינימליסטי.",
+  defaultTitle: "יום האם | מוצרי תכנון לאימהות",
+  defaultDescription: "לוחות, מחברות ובלוקי תכנון מעוצבים, שעוזרים לאימהות לדייק את היום, את השבוע ואת הזמן שלהן.",
   defaultImage: "/logo.png",
 };
 
