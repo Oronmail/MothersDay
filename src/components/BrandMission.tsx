@@ -14,12 +14,12 @@ export const BrandMission = () => {
         
         {/* First text line */}
         <p className="text-base md:text-xl font-normal mb-2 leading-relaxed text-foreground">
-          יום האם הוא מותג מוצרי תכנון עם מטרה אחת:
+          יום האם הוא מותג מוצרי תכנון עם מטרה ברורה:
         </p>
 
         {/* Second text line */}
         <p className="text-base md:text-xl font-normal mb-8 leading-relaxed text-foreground">
-          לעזור לך לדייק את היום, את השבוע ואת הזמן שלנו האימהות.
+          לעזור לאימהות לדייק את היום, את השבוע ואת הזמן.
         </p>
 
         {/* Third text line - first part */}

@@ -187,13 +187,13 @@ const AllProducts = () => {
             להיות בטוחה באימהות שלי.
           </p>
           <p className="text-base md:text-xl text-foreground leading-relaxed">
-            לתעדף,
+            לתעדף, לתכנן.
           </p>
           <p className="text-base md:text-xl text-foreground leading-relaxed">
-            לתכנן להיות בשליטה,
+            להיות בשליטה.
           </p>
           <p className="text-base md:text-xl text-foreground leading-relaxed">
-            לנהל את הזמן בדרך שמתאימה לי,
+            לנהל את הזמן בדרך שמתאימה לי.
           </p>
           <p className="text-base md:text-xl text-foreground leading-relaxed font-medium pt-4 md:pt-6">
             והכי חשוב,
