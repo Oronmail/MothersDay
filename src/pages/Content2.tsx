@@ -9,6 +9,16 @@ import bike2017 from "@/assets/blog2-bike-2017.jpg";
 import bike2022 from "@/assets/blog2-bike-2022.jpg";
 import { LazyImage } from "@/components/LazyImage";
 import { ROUTES } from "@/lib/routes";
+import { Instagram } from "lucide-react";
+import { INSTAGRAM_URL } from "@/lib/siteConfig";
+import heartIcon from "@/assets/heart-icon.png";
+
+const GroupHeading = ({ children }: { children: React.ReactNode }) => (
+  <div className="mt-10 flex flex-col items-center">
+    <h2 className="text-xl md:text-2xl font-medium text-foreground text-center">{children}</h2>
+    <div className="w-12 h-px bg-[#b79aa1] mt-2" />
+  </div>
+);
 
 const Content2 = () => {
   return (
@@ -25,7 +35,7 @@ const Content2 = () => {
             בלוג
           </Link>
         </div>
-        
+
         <div className="border border-muted-foreground/20 p-6 md:p-10 rounded-sm bg-background shadow-sm">
         {/* Post Title */}
         <div className="flex flex-col items-center mb-8">
@@ -33,23 +43,23 @@ const Content2 = () => {
           <h1 className="text-[28px] md:text-3xl text-foreground text-center leading-relaxed">
             הזמן שלי, כבר לא רק שלי
           </h1>
-          <img 
-            src={titleUnderline} 
-            alt="" 
+          <img
+            src={titleUnderline}
+            alt=""
             className="w-32 md:w-48 mt-2"
           />
         </div>
-        
+
         {/* Blog Content */}
         <article className="space-y-6 text-[17px] leading-[1.7] text-foreground/90">
           <p>
-            בפרק הקודם העליתי את בעיה מס׳ 1 – האימהות של היום היא לא האימהות של פעם. היא יותר מורכבת ואין ספר הדרכה. אנחנו נדרשות לשלב בין כמה תחומים כשכל תחום בפני עצמו כולל המון משימות.
+            בפרק הקודם העליתי את בעיה מס׳ 1- האימהות של היום היא לא האימהות של פעם. היא יותר מורכבת ואין ספר הדרכה. אנחנו נדרשות לשלב בין כמה תחומים כשכל תחום בפני עצמו כולל המון משימות.
           </p>
 
-          <p className="font-medium">הפיתרון – תכנון הזמן</p>
+          <p className="font-medium">הפיתרון- תכנון הזמן</p>
 
           <p>
-            בפרק הזה, מתנצלת, אני מעלה עוד בעיה נוספת – ברגע שהפכתי להיות אמא, הזמן שלי הוא כבר לא רק שלי. אני יכולה להיות הכי מסודרת ומאורגנת שיש, אבל תכנון הזמן מורכב יותר. זה לא איזה מבחן בתואר שיש לו תאריך ואני מנהלת את תוכנית הלימודים וההצלחה תלויה רק בי. למעשה, כשמדובר בהורות – הרבה פעמים אני אפילו לא יודעת את החומר.
+            בפרק הזה, מתנצלת, אני מעלה בעיה נוספת. ברגע שהפכתי להיות אמא, הזמן שלי הוא כבר לא רק שלי. אני יכולה להיות הכי מסודרת ומאורגנת שיש, אבל תכנון הזמן מורכב יותר. זה לא איזה מבחן בתואר שיש לו תאריך ואני מנהלת את תוכנית הלימודים וההצלחה תלויה רק בי. למעשה, כשמדובר בהורות, הרבה פעמים אני אפילו לא יודעת את החומר.
           </p>
 
           <p>
@@ -62,44 +72,49 @@ const Content2 = () => {
             אלה הם העקרונות שמנחים אותי בחלוקת הזמן, והם הבסיס להבין מה עומד מאחורי הבחירות שלי (במקרו ובמיקרו)
           </p>
 
-          <section className="mt-8 mb-6">
+          <GroupHeading>הבחירה</GroupHeading>
+
+          <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">1. אני בוחרת איך לחלק את הזמן שלי מתוך סדר העדיפויות שלי.</h3>
             <p className="mb-2">מה חשוב לי כרגע?</p>
             <ul className="list-none space-y-2 mr-4 [&>li]:before:content-['■'] [&>li]:before:ml-2 [&>li]:before:text-foreground/70 [&>li]:before:text-[10px]">
-              <li>כסף? כי זה הזמן לעשות כסף, לבסס מעמד, להתקדם בעבודה, בקריירה…</li>
-              <li>הילדים? כי הילדים זה הדבר הכי חשוב. בשנים הראשונות לחייהם הילדים צריכים אותי… לאמא אין תחליף כשיגדלו יהיה לי זמן...</li>
-              <li>בית נקי? כשהבית נקי ומסודר זה נותן לי הרגשה טובה ומאפשר לי לחשוב ולהיות פנויה לדברים אחרים…</li>
-              <li>אווירה? חשוב לי בית שמח – אני לא מעוניינת להיות שוטר. ואין לי בעיה עם בלאגן ולכלוך.</li>
+              <li>כסף? כי זה הזמן לבסס מעמד, להתקדם בעבודה ובקריירה.</li>
+              <li>הילדים? כי בשנים הראשונות הם צריכים אותי, ולאמא אין תחליף. כשיגדלו- יהיה לי זמן.</li>
+              <li>בית נקי? כשהבית מסודר יש לי הרגשה טובה, ואני פנויה לחשוב ולדברים אחרים.</li>
+              <li>אווירה? חשוב לי בית שמח- לא להיות שוטר. ואין לי בעיה עם בלאגן ולכלוך.</li>
               <li>בריאות? תזונה? חשוב לי לבשל בעצמי, שהאוכל יהיה מזין… ובכלל, אני אוהבת לבשל.</li>
-              <li>אני? אני הכי חשובה? כי כשיהיה לי טוב יהיה לכולם טוב. אני רוצה לעשות 3 פעמים בשבוע ספורט בערב, או לפתוח את הבוקר באימון יוגה, להכין לי אוכל בריא, להיות מטופחת – קוסמטיקאית, ציפורניים, טיפולי פנים, שנ״צ…</li>
-              <li>זוגיות? בעלי במקום הראשון? כי בסוף הילדים גדלים ועוזבים את הבית וזה רק אני והוא.</li>
+              <li>אני? כי כשלי טוב- לכולם טוב. ספורט, יוגה, אוכל בריא, קצת פינוק וזמן לעצמי.</li>
+              <li>זוגיות? כי בסוף הילדים גדלים ועוזבים את הבית, ונשארים רק אני והוא.</li>
             </ul>
             <p className="mt-4 font-medium">מה חשוב לי? מה הכי חשוב לי? אני בוחרת, אני מתעדפת.</p>
           </section>
 
           <section className="mt-8 mb-6">
-            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">2. אי אפשר הכל.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">2. מה שמגדיר אותי הוא לא תחום אחד או עיסוק מסוים וכמה אני טובה בו, אלא הערכים שלי, על פיהם בחרתי את סדר העדיפויות שלי.</h3>
+            <p>
+              למשל אם בחרתי לעבוד חצי משרה, ליד הבית, לא העבודה מגדירה אותי, אלא מה שעומד מאחורי הבחירה שלי.
+            </p>
+          </section>
+
+          <GroupHeading>המחיר</GroupHeading>
+
+          <section className="mt-6 mb-6">
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">3. אי אפשר הכל.</h3>
             <p>
               כשהכל חשוב לי אני לא מגיעה לכלום. אי אפשר לתת 100% בעבודה 100% לילדים 100% לעצמי ו-100% בבית.... כשהכל חשוב לי, יש לזה מחירים. באיכות, בהספק ובעיקר באנרגיות שלי.
             </p>
           </section>
 
           <section className="mt-8 mb-6">
-            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">3. אנרגיה.</h3>
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">4. אנרגיה.</h3>
             <p>
-              זה לא רק הזמן שמתחלק, אלא גם האנרגיה שלי. ובעוד שיש משימות ששואבות ממני אנרגיה, יש משימות שממלאות אותי באנרגיה.
+              זה לא רק הזמן שמתחלק, אלא גם האנרגיה שלי. יש משימות ששואבות ממני אנרגיה, ויש משימות שממלאות אותי.
             </p>
             <p className="mt-4">
-              למשל לארח – לארח זו השקעה מטורפת: קניות, בישולים, עריכה, אבל כשהאורחים באים וכולם יחד סביב השולחן, צוחקים, מדברים, זה ממלא אותי פי כמה וכמה ביחס לאנרגיות שהשקעתי בהכנות.
+              למשל לארח- לארח זו השקעה מטורפת: קניות, בישולים, עריכה, אבל כשהאורחים באים וכולם יחד סביב השולחן, צוחקים, מדברים, זה ממלא אותי פי כמה וכמה ביחס לאנרגיות שהשקעתי בהכנות. ואם גרפתי כמה מחמאות, בכלל…
             </p>
-            <p className="mt-4">ואם גרפתי כמה מחמאות, בכלל…</p>
-            <p className="mt-2">גם פעילות גופנית</p>
-          </section>
-
-          <section className="mt-8 mb-6">
-            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">4. אין שחור ולבן.</h3>
-            <p>
-              יכול להיות מצב שבו כאשר אני משקיעה בתחום אחד, אני תורמת בתחומים אחרים. למשל, כאשר אני עובדת ומגשימה את עצמי, אני משמשת דוגמא לילדים שלי. כשאני עובדת הרבה שעות, אני מרוויחה יותר ובכך דואגת לעתיד ילדיי. כשאני עובדת הרבה שעות ולא נמצאת, מבלי לשים לב אני מעודדת את הילדים שלי להסתדר בכוחות עצמם, לפתור בעיות, לסמוך על עצמם ובכך מעודדת עצמאות.
+            <p className="mt-4">
+              כך גם לגבי פעילות גופנית- אני יוצאת עייפה וחוזרת מרוצה.
             </p>
           </section>
 
@@ -110,10 +125,12 @@ const Content2 = () => {
             </p>
           </section>
 
-          <section className="mt-8 mb-6">
-            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">6. מה שמגדיר אותי הוא לא תחום אחד או עיסוק מסוים וכמה אני טובה בו, אלא הערכים שלי, על פיהם בחרתי את סדר העדיפויות שלי.</h3>
+          <GroupHeading>התמונה הגדולה</GroupHeading>
+
+          <section className="mt-6 mb-6">
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">6. אין שחור ולבן.</h3>
             <p>
-              למשל אם בחרתי לעבוד חצי משרה, ליד הבית, לא העבודה מגדירה אותי, אלא מה שעומד מאחורי הבחירה שלי.
+              יכול להיות מצב שבו כאשר אני משקיעה בתחום אחד, אני תורמת בתחומים אחרים. למשל, כאשר אני עובדת ומגשימה את עצמי, אני משמשת דוגמא לילדים שלי. כשאני עובדת הרבה שעות, אני מרוויחה יותר ובכך דואגת לעתיד ילדיי. כשאני עובדת הרבה שעות ולא נמצאת, מבלי לשים לב אני מעודדת את הילדים שלי להסתדר בכוחות עצמם, לפתור בעיות, לסמוך על עצמם ובכך מעודדת עצמאות.
             </p>
           </section>
 
@@ -127,6 +144,13 @@ const Content2 = () => {
             </p>
             <p className="mt-4">
               רצוי שחלוקת הזמן שלי תשתנה בהתאם לצרכים שלי ושל בני הבית. וכן… הצרכים פה משתנים כל הזמן
+            </p>
+          </section>
+
+          <section className="mt-8 mb-6">
+            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">8. פרופורציות.</h3>
+            <p>
+              כשאני בוחנת בחירה מסוימת בחלוקת הזמן שלי, חשוב שאבחן אותה לפרק זמן ארוך, לתקופה. ולא באופן נקודתי. למשל יכול להיות שהרגשתי שהיום לא הייתי עם הילדים בכלל, אבל בשבוע האחרון? או בחודש האחרון?
             </p>
           </section>
 
@@ -155,20 +179,13 @@ const Content2 = () => {
             </figcaption>
           </figure>
 
-          <section className="mt-8 mb-6">
-            <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">8. פרופורציות.</h3>
-            <p>
-              כשאני בוחנת בחירה מסוימת בחלוקת הזמן שלי, חשוב שאבחן אותה לפרק זמן ארוך, לתקופה. ולא באופן נקודתי. למשל יכול להיות שהרגשתי שהיום לא הייתי עם הילדים בכלל – אבל בשבוע האחרון? או בחודש האחרון?
-            </p>
-          </section>
-
           <p className="font-medium mt-8">
             לסיכום: השורה התחתונה היא שהבחירה היא שלי, שאין מושלם, שתמיד יש איזה מחיר. אבל כשיש סיבה לבחירות שלי, שאני מבינה את הסיבה וכשאני שלמה איתה, אדע לעמוד מאחוריהן ויותר להתחבר אליהן. חשוב שאזכיר לעצמי את העקרונות האלה.
           </p>
 
           <div className="bg-muted/30 p-6 rounded-lg mt-8 space-y-2">
             <p className="font-medium">עוד דבר חשוב!</p>
-            <p>כל השוואה בין סדר העדיפויות שלי / האופן בו אני מחלקת את הזמן לבין אימהות אחרות מיותר.</p>
+            <p>כל השוואה בין סדר העדיפויות שלי / האופן בו אני מחלקת את הזמן לבין אימהות אחרות מיותרת.</p>
             <p>מספיק שיש הבדל אחד, כמו מס׳ הילדים, גילאים, מבנה אישיות (של כל אחד מבני הבית), משרה, עזרה, מצב כלכלי, תפיסות עולם… כל גורם כזה משמעותי ויכול להשפיע על הבחירות שלנו.</p>
           </div>
 
@@ -192,6 +209,29 @@ const Content2 = () => {
               <span className="transition-transform group-hover:-translate-x-1">←</span>
             </span>
           </Link>
+        </div>
+
+        {/* Soft invitations — tools + Instagram */}
+        <div className="mt-10 pt-8 border-t border-muted-foreground/15 flex flex-col items-center gap-4 text-center">
+          <Link
+            to={ROUTES.allProducts}
+            className="group inline-flex items-center gap-2 text-foreground transition-colors hover:text-primary"
+          >
+            <img src={heartIcon} alt="" className="w-5 h-5" />
+            בואי להכיר את הכלים שאיתם אני מתכננת
+            <span className="transition-transform group-hover:-translate-x-1">←</span>
+          </Link>
+          {INSTAGRAM_URL && (
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Instagram size={16} />
+              עקבי אחריי באינסטגרם, שם אני משתפת על יום האם שלי
+            </a>
+          )}
         </div>
       </main>
       <Newsletter />
