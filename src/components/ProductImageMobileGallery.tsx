@@ -35,6 +35,12 @@ interface ProductImageMobileGalleryProps {
   singleIndices: number[];
   productTitle: string;
   onImageClick: (index: number) => void;
+  /** Optional hero video (mobile only) — shown as the first slide, autoplay/muted/loop */
+  videoSrc?: string;
+  /** Poster still shown until the video paints */
+  videoPoster?: string;
+  /** Show the single (portrait) slides before the stacked pair, not after */
+  singlesFirst?: boolean;
 }
 
 export const ProductImageMobileGallery: React.FC<ProductImageMobileGalleryProps> = ({
@@ -43,6 +49,9 @@ export const ProductImageMobileGallery: React.FC<ProductImageMobileGalleryProps>
   singleIndices,
   productTitle,
   onImageClick,
+  videoSrc,
+  videoPoster,
+  singlesFirst = false,
 }) => {
   const [topIndex, bottomIndex] = stackedIndices;
   const topImage = images[topIndex];
@@ -68,6 +77,21 @@ export const ProductImageMobileGallery: React.FC<ProductImageMobileGalleryProps>
     </button>
   );
 
+  const stackedSlide = (
+    <div className="snap-start shrink-0 basis-[88%]">
+      <div className="grid grid-rows-2 gap-1 aspect-[3/4]">
+        {imageButton(topIndex, topImage)}
+        {imageButton(bottomIndex, bottomImage)}
+      </div>
+    </div>
+  );
+
+  const singleSlides = singles.map(({ index, image }) => (
+    <div key={index} className="snap-start shrink-0 basis-[88%]">
+      <div className="aspect-[3/4]">{imageButton(index, image)}</div>
+    </div>
+  ));
+
   return (
     // RTL flex + native scroll-snap: first slide rests flush right, next slide peeks
     // on the left. snap-mandatory settles cleanly on each slide.
@@ -75,19 +99,36 @@ export const ProductImageMobileGallery: React.FC<ProductImageMobileGalleryProps>
       dir="rtl"
       className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
     >
-      {/* Slide 1: two landscape shots stacked = one tall main image */}
-      <div className="snap-start shrink-0 basis-[88%]">
-        <div className="grid grid-rows-2 gap-1 aspect-[3/4]">
-          {imageButton(topIndex, topImage)}
-          {imageButton(bottomIndex, bottomImage)}
+      {/* Hero video slide (mobile only), first — autoplay muted loop */}
+      {videoSrc && (
+        <div className="snap-start shrink-0 basis-[88%]">
+          <div className="aspect-[3/4] overflow-hidden bg-secondary/10">
+            <video
+              className="w-full h-full object-cover"
+              src={videoSrc}
+              poster={videoPoster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label={`סרטון של ${productTitle}`}
+            />
+          </div>
         </div>
-      </div>
-      {/* One slide per single image (portrait shot / bundle shots) */}
-      {singles.map(({ index, image }) => (
-        <div key={index} className="snap-start shrink-0 basis-[88%]">
-          <div className="aspect-[3/4]">{imageButton(index, image)}</div>
-        </div>
-      ))}
+      )}
+      {/* singlesFirst: portrait shot before the stacked pair (else the reverse) */}
+      {singlesFirst ? (
+        <>
+          {singleSlides}
+          {stackedSlide}
+        </>
+      ) : (
+        <>
+          {stackedSlide}
+          {singleSlides}
+        </>
+      )}
     </div>
   );
 };

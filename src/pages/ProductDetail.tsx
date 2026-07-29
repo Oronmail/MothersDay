@@ -235,17 +235,14 @@ export default function ProductDetail() {
   // cramped mosaic. Slide 1 = the two landscape shots stacked; then one slide per
   // remaining image (the portrait shot for planning products, or the three individual
   // shots for bundles — the old right-hand carousel broken out into separate slides).
-  // p1 is the unique task-notebook with its own presentation — left as-is for now.
   let galleryStacked: number[] = [];
   let gallerySingles: number[] = [];
-  if (handle !== "p1") {
-    if (imageLayout.type === "grid-2-left-1-right" && imageLayout.mainImages.length >= 3) {
-      galleryStacked = imageLayout.mainImages.slice(0, 2);
-      gallerySingles = [imageLayout.mainImages[2]];
-    } else if (isBundle && imageLayout.type === "grid-2-left-carousel-right") {
-      galleryStacked = imageLayout.mainImages.slice(0, 2);
-      gallerySingles = imageLayout.carouselImages || [];
-    }
+  if (imageLayout.type === "grid-2-left-1-right" && imageLayout.mainImages.length >= 3) {
+    galleryStacked = imageLayout.mainImages.slice(0, 2);
+    gallerySingles = [imageLayout.mainImages[2]];
+  } else if (isBundle && imageLayout.type === "grid-2-left-carousel-right") {
+    galleryStacked = imageLayout.mainImages.slice(0, 2);
+    gallerySingles = imageLayout.carouselImages || [];
   }
   gallerySingles = gallerySingles.filter((i) => !!images[i]);
   const useMobileGallery =
@@ -503,6 +500,9 @@ export default function ProductDetail() {
                     singleIndices={gallerySingles}
                     productTitle={data.title}
                     onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
+                    videoSrc={handle === "p1" ? "/videos/p1-mobile.mp4" : undefined}
+                    videoPoster={handle === "p1" ? "/videos/p1-mobile-poster.jpg" : undefined}
+                    singlesFirst={handle === "p1"}
                   />
                 </div>
               )}

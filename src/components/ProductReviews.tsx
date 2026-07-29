@@ -1,19 +1,32 @@
 import { useState } from "react";
-import { Star } from "lucide-react";
 import { getProductReviews, type Review } from "@/data/productReviews";
 import { ReviewForm } from "@/components/ReviewForm";
 import heartOutline from "@/assets/heart-icon.png";
+import heartFilled from "@/assets/heart-filled.png";
 
 const PAGE_SIZE = 5;
 
-const Stars = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) => {
+// דירוג בלבבות מצוירים-ביד, בגוון המותג (זהה ל-Testimonials / ReviewForm),
+// דרך CSS mask — ממולא = צבע המותג, ריק = muted.
+const Hearts = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) => {
   const cls = size === "lg" ? "h-5 w-5" : "h-4 w-4";
   return (
-    <div className="flex items-center gap-0.5" aria-label={`${rating} מתוך 5 כוכבים`}>
+    <div className="flex items-center gap-1" aria-label={`${rating} מתוך 5`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star
+        <span
           key={i}
-          className={`${cls} ${i <= rating ? "fill-secondary text-secondary" : "fill-none text-muted"}`}
+          aria-hidden="true"
+          className={`inline-block ${cls} ${i <= rating ? "bg-[#4d3c40]" : "bg-muted"}`}
+          style={{
+            WebkitMaskImage: `url(${heartFilled})`,
+            maskImage: `url(${heartFilled})`,
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+          }}
         />
       ))}
     </div>
@@ -23,7 +36,7 @@ const Stars = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) 
 const ReviewItem = ({ r }: { r: Review }) => (
   <article className="py-6 border-b border-border last:border-b-0 text-right">
     <div className="flex items-center justify-between gap-3">
-      <Stars rating={r.rating} />
+      <Hearts rating={r.rating} />
       {r.date && <span className="text-xs text-muted-foreground">{r.date}</span>}
     </div>
     <h3 className="mt-3 text-lg font-semibold text-foreground leading-snug">{r.title}</h3>
@@ -92,13 +105,13 @@ export const ProductReviews = ({
           <EmptyState onWrite={() => setFormOpen(true)} />
         ) : (
           <>
-            {/* סיכום: ציון ממוצע + כוכבים + מספר חוות דעת אמיתי */}
+            {/* סיכום: ציון ממוצע + לבבות + מספר חוות דעת אמיתי */}
             <div className="flex items-center gap-4 bg-card border border-border p-5 md:p-6">
               <span className="text-4xl md:text-5xl font-semibold text-foreground leading-none">
                 {Number.isInteger(average) ? average : average.toFixed(1)}
               </span>
               <div className="flex flex-col gap-1">
-                <Stars rating={Math.round(average)} size="lg" />
+                <Hearts rating={Math.round(average)} size="lg" />
                 <span className="text-sm text-muted-foreground">
                   על סמך {count} {count === 1 ? "חוות דעת" : "חוות דעת"} מקבוצת המיקוד
                 </span>

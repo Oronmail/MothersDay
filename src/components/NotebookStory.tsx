@@ -14,16 +14,19 @@ import smileyIcon from "@/assets/smiley-icon.png";
 
 type ImageEdge = { node: { url: string; altText?: string | null } };
 
+// Icons follow a smiley → heart → clock cadence (repeated ×3) so the same icon
+// never lands next to another — vertically or horizontally, in 1 or 2 columns.
+// Each label keeps the icon it originally had.
 const TOOLS = [
   { icon: smileyIcon, label: "ארגון סדרי עדיפויות" },
   { icon: heartIcon, label: "שגרת בוקר / צהריים / ערב" },
   { icon: clockIcon, label: "לוח שבועי אישי ומשפחתי" },
+  { icon: smileyIcon, label: "משימות לפי תחומים" },
   { icon: heartIcon, label: "חלוקת אחריות בין בני הבית" },
   { icon: clockIcon, label: "ליווי לכל אורך הדרך" },
-  { icon: smileyIcon, label: "משימות לפי תחומים" },
-  { icon: clockIcon, label: "משימות לפי סטטוס" },
   { icon: smileyIcon, label: "משימות לפי תדירות" },
   { icon: heartIcon, label: "השראה והעצמה" },
+  { icon: clockIcon, label: "משימות לפי סטטוס" },
 ];
 
 function RotatingImages({
@@ -109,6 +112,21 @@ export const NotebookStory = ({
           </div>
           {tableUrls.length > 0 && (
             <div className="nb-vis">
+              {/* Mobile: swipeable carousel through all table templates */}
+              <div className="nb-tablecarousel" dir="rtl">
+                {tableUrls.map((u, i) => (
+                  <button
+                    type="button"
+                    key={u}
+                    className="nb-tableslide"
+                    onClick={onImageClick ? () => onImageClick(10 + i) : undefined}
+                    aria-label={`פתחי טבלה ${i + 1} מתוך ${tableUrls.length}`}
+                  >
+                    <img src={u} alt="" />
+                  </button>
+                ))}
+              </div>
+              {/* Desktop: single auto-rotating page */}
               <RotatingImages urls={tableUrls} className="nb-tableslider" intervalMs={3100} baseIndex={10} onImageClick={onImageClick} />
             </div>
           )}
@@ -118,16 +136,16 @@ export const NotebookStory = ({
       {/* ===== הרבה יותר ממחברת (ערך) — tools panel right / text left ===== */}
       <section className="nb-section">
         <div className="nb-split">
-          <div className="nb-vis nb-toolvis">
+          <ul className="nb-vis nb-toollist">
             {TOOLS.map((t) => (
-              <div className="nb-tool" key={t.label}>
-                <div className="nb-ic">
+              <li className="nb-tool" key={t.label}>
+                <span className="nb-mark" aria-hidden="true">
                   <img src={t.icon} alt="" />
-                </div>
+                </span>
                 <h3>{t.label}</h3>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
           <div className="nb-txt">
             <h2>הרבה יותר ממחברת</h2>
             <p>המחברת היא מעבר לדף שבו את משבצת משימות.</p>

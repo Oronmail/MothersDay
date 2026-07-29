@@ -18,7 +18,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-new.png";
 import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, buildProductPath } from "@/lib/routes";
 
 export const MobileNav = () => {
@@ -155,6 +155,13 @@ export const MobileNav = () => {
           </Collapsible>
 
           <div className="h-px bg-border my-2" />
+
+          <button
+            onClick={() => handleNavigate(ROUTES.blog)}
+            className="py-3 text-right font-medium hover:text-primary transition-colors"
+          >
+            בלוג
+          </button>
 
           <button
             onClick={() => handleNavigate(ROUTES.about)}

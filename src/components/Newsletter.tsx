@@ -99,13 +99,13 @@ export const Newsletter = () => {
         {/* Description text */}
         <div className="text-center space-y-0.5 md:space-y-1 mb-5 md:mb-6 relative z-10">
           <p className="text-sm md:text-base text-foreground">
-            הבלוג של יום האם
+            הצטרפי למועדון "רוצה מתכננת עושה"
           </p>
           <p className="text-sm md:text-base text-foreground">
-            לתכנון וניהול זמן לאימהות
+            ותהני מהבלוג שלנו על תכנון וניהול זמן לאימהות
           </p>
           <p className="text-sm md:text-base text-foreground">
-            הירשמי לניוזלטר ותהני גם מפעילויות שוות
+            יחד עם הטבות ופעילויות שוות.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export const Newsletter = () => {
             disabled={isLoading}
             className="whitespace-nowrap bg-primary hover:bg-primary/90 text-primary-foreground rounded-none text-base md:text-sm px-5 md:px-7 h-9 md:h-10 border-0"
           >
-            {isLoading ? "שולח..." : "הרשמה"}
+            {isLoading ? "שולח..." : "הצטרפות"}
           </Button>
         </form>
       </div>

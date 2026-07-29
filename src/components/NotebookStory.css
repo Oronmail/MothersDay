@@ -39,19 +39,44 @@
 }
 .nbstory .nb-tableslider img.on { opacity:1; }
 
-/* tools — 3x3 icon panel, sharp corners */
-.nbstory .nb-toolvis {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:28px 16px;
-  background:#faf6f0; border:1px solid var(--nb-border); padding:34px 26px;
+/* tables carousel — mobile only; swipe through all templates (hidden on desktop) */
+.nbstory .nb-tablecarousel { display:none; }
+.nbstory .nb-tableslide {
+  flex:0 0 78%; scroll-snap-align:center; padding:0; margin:0;
+  aspect-ratio:71/100; overflow:hidden; background:#fffdf9;
+  border:1px solid var(--nb-border); cursor:zoom-in;
 }
-.nbstory .nb-tool { display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
-.nbstory .nb-tool .nb-ic { width:44px; height:44px; display:flex; align-items:center; justify-content:center; }
-.nbstory .nb-tool .nb-ic img { width:100%; height:100%; object-fit:contain; }
-.nbstory .nb-tool h3 { font-size:1rem; line-height:1.3; color:var(--nb-primary); font-weight:600; margin:0; }
+.nbstory .nb-tableslide img { width:100%; height:100%; object-fit:contain; padding:3.5%; display:block; }
+
+/* tools — clean feature checklist (no boxed doodles) */
+.nbstory .nb-toollist {
+  list-style:none; margin:0; padding:30px 30px 34px;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:20px 40px;
+  background:#faf6f0; border:1px solid var(--nb-border);
+}
+.nbstory .nb-toollist .nb-tool {
+  display:flex; flex-direction:row; align-items:center;
+  justify-content:flex-start; text-align:right; gap:12px;
+}
+.nbstory .nb-toollist .nb-tool h3 {
+  font-size:1.04rem; line-height:1.35; color:var(--nb-primary); font-weight:500; margin:0;
+}
+/* hand-drawn feature icon (smiley / heart / clock), varied per row */
+.nbstory .nb-mark {
+  flex:none; width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+}
+.nbstory .nb-mark img { width:100%; height:100%; object-fit:contain; }
 
 @media (max-width:860px) {
   .nbstory .nb-split { grid-template-columns:1fr; gap:28px; padding:40px 20px; }
-  .nbstory .nb-split .nb-vis { order:2; }
-  .nbstory .nb-toolvis { grid-template-columns:repeat(2,1fr); }
-  .nbstory .nb-tableslider { max-width:60%; }
+  .nbstory .nb-split .nb-vis { order:-1; }
+  .nbstory .nb-toollist { grid-template-columns:1fr; gap:16px; padding:26px 24px; }
+  .nbstory .nb-tableslider { display:none; }
+  .nbstory .nb-tablecarousel {
+    display:flex; gap:12px; overflow-x:auto;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none; padding-bottom:2px;
+  }
+  .nbstory .nb-tablecarousel::-webkit-scrollbar { display:none; }
 }
