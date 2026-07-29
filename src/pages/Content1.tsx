@@ -7,6 +7,9 @@ import titleUnderline from "@/assets/title-underline.png";
 import fourGenerations from "@/assets/blog-four-generations.jpg";
 import { LazyImage } from "@/components/LazyImage";
 import { ROUTES } from "@/lib/routes";
+import { Instagram } from "lucide-react";
+import { INSTAGRAM_URL } from "@/lib/siteConfig";
+import heartIcon from "@/assets/heart-icon.png";
 
 const Content1 = () => {
   return (
@@ -56,7 +59,7 @@ const Content1 = () => {
           </p>
 
           <p>
-            היום המציאות אחרת. אנחנו, הנשים, עובדות. יש לנו אינסוף אפשרויות במגוון תפקידים וסוגי משרה: משרת אם, משרה חלקית/ מלאה, קריירה תובענית, עסק עצמאי… למה בחרנו במה שבחרנו? חלום, חינוך, צורך כלכלי, הזדמנות – או שילוב של הכול. בכל אופן, אופי העבודה שלנו משפיע ישירות על היום־יום שלנו ועל הזמן שנשאר לנו בבית ועם הילדים. ולכן אין דרך אחת לאימהות. ואין תשובה אחת לשאלה ״איך עושים את זה״.
+            היום המציאות אחרת. אנחנו האימהות עובדות. יש לנו אינסוף אפשרויות במגוון תפקידים וסוגי משרה: משרת אם, משרה חלקית/ מלאה, קריירה תובענית, עסק עצמאי… למה בחרנו במה שבחרנו? חלום, חינוך, צורך כלכלי, הזדמנות או שילוב של הכול. בכל אופן, אופי העבודה שלנו משפיע ישירות על היום־יום שלנו ועל הזמן שנשאר לנו בבית ועם הילדים. ולכן אין דרך אחת לאימהות. ואין תשובה אחת לשאלה ״איך עושים את זה״.
           </p>
 
           <p>
@@ -89,7 +92,7 @@ const Content1 = () => {
               זה כבר לא סבבה לתת לילד לאכול מנה חמה או מנה כזו שמחוררים ומחממים צריך בריא, מאוזן, ביתי.
             </p>
             <p className="mt-4">
-              הכריך בשקית לבית ספר כבר מזמן הפך לא אקולוגי, והוחלף בקופסא עם פרי וירק ושוקולד? חס וחלילה.
+              הכריך בשקית לבית ספר כבר מזמן הפך לא אקולוגי, והוחלף בקופסא עם פרי וירק. ושוקולד? חס וחלילה.
             </p>
           </section>
 
@@ -126,11 +129,11 @@ const Content1 = () => {
           </p>
 
           <p>
-            אנחנו רוצות הרבה יותר בשביל עצמנו. גם אנחנו רוצות להגשים את עצמנו בתוך כל האפשרויות שנפתחו בפנינו, אנחנו רוצות להראות טוב- גם אנחנו רוצות להיות מאושרות.
+            אנחנו רוצות הרבה יותר בשביל עצמנו. גם אנחנו רוצות להגשים את עצמנו בתוך כל האפשרויות שנפתחו בפנינו, אנחנו רוצות להראות טוב, גם אנחנו רוצות להיות מאושרות.
           </p>
 
           <p>
-            ולא רק אנחנו, גם האימהות שלנו- הסבתות. יש סבתות שעדיין עובדות וגם הן רוצות להגשים את עצמן, ללכת לקאנטרי, לתאטרון, לטייל בחו"ל. והן לא תמיד זמינות לעזור לנו.
+            ולא רק אנחנו, גם האימהות שלנו, הסבתות. יש סבתות שעדיין עובדות וגם הן רוצות להגשים את עצמן, ללכת לקאנטרי, לתאטרון, לטייל בחו"ל. והן לא תמיד זמינות לעזור לנו.
           </p>
 
           <p>
@@ -170,6 +173,29 @@ const Content1 = () => {
               <span className="transition-transform group-hover:-translate-x-1">←</span>
             </span>
           </Link>
+        </div>
+
+        {/* Soft invitations — tools + Instagram */}
+        <div className="mt-10 pt-8 border-t border-muted-foreground/15 flex flex-col items-center gap-4 text-center">
+          <Link
+            to={ROUTES.allProducts}
+            className="group inline-flex items-center gap-2 text-foreground transition-colors hover:text-primary"
+          >
+            <img src={heartIcon} alt="" className="w-5 h-5" />
+            בואי להכיר את הכלים שאיתם אני מתכננת
+            <span className="transition-transform group-hover:-translate-x-1">←</span>
+          </Link>
+          {INSTAGRAM_URL && (
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Instagram size={16} />
+              עקבי אחריי באינסטגרם, שם אני משתפת על יום האם שלי
+            </a>
+          )}
         </div>
       </main>
       <Newsletter />
