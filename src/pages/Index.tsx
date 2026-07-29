@@ -43,7 +43,10 @@ const Index = () => {
         </div>
         <VideoTitle />
         <VideoCarousel />
-        <Testimonials />
+        {/* קרוסלת "אימהות מספרות" — התוכן ב-Testimonials.tsx עדיין placeholder,
+            אז היא מוצגת בפיתוח המקומי בלבד ולא באתר החי. כשיגיעו 7 חוות הדעת
+            האמיתיות מקבוצת המיקוד: להחליף את הטקסטים שם ולהסיר את התנאי הזה. */}
+        {import.meta.env.DEV && <Testimonials />}
         <FounderStory />
         <ContentSquares />
         <Newsletter />

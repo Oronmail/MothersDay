@@ -19,9 +19,14 @@ export interface Review {
   featured?: boolean;  // האם להציג גם בקרוסלה בעמוד הבית
 }
 
-// מפתח = handle של המוצר (כמו ב-URL /product/<handle>)
-export const PRODUCT_REVIEWS: Record<string, Review[]> = {
-  // דוגמה זמנית להמחשת המצב ה"מלא" — להחליף בחוות הדעת האמיתיות:
+// חוות דעת אמיתיות — נכנסות לכאן וייראו גם באתר החי.
+// כשיגיעו 7 חוות הדעת מקבוצת המיקוד, מוסיפים אותן כאן לפי handle:
+//   "p1": [{ name: "...", title: "...", quote: "...", rating: 5, featured: true }],
+const REAL_REVIEWS: Record<string, Review[]> = {};
+
+// תוכן PLACEHOLDER — להמחשת העיצוב בפיתוח המקומי בלבד.
+// מסונן החוצה בבנייה לפרודקשן, כך שהאתר החי לעולם לא מציג חוות דעת מומצאות.
+const PLACEHOLDER_REVIEWS: Record<string, Review[]> = {
   "p1": [
     {
       name: "[שם]",
@@ -38,9 +43,12 @@ export const PRODUCT_REVIEWS: Record<string, Review[]> = {
       featured: true,
     },
   ],
-
-  // שאר המוצרים ללא חוות דעת עדיין → יציגו מצב ריק ("אנחנו מחפשים כוכבים").
 };
+
+// מפתח = handle של המוצר (כמו ב-URL /product/<handle>)
+export const PRODUCT_REVIEWS: Record<string, Review[]> = import.meta.env.DEV
+  ? { ...PLACEHOLDER_REVIEWS, ...REAL_REVIEWS }
+  : REAL_REVIEWS;
 
 /** כל חוות הדעת של מוצר לפי ה-handle שלו (ריק אם אין). */
 export function getProductReviews(handle: string | undefined): Review[] {
