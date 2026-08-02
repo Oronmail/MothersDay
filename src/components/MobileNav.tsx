@@ -163,26 +163,8 @@ export const MobileNav = () => {
             בלוג
           </button>
 
-          <button
-            onClick={() => handleNavigate(ROUTES.about)}
-            className="py-3 text-right font-medium hover:text-primary transition-colors"
-          >
-            אודות
-          </button>
-          
-          <button
-            onClick={() => handleNavigate(ROUTES.support)}
-            className="py-3 text-right font-medium hover:text-primary transition-colors"
-          >
-            צור קשר
-          </button>
-          
-          <button
-            onClick={() => handleNavigate(ROUTES.content2)}
-            className="py-3 text-right font-medium hover:text-primary transition-colors"
-          >
-            שאלות נפוצות
-          </button>
+          {/* אודות / צור קשר / שאלות נפוצות לא מופיעים כאן בכוונה:
+              במובייל מגיעים אליהם דרך "שירות לקוחות" ו"יום האם" שבפוטר. */}
 
           <div className="h-px bg-border my-2" />
 
@@ -216,9 +198,10 @@ export const MobileNav = () => {
                 setIsOpen(false);
                 setIsAuthDialogOpen(true);
               }}
-              className="py-3 text-right font-medium hover:text-primary transition-colors"
+              className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
             >
-              התחבר
+              <User className="h-4 w-4" />
+              <span>האיזור האישי</span>
             </button>
           )}
         </nav>

@@ -1,8 +1,7 @@
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Mail, Phone } from "lucide-react";
+import { ChevronLeft, Mail, Phone } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -110,9 +109,9 @@ const Support = () => {
       <div className="min-h-screen bg-background">
         <AnnouncementBanner />
         <Header />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
           {/* Branded header */}
-          <div className="text-center mb-14" dir="rtl">
+          <div className="text-center mb-10 md:mb-14" dir="rtl">
             <img src={heartIcon} alt="" className="w-10 h-10 mx-auto mb-3" />
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
               שירות לקוחות
@@ -127,31 +126,35 @@ const Support = () => {
             </p>
           </div>
 
-          {/* Contact channels */}
-          <div className="grid md:grid-cols-3 gap-5 mb-20" dir="rtl">
+          {/* Contact channels.
+              מובייל: שורה קומפקטית שכולה לחיצה (אייקון, טקסט, חץ).
+              דסקטופ (md ומעלה): אותם נתונים כשלושה כרטיסים זה לצד זה, כמו קודם. */}
+          <div className="grid gap-3 md:grid-cols-3 md:gap-5 mb-14 md:mb-20" dir="rtl">
             {contactChannels.map(({ icon: Icon, title, description, cta, href, external }) => (
-              <div
+              <a
                 key={title}
-                className="group bg-card border border-border p-8 text-center transition-all duration-200 hover:border-primary/40 hover:shadow-sm"
+                href={href}
+                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="group flex items-center gap-4 bg-card border border-border p-4 text-right transition-all duration-200 hover:border-primary/40 hover:shadow-sm md:flex-col md:p-8 md:text-center"
               >
-                <div className="bg-secondary/30 group-hover:bg-secondary/50 transition-colors w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <Icon className="h-7 w-7 text-foreground" />
-                </div>
-                <h2 className="font-display text-xl font-bold mb-1 text-foreground">{title}</h2>
-                <p className="text-foreground/60 text-sm mb-5">{description}</p>
-                <Button
-                  variant="outline"
-                  className="w-full rounded-none hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-                  asChild
-                >
-                  <a
-                    href={href}
-                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  >
+                <span className="bg-secondary/30 group-hover:bg-secondary/50 transition-colors w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 md:mb-5">
+                  <Icon className="h-6 w-6 md:h-7 md:w-7 text-foreground" />
+                </span>
+
+                <span className="flex-1 md:w-full">
+                  <span className="block font-display text-lg md:text-xl font-bold text-foreground md:mb-1">
+                    {title}
+                  </span>
+                  <span className="block text-foreground/60 text-sm md:mb-5">{description}</span>
+                  {/* מובייל: ה-CTA כשורת טקסט. דסקטופ: כפתור מסגרת ברוחב מלא. */}
+                  <span className="mt-0.5 block text-sm text-primary md:hidden">{cta}</span>
+                  <span className="hidden md:flex h-10 w-full items-center justify-center border border-input text-sm font-medium transition-colors group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
                     {cta}
-                  </a>
-                </Button>
-              </div>
+                  </span>
+                </span>
+
+                <ChevronLeft className="h-5 w-5 shrink-0 text-foreground/30 md:hidden" />
+              </a>
             ))}
           </div>
 

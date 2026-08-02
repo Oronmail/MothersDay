@@ -50,6 +50,68 @@ export const Header = () => {
       navigate(ROUTES.home);
     }
   };
+  // Wishlist + account entry points — same markup on mobile and desktop.
+  const wishlistButton = (
+    <button
+      onClick={() => navigate(ROUTES.wishlist)}
+      aria-label="רשימת המשאלות"
+      className="flex items-center px-1 hover:opacity-80 transition-opacity"
+    >
+      <span
+        aria-hidden="true"
+        className="block h-7 w-7 bg-[#3c2a2e] relative top-[2px]"
+        style={{
+          WebkitMaskImage: `url(${heartIcon})`,
+          maskImage: `url(${heartIcon})`,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+        }}
+      />
+    </button>
+  );
+
+  const accountMenu = user ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="p-0" aria-label="האזור האישי">
+          <img src={userIcon} alt="משתמש" className="h-6 w-6" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem className="text-sm text-muted-foreground" disabled>
+          {user.email}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate(ROUTES.profile)}>
+          <img src={userIcon} alt="" className="ml-2 h-4 w-4" />
+          פרופיל
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate(ROUTES.wishlist)}>
+          <Heart className="ml-2 h-4 w-4" />
+          רשימת משאלות
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="ml-2 h-4 w-4" />
+          התנתק
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="p-0"
+      aria-label="האזור האישי"
+      onClick={() => setIsAuthDialogOpen(true)}
+    >
+      <img src={userIcon} alt="משתמש" className="h-6 w-6" />
+    </Button>
+  );
+
   return <header className="sticky top-0 z-50 backdrop-blur shadow-sm relative" style={{
     backgroundImage: `url(${headerTexture})`,
     backgroundSize: 'cover',
@@ -75,6 +137,8 @@ export const Header = () => {
             </button>
           </div>
 
+          {/* רק חיפוש וסל נשארים בחוץ. האיזור האישי ורשימת המשאלות
+              יושבים בתוך תפריט ההמבורגר, כדי לא לעמיס את ההדר במובייל. */}
           <div className="flex items-center gap-0">
             <SearchModal />
             <CartDrawer />
@@ -242,58 +306,9 @@ export const Header = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate(ROUTES.wishlist)}
-              aria-label="רשימת המשאלות"
-              className="flex items-center hover:opacity-80 transition-opacity"
-            >
-              <span
-                aria-hidden="true"
-                className="block h-7 w-7 bg-[#3c2a2e] relative top-[2px]"
-                style={{
-                  WebkitMaskImage: `url(${heartIcon})`,
-                  maskImage: `url(${heartIcon})`,
-                  WebkitMaskRepeat: "no-repeat",
-                  maskRepeat: "no-repeat",
-                  WebkitMaskPosition: "center",
-                  maskPosition: "center",
-                  WebkitMaskSize: "contain",
-                  maskSize: "contain",
-                }}
-              />
-            </button>
+            {wishlistButton}
             <CartDrawer />
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="p-0">
-                    <img src={userIcon} alt="משתמש" className="h-6 w-6" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="text-sm text-muted-foreground" disabled>
-                    {user.email}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate(ROUTES.profile)}>
-                    <img src={userIcon} alt="" className="ml-2 h-4 w-4" />
-                    פרופיל
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(ROUTES.wishlist)}>
-                    <Heart className="ml-2 h-4 w-4" />
-                    רשימת משאלות
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="ml-2 h-4 w-4" />
-                    התנתק
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="ghost" size="icon" className="p-0" onClick={() => setIsAuthDialogOpen(true)}>
-                <img src={userIcon} alt="משתמש" className="h-6 w-6" />
-              </Button>
-            )}
+            {accountMenu}
           </div>
         </div>
       </div>
