@@ -7,6 +7,9 @@ import titleUnderline from "@/assets/title-underline.png";
 import soccerCake from "@/assets/blog3-soccer-cake.jpg";
 import { LazyImage } from "@/components/LazyImage";
 import { ROUTES } from "@/lib/routes";
+import { Instagram } from "lucide-react";
+import { INSTAGRAM_URL } from "@/lib/siteConfig";
+import heartIcon from "@/assets/heart-icon.png";
 
 const Content3 = () => {
   return (
@@ -57,7 +60,7 @@ const Content3 = () => {
           </p>
 
           <p>
-            כמו ההבדל בין לפתוח את המקרר, לבהות בו ולנסות להחליט מה להכין לארוחת ערב, ב 19:00, אחרי שחזרתי מאיסופים מחוגים וכולם רעבים,<br />
+            כמו ההבדל בין לפתוח את המקרר, לבהות בו ולנסות להחליט מה להכין לארוחת ערב, ב-19:00, אחרי שחזרתי מאיסופים מחוגים וכולם רעבים,<br />
             לבין שיש לי מרק ירקות מזין שרק צריך לחמם בדיוק ליום כזה.
           </p>
 
@@ -73,7 +76,7 @@ const Content3 = () => {
 
           <p>
             זה כמו ההבדל בין להגיד לעצמי ״איך הייתי רוצה לשבת ולעשות יצירות/ לשחק משחק קופסא/ לקרוא ספר עם הילד הקטן״,<br />
-            לבין לעשות את זה.
+            לבין לעשות את זה, כי שיבצתי לעצמי זמן בלו״ז.
           </p>
 
           <div className="bg-muted/30 p-6 rounded-lg mt-8 space-y-2">
@@ -100,22 +103,22 @@ const Content3 = () => {
 
           <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">1. בראש ובראשונה להיות מוכנה.</h3>
-            <p>כשאת יודעת מה צפוי לך היום, גם אם זה יום עמוס במיוחד, את ניגשת אליו אחרת.</p>
+            <p>כשאני יודעת מה צפוי לי היום, גם אם זה יום עמוס במיוחד, אני ניגשת אליו אחרת.</p>
           </section>
 
           <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">2. צעד חשוב בלגרום למשהו לקרות הוא לתכנן אותו.</h3>
-            <p>אחרי שאני מבינה שאני רוצה שמשהו יקרה, אני שואלת ״איך?״ ומכינה תוכנית אפשרית.</p>
+            <p>אחרי שאני מבינה שאני רוצה שמשהו יקרה, אני שואלת ״איך? ומתי?״ ומכינה תוכנית אפשרית.</p>
           </section>
 
           <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">3. תזמון- להתאים את המשימה לזמן הנכון.</h3>
-            <p>למה אומרים להכין בגדים מהערב, ולא בבוקר? במיוחד עם ילדים הטיימינג יכול להיות גיים צ׳נג׳ר</p>
+            <p>למה אומרים להכין בגדים מהערב, ולא בבוקר? במיוחד עם ילדים התזמון הוא קריטי.</p>
           </section>
 
           <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">4. יעול זמן- כשאני מתכננת נכון, אני מנצלת את הזמן בצורה הרבה יותר יעילה.</h3>
-            <p>למשל אני יכולה לעשות קניות בזמן שאני מחכה שהבת שלי תסיים את החוג.</p>
+            <p>למשל אני יכולה לעשות קניות online בזמן שאני מחכה שהבת שלי תסיים את החוג, במקום סתם לגלול.</p>
           </section>
 
           <section className="mt-6 mb-6">
@@ -126,7 +129,7 @@ const Content3 = () => {
 
           <section className="mt-6 mb-6">
             <h3 className="text-[17px] font-medium font-sans text-foreground mb-4">6. תכנון עוזר לי להתמקד ולא להתפזר.</h3>
-            <p>תכננתי לעשות עכשיו משהו- אם מישהו יפנה אלי, אוכל להגיד לו בביטחון, ״כרגע אני לא פנויה״/ ״אני עסוקה כרגע״.</p>
+            <p>תכננתי לעשות עכשיו משהו- אם מישהו יפנה אלי, אוכל להגיד בביטחון, ״כרגע אני לא פנויה״/ ״אני עסוקה כרגע״.</p>
           </section>
 
           <section className="mt-6 mb-6">
@@ -169,6 +172,29 @@ const Content3 = () => {
             <span className="transition-transform group-hover:translate-x-1">→</span>
             חזרה לכל הפרקים
           </Link>
+        </div>
+
+        {/* Soft invitations — tools + Instagram */}
+        <div className="mt-10 pt-8 border-t border-muted-foreground/15 flex flex-col items-center gap-4 text-center">
+          <Link
+            to={ROUTES.allProducts}
+            className="group inline-flex items-center gap-2 text-foreground transition-colors hover:text-primary"
+          >
+            <img src={heartIcon} alt="" className="w-5 h-5" />
+            בואי להכיר את הכלים שאיתם אני מתכננת
+            <span className="transition-transform group-hover:-translate-x-1">←</span>
+          </Link>
+          {INSTAGRAM_URL && (
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Instagram size={16} />
+              עקבי אחריי באינסטגרם, שם אני משתפת על יום האם שלי
+            </a>
+          )}
         </div>
       </main>
       <Newsletter />
