@@ -62,8 +62,12 @@ const Blog = () => {
             בלוג
           </h1>
           <img src={titleUnderline} alt="" className="w-32 md:w-48 -mt-1" />
-          <p className="text-muted-foreground mt-4 text-center max-w-xl">
-            רוצה מתכננת עושה- הבלוג של יום האם לתכנון וניהול זמן לאימהות
+          <p className="text-muted-foreground mt-4 text-center max-w-xl text-sm md:text-base">
+            רוצה מתכננת עושה-{" "}
+            <br className="md:hidden" />
+            <span className="md:whitespace-normal whitespace-nowrap">
+              הבלוג של יום האם לתכנון וניהול זמן לאימהות
+            </span>
           </p>
         </div>
 
