@@ -34,6 +34,8 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <AnnouncementBanner />
         <Header />
+        {/* H1 סמוי לקוראי מסך ולמנועי חיפוש - לעמוד אין כותרת טקסטואלית גלויה */}
+        <h1 className="sr-only">יום האם - מוצרי תכנון לאימהות</h1>
         <Hero />
         <HeroNewsletterCard />
         <BrandMission />

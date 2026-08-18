@@ -160,7 +160,13 @@ export const SEO = ({
     : defaultSEO.defaultTitle;
   const pageDescription = description || defaultSEO.defaultDescription;
   const pageImage = image || defaultSEO.defaultImage;
-  const pageUrl = url || siteUrl;
+  // Without an explicit url, canonicalize to the current path - not the site
+  // root - so inner pages never declare the homepage as their canonical.
+  const pageUrl =
+    url ||
+    (typeof window !== "undefined" && window.location.pathname !== "/"
+      ? `${siteUrl}${window.location.pathname}`
+      : siteUrl);
 
   // Ensure image is absolute URL
   const absoluteImageUrl = pageImage.startsWith("http")
@@ -250,7 +256,9 @@ export const SEO = ({
 export const getOrganizationStructuredData = () => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "יום האם - Yom Ha'Em",
+  "@id": `${getSiteUrl()}/#organization`,
+  name: "יום האם",
+  alternateName: "Yom Ha'Em - Mother's Day",
   description: "מותג מוצרי תכנון איכותיים לאימהות",
   url: getSiteUrl(),
   logo: `${getSiteUrl()}/logo.png`,
@@ -296,8 +304,12 @@ export const getProductStructuredData = (product: {
 export const getWebsiteStructuredData = () => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: defaultSEO.siteName,
+  "@id": `${getSiteUrl()}/#website`,
+  name: "יום האם",
+  alternateName: ["Mother's Day", "יום האם Mother's Day"],
   url: getSiteUrl(),
+  inLanguage: "he",
+  publisher: { "@id": `${getSiteUrl()}/#organization` },
 });
 
 /**

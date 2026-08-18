@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://mothers-day-flax-one.vercel.app/sitemap.xml

@@ -1,5 +1,5 @@
-export const SITE_NAME = "יום האם Mother's Day";
-export const FALLBACK_SITE_URL = "https://mothers-day-flax-one.vercel.app";
+export const SITE_NAME = "יום האם";
+export const FALLBACK_SITE_URL = "https://www.mothersday.co.il";
 
 export const SUPPORT_EMAIL = "support@mothersday.co.il";
 export const SUPPORT_PHONE_DISPLAY = "054-8024059";

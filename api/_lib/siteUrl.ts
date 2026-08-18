@@ -1,6 +1,6 @@
 import type { VercelRequest } from "@vercel/node";
 
-const FALLBACK_SITE_URL = "https://mothers-day-flax-one.vercel.app";
+const FALLBACK_SITE_URL = "https://www.mothersday.co.il";
 
 export const getRequestSiteUrl = (req: VercelRequest) => {
   const envSiteUrl = process.env.VITE_SITE_URL?.trim();
