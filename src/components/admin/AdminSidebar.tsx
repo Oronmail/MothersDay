@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
-import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, Ticket, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, Ticket, LogOut, Settings, Heart } from 'lucide-react';
 import logoNew from '@/assets/logo-new.png';
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/admin/collections', icon: FolderOpen, label: 'קולקציות' },
   { to: '/admin/orders', icon: ShoppingCart, label: 'הזמנות' },
   { to: '/admin/customers', icon: Users, label: 'לקוחות' },
+  { to: '/admin/reviews', icon: Heart, label: 'חוות דעת' },
   { to: '/admin/newsletter', icon: Mail, label: 'ניוזלטר' },
   { to: '/admin/discounts', icon: Ticket, label: 'הטבות' },
   { to: '/admin/settings', icon: Settings, label: 'הגדרות' },

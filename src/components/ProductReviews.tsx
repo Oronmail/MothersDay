@@ -1,10 +1,30 @@
 import { useState } from "react";
-import { getProductReviews, type Review } from "@/data/productReviews";
+import { format } from "date-fns";
+import { getProductReviews } from "@/data/productReviews";
+import { useApprovedReviews, type SiteReview } from "@/hooks/useProductReviews";
 import { ReviewForm } from "@/components/ReviewForm";
 import heartOutline from "@/assets/heart-icon.png";
 import heartFilled from "@/assets/heart-filled.png";
 
 const PAGE_SIZE = 5;
+
+// תצוגה אחידה לשני המקורות: חוות דעת אוצרות מקבוצת המיקוד (סטטיות, מהקוד)
+// וחוות דעת מהאתר (Supabase, רק אחרי אישור בפאנל הניהול).
+interface DisplayReview {
+  rating: number;
+  title?: string;
+  quote: string;
+  name: string;
+  date?: string;
+  context?: string; // השורה הקטנה ליד השם
+}
+
+const siteReviewContext = (r: SiteReview): string | undefined => {
+  const parts: string[] = [];
+  if (r.kids_count) parts.push(`אמא ל-${r.kids_count} ילדים`);
+  if (r.kids_ages) parts.push(`גילאי ${r.kids_ages}`);
+  return parts.length ? parts.join(" · ") : undefined;
+};
 
 // דירוג בלבבות מצוירים-ביד, בגוון המותג (זהה ל-Testimonials / ReviewForm),
 // דרך CSS mask — ממולא = צבע המותג, ריק = muted.
@@ -33,17 +53,21 @@ const Hearts = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" })
   );
 };
 
-const ReviewItem = ({ r }: { r: Review }) => (
+const ReviewItem = ({ r }: { r: DisplayReview }) => (
   <article className="py-6 border-b border-border last:border-b-0 text-right">
     <div className="flex items-center justify-between gap-3">
       <Hearts rating={r.rating} />
       {r.date && <span className="text-xs text-muted-foreground">{r.date}</span>}
     </div>
-    <h3 className="mt-3 text-lg font-semibold text-foreground leading-snug">{r.title}</h3>
+    {r.title && (
+      <h3 className="mt-3 text-lg font-semibold text-foreground leading-snug">{r.title}</h3>
+    )}
     <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">{r.quote}</p>
     <div className="mt-3 flex items-center gap-2">
       <span className="text-sm font-medium text-foreground">{r.name}</span>
-      <span className="text-[11px] text-muted-foreground">· השתתפה בקבוצת המיקוד</span>
+      {r.context && (
+        <span className="text-[11px] text-muted-foreground">· {r.context}</span>
+      )}
     </div>
   </article>
 );
@@ -82,13 +106,30 @@ const EmptyState = ({ onWrite }: { onWrite: () => void }) => (
 export const ProductReviews = ({
   handle,
   productTitle,
+  productId,
 }: {
   handle: string | undefined;
   productTitle?: string;
+  productId?: string;
 }) => {
-  const reviews = getProductReviews(handle);
+  const siteReviews = useApprovedReviews(handle);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [formOpen, setFormOpen] = useState(false);
+
+  // האוצרות (קבוצת המיקוד) קודם, ואחריהן חוות דעת מהאתר, מהחדשה לישנה.
+  const reviews: DisplayReview[] = [
+    ...getProductReviews(handle).map((r) => ({
+      ...r,
+      context: "השתתפה בקבוצת המיקוד",
+    })),
+    ...siteReviews.map((r) => ({
+      rating: r.rating,
+      quote: r.body,
+      name: r.name,
+      date: format(new Date(r.created_at), "dd/MM/yyyy"),
+      context: siteReviewContext(r),
+    })),
+  ];
 
   const count = reviews.length;
   const average =
@@ -113,7 +154,7 @@ export const ProductReviews = ({
               <div className="flex flex-col gap-1">
                 <Hearts rating={Math.round(average)} size="lg" />
                 <span className="text-sm text-muted-foreground">
-                  על סמך {count} {count === 1 ? "חוות דעת" : "חוות דעת"} מקבוצת המיקוד
+                  על סמך {count} חוות דעת{siteReviews.length === 0 ? " מקבוצת המיקוד" : ""}
                 </span>
               </div>
             </div>
@@ -141,7 +182,13 @@ export const ProductReviews = ({
         )}
       </div>
 
-      <ReviewForm productTitle={productTitle} open={formOpen} onOpenChange={setFormOpen} />
+      <ReviewForm
+        productId={productId}
+        productHandle={handle}
+        productTitle={productTitle}
+        open={formOpen}
+        onOpenChange={setFormOpen}
+      />
     </section>
   );
 };

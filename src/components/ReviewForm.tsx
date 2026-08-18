@@ -1,16 +1,22 @@
 import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
+import { submitReview } from "@/hooks/useProductReviews";
+import { useAuth } from "@/hooks/useAuth";
 import heartFilled from "@/assets/heart-filled.png";
 import heartOutline from "@/assets/heart-icon.png";
 
-// טופס שליחת חוות דעת. ⚠️ השליחה כרגע STUB בלבד — עדיין אין טבלת reviews ב-Supabase
-// ולא פונקציית שרת (/api/create-review). לקראת ההשקה: לשמור ל-DB כ"ממתין" + מודרציה בפאנל.
+// טופס שליחת חוות דעת. נשמרת ב-Supabase (טבלת reviews) בסטטוס "ממתינה",
+// עוברת מודרציה ב-/admin/reviews, ורק חוות דעת מאושרת מוצגת בעמוד המוצר.
 
 interface ReviewFormProps {
+  productId?: string;
+  productHandle?: string;
   productTitle?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -33,25 +39,48 @@ const HeartMask = ({ filled, className = "" }: { filled: boolean; className?: st
   />
 );
 
-export const ReviewForm = ({ productTitle, open, onOpenChange }: ReviewFormProps) => {
+export const ReviewForm = ({
+  productId,
+  productHandle,
+  productTitle,
+  open,
+  onOpenChange,
+}: ReviewFormProps) => {
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [body, setBody] = useState("");
   const [name, setName] = useState("");
   const [kidsCount, setKidsCount] = useState("");
   const [kidsAges, setKidsAges] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const isValid =
     rating > 0 && body.trim() && name.trim() && kidsCount.trim() && kidsAges.trim();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
-    // TODO: POST ל-/api/create-review (סטטוס "ממתין") כשה-DB יהיה מוכן.
-    // eslint-disable-next-line no-console
-    console.log("TODO create-review", { productTitle, rating, body, name, kidsCount, kidsAges });
-    setSubmitted(true);
+    if (!isValid || submitting || !productHandle) return;
+    setSubmitting(true);
+    try {
+      await submitReview({
+        productId,
+        productHandle,
+        productTitle,
+        rating,
+        body,
+        name,
+        kidsCount,
+        kidsAges,
+        userId: user?.id ?? null,
+      });
+      setSubmitted(true);
+    } catch {
+      toast.error("משהו השתבש ולא הצלחנו לשמור, נסי שוב בעוד רגע");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const reset = () => {
@@ -69,7 +98,7 @@ export const ReviewForm = ({ productTitle, open, onOpenChange }: ReviewFormProps
           // מסך תודה אחרי שליחה
           <div className="py-6 text-center">
             <HeartMask filled className="h-12 w-12 mx-auto" />
-            <h2 className="mt-4 text-xl font-semibold text-foreground">תודה ששיתפת! 🌸</h2>
+            <h2 className="mt-4 text-xl font-semibold text-foreground">תודה ששיתפת!</h2>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               חוות הדעת שלך התקבלה ותפורסם לאחר בדיקה קצרה.
             </p>
@@ -157,8 +186,8 @@ export const ReviewForm = ({ productTitle, open, onOpenChange }: ReviewFormProps
                 </div>
               </div>
 
-              <Button type="submit" disabled={!isValid} className="w-full">
-                שליחה
+              <Button type="submit" disabled={!isValid || submitting} className="w-full">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "שליחה"}
               </Button>
             </form>
           </>

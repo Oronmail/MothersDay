@@ -37,6 +37,7 @@ import { parseImageLayout, getProductCarouselConfig, getProductImageLayoutOverri
 import { getProductSpecs } from "@/lib/productProperties";
 import { ProductReviews } from "@/components/ProductReviews";
 import { getProductReviews } from "@/data/productReviews";
+import { useApprovedReviews } from "@/hooks/useProductReviews";
 import DOMPurify from "dompurify";
 import { WishlistButton } from "@/components/WishlistButton";
 import {
@@ -93,6 +94,9 @@ export default function ProductDetail() {
 
   // Check if this product is a bundle
   const isBundle = data?.title?.includes('מארז');
+
+  // Approved site reviews (Supabase) — affect where the reviews section sits
+  const siteReviews = useApprovedReviews(handle);
 
   // Fetch only the bundles that actually contain this product - only for non-bundle products
   const { data: bundlesData } = useQuery({
@@ -165,7 +169,9 @@ export default function ProductDetail() {
     
     toast.success('הוסף לעגלה', {
       description: `${data.title} (${quantity})`,
-      position: 'top-center'
+      position: 'top-center',
+      // Product name carries the narrow brand font; the label stays in body type.
+      classNames: { description: 'group-[.toast]:font-display' }
     });
   };
 
@@ -199,7 +205,7 @@ export default function ProductDetail() {
   const productProps = getProductSpecs(data);
   // Reviews with content sit high on the page (before cross-sell); the empty
   // "כתבי לנו" state is moved to the very bottom so it doesn't interrupt shopping.
-  const hasReviews = getProductReviews(handle).length > 0;
+  const hasReviews = getProductReviews(handle).length > 0 || siteReviews.length > 0;
   const images = data.images.edges;
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
   const bundles = bundlesData || [];
@@ -591,7 +597,7 @@ export default function ProductDetail() {
           Empty state is rendered at the very end of the page instead (below). */}
       {hasReviews && (
         <ErrorBoundary fallback={null}>
-          <ProductReviews handle={handle} productTitle={data.title} />
+          <ProductReviews handle={handle} productTitle={data.title} productId={data.id} />
         </ErrorBoundary>
       )}
 
@@ -635,7 +641,7 @@ export default function ProductDetail() {
           prompt doesn't take prime space when there are no reviews yet. */}
       {!hasReviews && (
         <ErrorBoundary fallback={null}>
-          <ProductReviews handle={handle} productTitle={data.title} />
+          <ProductReviews handle={handle} productTitle={data.title} productId={data.id} />
         </ErrorBoundary>
       )}
 

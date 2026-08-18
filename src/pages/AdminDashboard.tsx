@@ -13,6 +13,7 @@ import { OrderDetail } from '@/components/admin/OrderDetail';
 import { CustomerList } from '@/components/admin/CustomerList';
 import { CustomerDetail } from '@/components/admin/CustomerDetail';
 import { NewsletterList } from '@/components/admin/NewsletterList';
+import { ReviewList } from '@/components/admin/ReviewList';
 import { DiscountList } from '@/components/admin/DiscountList';
 import { StoreSettings } from '@/components/admin/StoreSettings';
 
@@ -34,6 +35,7 @@ const AdminDashboardPage = () => (
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="customers" element={<CustomerList />} />
         <Route path="customers/:id" element={<CustomerDetail />} />
+        <Route path="reviews" element={<ReviewList />} />
         <Route path="newsletter" element={<NewsletterList />} />
         <Route path="discounts" element={<DiscountList />} />
         <Route path="settings" element={<StoreSettings />} />
