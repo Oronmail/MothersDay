@@ -38,8 +38,12 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
   selectedImageIndex,
   onImageClick,
 }) => {
+  // Skip carousel slots that have no image behind them, so the rotation never
+  // lands on a blank frame.
   const carouselIndices =
-    layout.type === "grid-2-left-carousel-right" ? layout.carouselImages || [] : [];
+    layout.type === "grid-2-left-carousel-right"
+      ? (layout.carouselImages || []).filter((i) => !!images[i])
+      : [];
   const [carouselIdx, setCarouselIdx] = useState(0);
 
   useEffect(() => {

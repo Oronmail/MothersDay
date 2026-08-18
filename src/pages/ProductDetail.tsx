@@ -165,16 +165,7 @@ export default function ProductDetail() {
     
     toast.success('הוסף לעגלה', {
       description: `${data.title} (${quantity})`,
-      position: 'top-center',
-      action: {
-        label: 'ביטול',
-        onClick: () => {
-          useCartStore.getState().updateQuantity(variant.id, 
-            (useCartStore.getState().items.find(i => i.variantId === variant.id)?.quantity || quantity) - quantity
-          );
-          toast.info('המוצר הוסר מהעגלה');
-        }
-      }
+      position: 'top-center'
     });
   };
 
@@ -227,8 +218,16 @@ export default function ProductDetail() {
 
   // Parse image layout from metafield, or use override if exists
   // Bundle products get a special 2-stacked layout (images 3 & 4 only)
+  // The bundle carousel is limited to the images that actually exist, so a bundle
+  // with only two extra shots (e.g. מארז יין) rotates between two, not three.
   const imageLayout = isBundle
-    ? { type: "grid-2-left-carousel-right" as const, mainImages: [2, 3], carouselImages: [4, 5, 6], aspectRatios: ["4/3", "4/3"], description: "2 stacked left, carousel right" }
+    ? {
+        type: "grid-2-left-carousel-right" as const,
+        mainImages: [2, 3],
+        carouselImages: [4, 5, 6].filter((i) => !!images[i]),
+        aspectRatios: ["4/3", "4/3"],
+        description: "2 stacked left, carousel right",
+      }
     : getProductImageLayoutOverride(handle || '') || parseImageLayout(data.imageLayout);
 
   // Mobile: planning products & bundles get an enlarged swipe gallery instead of the
