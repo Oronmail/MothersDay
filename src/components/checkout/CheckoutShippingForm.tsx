@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { AddressAutocomplete } from "./AddressAutocomplete";
+import { AddressAutocomplete, findCityCode } from "./AddressAutocomplete";
 import type { CheckoutFormValues } from "@/pages/Checkout";
 
 interface CheckoutShippingFormProps {
@@ -12,6 +12,19 @@ interface CheckoutShippingFormProps {
 
 export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
   const [cityCode, setCityCode] = useState<number | undefined>();
+  const cityValue = form.watch("city");
+
+  // The street autocomplete needs the city code. When the city arrives as
+  // text (prefilled saved address, or typed fully without picking a
+  // suggestion), resolve the code by exact name so the street field unlocks.
+  useEffect(() => {
+    if (!cityValue || cityCode) return;
+    let active = true;
+    findCityCode(cityValue).then((code) => {
+      if (active && code) setCityCode(code);
+    });
+    return () => { active = false; };
+  }, [cityValue, cityCode]);
 
   return (
     <section className="space-y-4">

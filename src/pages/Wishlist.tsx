@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Trash2 } from 'lucide-react';
 import { ROUTES, buildProductPath } from '@/lib/routes';
 import { LazyImage } from '@/components/LazyImage';
-import { useEffect } from 'react';
 import { getProductCardImageUrl } from '@/lib/imageTransforms';
 import heartIcon from '@/assets/heart-icon.png';
 import titleUnderline from '@/assets/title-underline.png';
@@ -16,12 +15,6 @@ export default function Wishlist() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { items, isLoading, remove } = useWishlistItems();
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate(ROUTES.auth);
-    }
-  }, [user, authLoading, navigate]);
 
   if (authLoading || isLoading) {
     return (
@@ -49,6 +42,15 @@ export default function Wishlist() {
           <p className="text-foreground/70 max-w-md mx-auto leading-relaxed">
             כל המוצרים שאהבת, שמורים במקום אחד.
           </p>
+          {!user && items.length > 0 && (
+            <p className="text-sm text-foreground/60 max-w-md mx-auto mt-3">
+              הרשימה נשמרת כרגע בדפדפן הזה.{' '}
+              <Link to={ROUTES.auth} className="underline underline-offset-4 hover:text-primary transition-colors">
+                התחברי לחשבון
+              </Link>
+              {' '}כדי שתחכה לך מכל מכשיר.
+            </p>
+          )}
         </div>
 
         {items.length === 0 ? (

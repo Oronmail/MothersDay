@@ -26,7 +26,8 @@ Shopify/Lovable and are **stale** — trust this file and the code over them.
 - **Frontend:** React 18 + TypeScript + Vite, Tailwind CSS + shadcn/ui (Radix), RTL/Hebrew
 - **State:** Zustand (cart, persisted to localStorage) + React Query (server data)
 - **Backend:** Supabase (Postgres + Auth + RLS) and Vercel **serverless functions** in `api/`
-- **Email:** Resend (order confirmations)
+- **Email:** Resend (order confirmations); Supabase Auth SMTP sends magic-link/signup emails
+  (branded RTL templates in `supabase/email-templates/`, pasted into the Supabase dashboard)
 - **Payments:** CreditGuard / **Hyp** (Israeli processor) — XML API, hosted payment page in iframe
 - **Hosting:** Vercel, deployed from GitHub repo `Oronmail/MothersDay` (branch `main`)
 - **Monitoring:** Sentry; Analytics: Google Analytics (`G-RZ3NF8NX21`)
@@ -74,6 +75,9 @@ Outside the layout: `/auth`, `/admin/login`, `/admin/*` (AdminDashboard), `*` (N
 - `payment-callback.ts` — Hyp redirects here; validates MAC, marks order `paid`, redirects to confirmation.
 - `simulate-payment.ts` — dev/test only: marks paid + sends email. Gated by `VITE_PAYMENT_SIMULATION_ENABLED`.
 - `get-order.ts` — fetches an order for the confirmation page (validates access token, service role).
+- `gov-address.ts` — same-origin proxy for the data.gov.il cities/streets datasets used by the
+  checkout address autocomplete (data.gov.il stopped sending CORS headers, so the browser can't
+  call it directly; in local dev, `vite.config.ts` proxies the same path).
 - `robots.ts`, `sitemap.ts` — served at `/robots.txt` and `/sitemap.xml` via `vercel.json` rewrites.
 - `api/_lib/` — `checkout.ts` (feature-flag helpers), `orderAccess.ts` (HMAC guest-order tokens),
   `orderConfirmationEmail.ts` (Resend email), `siteUrl.ts` (resolve base URL).
@@ -82,9 +86,26 @@ Outside the layout: `/auth`, `/admin/login`, `/admin/*` (AdminDashboard), `*` (N
 
 Tables: `products`, `product_images`, `product_variants`, `variant_options`, `collections`,
 `collection_products`, `bundle_items`, `orders` (line_items + shipping_address as JSONB),
-`profiles` (role `customer`|`admin`), `addresses`, `wishlists`, `store_settings`
+`profiles` (role `customer`|`admin`), `addresses`, `wishlists`, `carts` (user_id PK + items
+JSONB — mirror of the logged-in user's cart, see `useCartSync`), `reviews` (product reviews,
+status `pending`|`approved`|`rejected`), `store_settings`
 (shipping_enabled, shipping_cost, free_shipping_threshold). RLS blocks anon writes to `orders`,
 so guest checkout must go through the service-role API functions.
+
+**Product reviews:** the product-page form inserts directly into `reviews` (RLS allows public
+INSERT pinned to `status='pending'`, like the newsletter forms). Moderation lives at
+`/admin/reviews` (approve/reject/delete); only approved reviews render on the product page,
+merged after the curated focus-group reviews from `src/data/productReviews.ts`
+(see `src/hooks/useProductReviews.ts`). If migration `20260818130000_reviews.sql` hasn't been
+applied yet, the site degrades gracefully (static reviews only, admin screen shows a setup note).
+
+**Cart & wishlist persistence:** both survive refresh for guests via localStorage
+(`cart-storage` in `cartStore.ts`, `wishlist-storage` in `wishlistStore.ts`). On login,
+`AccountSync` (mounted in `SiteAccess`) merges the guest wishlist into `wishlists` and mirrors
+the cart to `carts` (`useCartSync`). The `carts` migration (`20260818120000_carts.sql`) was
+applied to prod on 2026-08-18; if the table were ever missing, cart sync disables itself
+gracefully. Checkout prefills contact + shipping fields for logged-in users from `addresses`
+(default/most recent) and `profiles`, and saves the address after a first order.
 
 ## Checkout / payment flow
 
@@ -116,8 +137,17 @@ Full set the code reads (server vars are configured in the **Vercel dashboard** 
 
 `scripts/prerender-seo.ts` runs after `vite build`: writes per-route static HTML shells under
 `dist/<route>/index.html` (title, meta description, Open Graph, Twitter, canonical, JSON-LD) for
-static routes plus dynamic products/collections pulled from Supabase. `vercel.json` also sets the
-CSP and rewrites for SPA routing, robots, and sitemap.
+static routes plus dynamic products/collections pulled from Supabase. Since the 2026-08 SEO pass
+it also: injects **static body content into `#root`** (real text for crawlers that don't run JS —
+AI bots; React replaces it on hydration), writes **noindex shells** for app routes
+(/checkout, /profile, /orders, /wishlist, /auth, /reset-password, /admin/login), and adds
+FAQPage (/support, from `src/content/faq.ts`), Article (content-1..3), ItemList (/products, /sets)
+and enriched Organization/WebSite JSON-LD (site name "יום האם" for Google's site-name display).
+Canonical domain is **https://www.mothersday.co.il** (fallback if `VITE_SITE_URL` is unset — set it
+in Vercel!). `public/robots.txt` was deleted on purpose: it used to shadow the `/api/robots`
+rewrite with a stale vercel.app sitemap URL; robots is served by `api/robots.ts` (which also
+explicitly allows AI crawlers). `public/llms.txt` describes the brand for LLM crawlers.
+`vercel.json` also sets the CSP and rewrites for SPA routing, robots, and sitemap.
 
 ## Conventions & gotchas
 

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { ROUTES } from "@/lib/routes";
 import { toast } from "sonner";
 import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
@@ -37,9 +38,42 @@ const checkoutSchema = z.object({
   apartment: z.string().optional(),
   postal_code: z.string().optional(),
   notes: z.string().optional(),
+  terms_accepted: z.boolean().refine((v) => v === true, {
+    message: "יש לאשר את תקנון האתר ומדיניות הפרטיות",
+  }),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+
+// Saved phones may be stored in +972 format; the checkout field expects the
+// local 0-format. Returns "" when the number can't be shown as a valid value.
+function toLocalPhone(raw?: string | null): string {
+  if (!raw) return "";
+  const digits = raw.replace(/[^\d+]/g, "");
+  const local = digits.startsWith("+972")
+    ? `0${digits.slice(4)}`
+    : digits.startsWith("972")
+      ? `0${digits.slice(3)}`
+      : digits;
+  return /^0\d{8,9}$/.test(local) ? local : "";
+}
+
+// Saved addresses keep the street as one line ("הרצל 5, דירה 2");
+// the checkout form has separate street / house / apartment fields.
+function splitStreetLine(line: string): { street: string; house_number: string; apartment: string } {
+  let rest = line.trim();
+  let apartment = "";
+  const aptMatch = rest.match(/,?\s*דירה\s+(\S+)\s*$/);
+  if (aptMatch) {
+    apartment = aptMatch[1];
+    rest = rest.replace(aptMatch[0], "").trim();
+  }
+  const houseMatch = rest.match(/^(.+?)\s+(\d+\S*)$/);
+  if (houseMatch) {
+    return { street: houseMatch[1], house_number: houseMatch[2], apartment };
+  }
+  return { street: rest, house_number: "", apartment };
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -47,6 +81,7 @@ export default function Checkout() {
   const { items, isLoading, createOrder } = useCartStore();
   const { data: settings } = useStoreSettings();
   const orderInProgress = useRef(false);
+  const hasSavedAddressRef = useRef(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
   const subtotal = items.reduce(
@@ -69,6 +104,7 @@ export default function Checkout() {
       apartment: "",
       postal_code: "",
       notes: "",
+      terms_accepted: false,
     },
   });
 
@@ -85,6 +121,55 @@ export default function Checkout() {
       form.setValue("email", user.email);
     }
   }, [user?.email, form]);
+
+  // Recognize returning customers: prefill contact + shipping details from
+  // their saved address (or profile), filling empty fields only.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    const prefill = async () => {
+      const [{ data: address }, { data: profile }] = await Promise.all([
+        supabase
+          .from("addresses")
+          .select("full_name, street, city, postal_code, phone")
+          .eq("user_id", user.id)
+          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+      hasSavedAddressRef.current = !!address;
+
+      type PrefillField = "full_name" | "phone" | "city" | "street" | "house_number" | "apartment" | "postal_code";
+      const setIfEmpty = (field: PrefillField, value?: string | null) => {
+        if (value && !form.getValues(field)) {
+          form.setValue(field, value);
+        }
+      };
+
+      setIfEmpty("full_name", address?.full_name || profile?.full_name);
+      setIfEmpty("phone", toLocalPhone(address?.phone || profile?.phone));
+      if (address) {
+        const { street, house_number, apartment } = splitStreetLine(address.street || "");
+        setIfEmpty("city", address.city);
+        setIfEmpty("street", street);
+        setIfEmpty("house_number", house_number);
+        setIfEmpty("apartment", apartment);
+        setIfEmpty("postal_code", address.postal_code);
+      }
+    };
+
+    prefill();
+    return () => { cancelled = true; };
+  }, [user?.id, form]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
     if (!CAN_SUBMIT_CHECKOUT) {
@@ -122,6 +207,26 @@ export default function Checkout() {
       );
 
       sessionStorage.setItem(getOrderAccessStorageKey(orderId), orderAccessToken);
+
+      // Remember the address for the next checkout (first order of a
+      // logged-in user without a saved address). Fire-and-forget.
+      if (user?.id && !hasSavedAddressRef.current) {
+        void supabase
+          .from("addresses")
+          .insert({
+            user_id: user.id,
+            label: "בית",
+            full_name: data.full_name,
+            street: streetFull,
+            city: data.city,
+            postal_code: data.postal_code || null,
+            phone: data.phone,
+            is_default: true,
+          })
+          .then(({ error }) => {
+            if (error) console.warn("Failed to save address for future checkouts", error);
+          });
+      }
 
       toast.success(PAYMENT_SIMULATION_ENABLED ? "הזמנת הדוגמה נוצרה בהצלחה!" : "ההזמנה נוצרה בהצלחה!", {
         description: `מספר הזמנה: ${orderNumber}`,

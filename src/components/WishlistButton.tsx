@@ -1,6 +1,5 @@
 import { Heart } from 'lucide-react';
 import { useWishlistToggle } from '@/hooks/useWishlist';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -12,21 +11,15 @@ interface WishlistButtonProps {
 }
 
 /**
- * A heart-shaped toggle button that adds/removes a product from the
- * authenticated user's wishlist. Redirects to /auth if not logged in.
+ * A heart-shaped toggle button that adds/removes a product from the wishlist.
+ * Guests get a local (browser) wishlist; logged-in users save to the account.
  */
 export function WishlistButton({ productId, className, size = 20 }: WishlistButtonProps) {
-  const { isInWishlist, toggle, isLoading, isLoggedIn } = useWishlistToggle(productId);
-  const navigate = useNavigate();
+  const { isInWishlist, toggle, isLoading } = useWishlistToggle(productId);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (!isLoggedIn) {
-      navigate('/auth');
-      return;
-    }
 
     await toggle();
 

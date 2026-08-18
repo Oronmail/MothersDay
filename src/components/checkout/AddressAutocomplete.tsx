@@ -17,7 +17,10 @@ interface AddressAutocompleteProps {
 
 const CITIES_RESOURCE_ID = "b7cf8f14-64a2-4b33-8d4b-edb286fdbd37";
 const STREETS_RESOURCE_ID = "a7296d1a-f8c9-4b70-96c2-6ebb4352f8e3";
-const API_BASE = "https://data.gov.il/api/3/action/datastore_search";
+// data.gov.il no longer sends CORS headers, so the browser can't call it
+// directly. api/gov-address.ts proxies it same-origin (Vite proxies the same
+// path to data.gov.il in local dev — see vite.config.ts).
+const API_BASE = "/api/gov-address";
 
 // Cache: fetch all cities/streets once, filter client-side for instant prefix matching
 const cache: Record<string, AutocompleteResult[]> = {};
@@ -64,6 +67,22 @@ async function fetchAllRecords(
   return allRecords;
 }
 
+/**
+ * Resolve a city name to its government city code (סמל_ישוב).
+ * Used to unlock the street autocomplete when the city arrives as text
+ * (prefilled saved address, or typed fully without picking a suggestion).
+ */
+export async function findCityCode(name: string): Promise<number | undefined> {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return undefined;
+  try {
+    const cities = await fetchAllRecords(CITIES_RESOURCE_ID, "cities", "שם_ישוב", "סמל_ישוב");
+    return cities.find((city) => city.name === trimmed)?.code;
+  } catch {
+    return undefined;
+  }
+}
+
 export function AddressAutocomplete({
   type,
   cityCode,
@@ -87,9 +106,9 @@ export function AddressAutocomplete({
   // Preload data
   useEffect(() => {
     if (type === "city") {
-      fetchAllRecords(CITIES_RESOURCE_ID, "cities", "שם_ישוב", "סמל_ישוב").then(
-        setAllItems
-      );
+      fetchAllRecords(CITIES_RESOURCE_ID, "cities", "שם_ישוב", "סמל_ישוב")
+        .then(setAllItems)
+        .catch(() => setAllItems([]));
     }
   }, [type]);
 
@@ -103,7 +122,9 @@ export function AddressAutocomplete({
         "שם_רחוב",
         "סמל_רחוב",
         { "סמל_ישוב": cityCode }
-      ).then(setAllItems);
+      )
+        .then(setAllItems)
+        .catch(() => setAllItems([]));
     }
   }, [type, cityCode]);
 
