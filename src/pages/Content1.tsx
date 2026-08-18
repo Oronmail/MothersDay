@@ -30,7 +30,7 @@ const Content1 = () => {
         <div className="border border-muted-foreground/20 p-6 md:p-10 rounded-sm bg-background shadow-sm">
         {/* Post Title */}
         <div className="flex flex-col items-center mb-8">
-          <span className="text-sm text-muted-foreground mb-2">פוסט 1</span>
+          <span className="text-sm text-muted-foreground mb-2">פרק 1</span>
           <h1 className="text-[28px] md:text-3xl text-foreground text-center leading-relaxed">
             האמא של היום היא לא האמא של פעם-
           </h1>
