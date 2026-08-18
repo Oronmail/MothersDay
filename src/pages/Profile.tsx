@@ -9,8 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Package, Heart, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import smileyIcon from "@/assets/smiley-icon.png";
+import homeIcon from "@/assets/home-icon.png";
+import clockIcon from "@/assets/clock-icon.png";
+import shoppingBagIcon from "@/assets/shopping-bag-icon.png";
+import heartIcon from "@/assets/heart-icon.png";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -182,7 +186,7 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <MapPin className="h-6 w-6 text-primary" />
+                <img src={homeIcon} alt="" className="h-6 w-6" />
                 <CardTitle>כתובות למשלוח</CardTitle>
               </div>
               <CardDescription>נהל את כתובות המשלוח שלך</CardDescription>
@@ -194,13 +198,16 @@ const Profile = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>קישורים מהירים</CardTitle>
+              <div className="flex items-center gap-2">
+                <img src={clockIcon} alt="" className="h-6 w-6" />
+                <CardTitle>קישורים מהירים</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link to={ROUTES.orders}>
                 <Button variant="outline" className="w-full justify-between">
                   <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
+                    <img src={shoppingBagIcon} alt="" className="h-4 w-4" />
                     <span>היסטוריית הזמנות</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
@@ -209,7 +216,7 @@ const Profile = () => {
               <Link to={ROUTES.wishlist}>
                 <Button variant="outline" className="w-full justify-between">
                   <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4" />
+                    <img src={heartIcon} alt="" className="h-4 w-4" />
                     <span>רשימת משאלות</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
