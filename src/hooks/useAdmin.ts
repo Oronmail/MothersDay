@@ -4,53 +4,76 @@ import type { User } from '@supabase/supabase-js';
 
 export const useAdmin = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [authResolved, setAuthResolved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error || !session?.user) {
-          setIsLoading(false);
-          return;
+    let mounted = true;
+
+    // Same rule as useAuth: the auth callback stays synchronous — querying
+    // Supabase inside it deadlocks client initialization (admin area frozen
+    // on "טוען..."). The admin-role check runs in the effect below.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return;
+        setUser(session?.user ?? null);
+        setAuthResolved(true);
+      })
+      .catch(() => {
+        if (mounted) {
+          setUser(null);
+          setAuthResolved(true);
         }
-
-        setUser(session.user);
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        setIsAdmin(data?.role === 'admin');
-      } catch {
-        // Session restoration failed (stale token, key mismatch, etc.)
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAdmin();
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
+        if (!mounted) return;
         setUser(session?.user ?? null);
-        if (session?.user) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          setIsAdmin(data?.role === 'admin');
-        } else {
-          setIsAdmin(false);
-        }
+        setAuthResolved(true);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // AdminRoute redirects to the login page whenever !isAdmin && !isLoading,
+  // so isLoading settles only once the role answer is in (or there is
+  // definitely no user).
+  const userId = user?.id;
+  useEffect(() => {
+    if (!authResolved) return;
+
+    if (!userId) {
+      setIsAdmin(false);
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const checkRole = async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+        if (!cancelled) setIsAdmin(data?.role === 'admin');
+      } catch {
+        if (!cancelled) setIsAdmin(false);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    checkRole();
+
+    return () => { cancelled = true; };
+  }, [authResolved, userId]);
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
