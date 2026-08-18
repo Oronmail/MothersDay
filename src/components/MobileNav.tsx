@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, ChevronDown, User, Heart, LogOut } from "lucide-react";
+import { Menu, ChevronDown, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +19,7 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import logo from "@/assets/logo-new.png";
+import userIcon from "@/assets/user-icon.png";
 import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, buildProductPath } from "@/lib/routes";
 
 export const MobileNav = () => {
@@ -174,7 +175,7 @@ export const MobileNav = () => {
                 onClick={() => handleNavigate(ROUTES.profile)}
                 className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
               >
-                <User className="h-4 w-4" />
+                <img src={userIcon} alt="" className="h-5 w-5" />
                 <span>הפרופיל שלי</span>
               </button>
               <button
@@ -200,7 +201,7 @@ export const MobileNav = () => {
               }}
               className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
             >
-              <User className="h-4 w-4" />
+              <img src={userIcon} alt="" className="h-5 w-5" />
               <span>האיזור האישי</span>
             </button>
           )}

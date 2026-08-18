@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Chrome, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { MarketingConsentText } from "@/components/MarketingConsentText";
 import { supabase } from "@/lib/supabase";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import logo from "@/assets/logo-new.png";
+import smileyIcon from "@/assets/smiley-icon.png";
+import titleUnderline from "@/assets/title-underline.png";
 
 type AuthCardProps = {
   className?: string;
@@ -20,6 +21,9 @@ type AuthCardProps = {
 
 const getAuthRedirectUrl = () => window.location.origin;
 
+/** Survives the Google OAuth round trip, which unmounts this component. */
+const NEWSLETTER_OPT_IN_KEY = "auth-newsletter-opt-in";
+
 export const AuthCard = ({
   className,
   onSuccess,
@@ -29,14 +33,30 @@ export const AuthCard = ({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  // Marketing consent must be an active opt-in, so this starts unchecked.
+  const [joinNewsletter, setJoinNewsletter] = useState(false);
+  // Set when a Google sign-in returns and an opt-in was pending. Never subscribe
+  // from inside onAuthStateChange — querying Supabase there freezes auth.
+  const [pendingOptInEmail, setPendingOptInEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     let isActive = true;
 
-    const handleSignedIn = (event: string, sessionExists: boolean, provider?: string) => {
+    const handleSignedIn = (
+      event: string,
+      sessionExists: boolean,
+      provider?: string,
+      sessionEmail?: string,
+    ) => {
       if (!isActive || !sessionExists) {
         return;
+      }
+
+      // Google sends her away and back, so the opt-in travels in sessionStorage.
+      if (sessionEmail && sessionStorage.getItem(NEWSLETTER_OPT_IN_KEY) === "1") {
+        sessionStorage.removeItem(NEWSLETTER_OPT_IN_KEY);
+        setPendingOptInEmail(sessionEmail);
       }
 
       if (typeof window.gtag === "function") {
@@ -52,13 +72,23 @@ export const AuthCard = ({
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSignedIn("SIGNED_IN", Boolean(session), session?.user.app_metadata?.provider);
+      handleSignedIn(
+        "SIGNED_IN",
+        Boolean(session),
+        session?.user.app_metadata?.provider,
+        session?.user.email,
+      );
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      handleSignedIn(event, Boolean(session), session?.user.app_metadata?.provider);
+      handleSignedIn(
+        event,
+        Boolean(session),
+        session?.user.app_metadata?.provider,
+        session?.user.email,
+      );
     });
 
     return () => {
@@ -67,8 +97,43 @@ export const AuthCard = ({
     };
   }, [navigate, onSuccess, redirectOnSuccess]);
 
+  // Runs outside onAuthStateChange, so the Supabase call here is safe.
+  useEffect(() => {
+    if (!pendingOptInEmail) return;
+    subscribeToNewsletter(pendingOptInEmail);
+    setPendingOptInEmail(null);
+  }, [pendingOptInEmail]);
+
+  /**
+   * Records the marketing opt-in. A duplicate address (23505) just means she is
+   * already subscribed, which is not an error worth surfacing during login.
+   */
+  const subscribeToNewsletter = async (address: string) => {
+    const trimmed = address.trim().toLowerCase();
+    if (!trimmed) return;
+
+    const { error } = await supabase
+      .from("newsletter_subscribers")
+      .insert({ email: trimmed });
+
+    if (error && error.code !== "23505") {
+      console.error("Newsletter subscription error:", error);
+      return;
+    }
+
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "generate_lead", { method: "newsletter_auth" });
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+
+    if (joinNewsletter) {
+      sessionStorage.setItem(NEWSLETTER_OPT_IN_KEY, "1");
+    } else {
+      sessionStorage.removeItem(NEWSLETTER_OPT_IN_KEY);
+    }
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -109,55 +174,59 @@ export const AuthCard = ({
     } else {
       toast.success("קישור התחברות נשלח למייל שלך");
       setMagicLinkSent(true);
+      if (joinNewsletter) {
+        await subscribeToNewsletter(email);
+      }
     }
 
     setIsLoading(false);
   };
 
   return (
-    <Card
+    <div
       className={cn(
-        "w-full max-w-[440px] rounded-none border border-primary/10 bg-background/95 shadow-[0_28px_80px_rgba(77,60,64,0.22)] backdrop-blur-sm",
+        "w-full max-w-sm border border-border bg-background p-6 shadow-xl md:p-8",
         className,
       )}
       dir="rtl"
     >
-      <CardHeader className="space-y-5 pb-4 text-center">
-        <div className="mx-auto bg-[#6B5B5A] px-4 py-3 shadow-sm">
-          <img src={logo} alt="יום האם" className="h-16" />
-        </div>
-        <div className="space-y-2">
-          <CardTitle className="text-3xl font-normal text-foreground">האיזור האישי</CardTitle>
-          <p className="text-sm leading-6 text-muted-foreground">
-            התחברי להזמנות, למועדפים ולפרטים האישיים שלך
-          </p>
-        </div>
-      </CardHeader>
+      {/* Header — same rhythm as the 10% card: brand mark, display title, underline */}
+      <div className="mb-6 text-center">
+        <img src={smileyIcon} alt="" className="mx-auto mb-2 h-9 w-9" />
+        <p className="font-display text-4xl font-bold leading-none text-foreground">
+          האזור האישי
+        </p>
+        <img src={titleUnderline} alt="" className="mx-auto mt-1 w-36" />
+        <p className="mt-2 text-sm text-foreground/70">
+          ההזמנות שלך, המועדפים והפרטים ששמרת
+        </p>
+      </div>
 
-      <CardContent className="space-y-6 px-8 pb-8">
+      <div className="space-y-4">
         <Button
           type="button"
+          variant="outline"
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="h-12 w-full rounded-none bg-primary text-base text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground focus:text-primary-foreground"
+          className="h-11 w-full rounded-none border-border bg-background text-sm text-foreground hover:bg-secondary/40 hover:text-foreground"
         >
-          <Chrome className="h-5 w-5" />
+          <Chrome className="h-4 w-4" />
           המשיכי עם Google
         </Button>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full bg-primary/15" />
+            <Separator className="w-full bg-border" />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-background px-3 text-muted-foreground">או</span>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-background px-3 text-foreground/50">או</span>
           </div>
         </div>
 
         {magicLinkSent ? (
-          <div className="space-y-4 py-2 text-center">
-            <Mail className="mx-auto h-10 w-10 text-primary" />
-            <p className="text-sm leading-6 text-muted-foreground">
+          <div className="space-y-3 py-2 text-center">
+            <Mail className="mx-auto h-9 w-9 text-primary" />
+            <p className="text-sm leading-6 text-foreground/70">
               שלחנו קישור התחברות ל-<strong dir="ltr">{email}</strong>
             </p>
             <Button
@@ -176,21 +245,35 @@ export const AuthCard = ({
           <form onSubmit={handleMagicLink} className="space-y-3">
             <Input
               type="email"
-              placeholder="your@email.com"
+              placeholder="דואר אלקטרוני *"
+              aria-label="דואר אלקטרוני"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
-              dir="ltr"
-              className="h-12 rounded-none border-primary/15 bg-white text-left"
+              dir="rtl"
+              className="rounded-none bg-background text-right"
             />
+
+            {/* Optional marketing opt-in. Unticked by default: under Israeli
+                anti-spam law a pre-ticked box is not valid consent. */}
+            <label className="flex items-start gap-2 text-right text-[11px] leading-snug text-foreground/60">
+              <input
+                type="checkbox"
+                checked={joinNewsletter}
+                onChange={(e) => setJoinNewsletter(e.target.checked)}
+                disabled={isLoading}
+                className="mt-0.5 shrink-0 accent-primary"
+              />
+              <MarketingConsentText />
+            </label>
+
             <Button
               type="submit"
-              variant="outline"
-              className="h-12 w-full rounded-none border-primary/20 bg-[#F6F2EF] text-foreground hover:bg-[#EEE7E3] hover:text-foreground"
+              className="w-full rounded-none bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={isLoading || !email.trim()}
             >
-              {isLoading ? "שולח..." : "שלחי לי קישור"}
+              {isLoading ? "שולח..." : "לקבלת קישור"}
             </Button>
           </form>
         )}
@@ -199,13 +282,13 @@ export const AuthCard = ({
           <div className="pt-1 text-center">
             <Link
               to={ROUTES.home}
-              className="text-sm text-muted-foreground transition-colors hover:text-primary"
+              className="text-sm text-foreground/60 transition-colors hover:text-primary"
             >
               חזרה לחנות
             </Link>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

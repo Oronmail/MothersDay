@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { ROUTES } from "@/lib/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { MarketingConsentText } from "@/components/MarketingConsentText";
 import heartIcon from "@/assets/heart-icon.png";
 import titleUnderline from "@/assets/title-underline.png";
 
@@ -159,13 +158,7 @@ export const HeroNewsletterCard = () => {
               required
               className="mt-0.5 shrink-0 accent-primary"
             />
-            <span>
-              בהצטרפות לרשימה את מסכימה שנשתמש במידע שלך לצורך פניות שיווקיות, בהתאם{" "}
-              <Link to={ROUTES.privacy} className="underline hover:text-foreground">
-                למדיניות הפרטיות
-              </Link>{" "}
-              שלנו. ניתן להסיר בכל עת.
-            </span>
+            <MarketingConsentText />
           </label>
 
           <Button

@@ -10,7 +10,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[460px] border-0 bg-transparent p-0 shadow-none sm:rounded-none"
+        className="max-w-sm border-0 bg-transparent p-0 shadow-none sm:rounded-none"
         dir="rtl"
       >
         <DialogHeader className="sr-only">

@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, MapPin, Package, Heart, ArrowRight } from "lucide-react";
+import { Loader2, MapPin, Package, Heart, ArrowRight } from "lucide-react";
+import smileyIcon from "@/assets/smiley-icon.png";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -115,11 +116,12 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col" dir="rtl">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        {/* Mobile: stacked. Desktop: profile settings beside addresses + quick links. */}
+        <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 md:items-start">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <User className="h-6 w-6 text-primary" />
+                <img src={smileyIcon} alt="" className="h-6 w-6" />
                 <CardTitle>הגדרות פרופיל</CardTitle>
               </div>
               <CardDescription>נהל את המידע האישי שלך</CardDescription>
@@ -176,6 +178,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
+          <div className="space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -214,6 +217,7 @@ const Profile = () => {
               </Link>
             </CardContent>
           </Card>
+          </div>
         </div>
       </main>
       <Footer />
