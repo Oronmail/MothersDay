@@ -122,7 +122,7 @@ const Profile = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Mobile: stacked. Desktop: profile settings beside addresses + quick links. */}
         <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2">
-          <Card>
+          <Card className="flex flex-col">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <img src={smileyIcon} alt="" className="h-6 w-6" />
@@ -130,9 +130,10 @@ const Profile = () => {
               </div>
               <CardDescription>נהל את המידע האישי שלך</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
+                  <div className="space-y-6 mb-6">
                   <div className="space-y-2">
                     <label className="text-sm">אימייל</label>
                     <Input value={user?.email || ""} disabled className="bg-muted" dir="ltr" />
@@ -166,8 +167,9 @@ const Profile = () => {
                       </FormItem>
                     )}
                   />
+                  </div>
 
-                  <Button type="submit" disabled={saving} className="w-full">
+                  <Button type="submit" disabled={saving} className="w-full mt-auto">
                     {saving ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin ml-2" />
