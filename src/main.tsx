@@ -6,6 +6,20 @@ import { initSentry } from "./lib/sentry";
 import App from "./App.tsx";
 import "./index.css";
 
+// Self-heal failed page-chunk loads. Every page is a lazy chunk with a hashed
+// filename that disappears from the server on the next deploy, so a tab opened
+// before a deploy crashes on its next navigation. Reloading fetches the fresh
+// index.html with the new chunk names. The 30s guard lets a persistent failure
+// (e.g. device offline) fall through to the error boundary instead of looping.
+const CHUNK_RELOAD_AT = "chunk-reload-at";
+window.addEventListener("vite:preloadError", (event) => {
+  const lastReload = Number(sessionStorage.getItem(CHUNK_RELOAD_AT) ?? "0");
+  if (Date.now() - lastReload < 30_000) return;
+  sessionStorage.setItem(CHUNK_RELOAD_AT, String(Date.now()));
+  event.preventDefault();
+  window.location.reload();
+});
+
 // Supabase password-recovery links redirect to an allow-listed URL and append
 // the recovery token in the URL hash (#...type=recovery). When the specific
 // redirect isn't honored, that lands on the site root instead of /reset-password.
