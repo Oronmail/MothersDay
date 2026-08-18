@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronUp, Lock, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 import { CartItem } from "@/lib/types";
 import { LazyImage } from "@/components/LazyImage";
@@ -27,6 +31,8 @@ export function CheckoutSummary({
   onSubmit,
 }: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { control, formState } = useFormContext();
+  const termsError = formState.errors.terms_accepted?.message as string | undefined;
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
 
@@ -139,6 +145,42 @@ export function CheckoutSummary({
 
       {/* CTA button — sticky on mobile */}
       <div className="md:relative fixed bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-auto bg-background md:bg-transparent p-4 md:p-0 border-t md:border-t-0 border-border z-40 space-y-2">
+        {/* Terms consent — must be given before an order can be placed */}
+        <div className="space-y-1">
+          <div className="flex items-start gap-2">
+            <Controller
+              name="terms_accepted"
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  id="terms_accepted"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  onBlur={field.onBlur}
+                  aria-invalid={!!termsError}
+                  aria-describedby={termsError ? "terms_accepted-error" : undefined}
+                  className="mt-0.5 flex-shrink-0"
+                />
+              )}
+            />
+            <label htmlFor="terms_accepted" className="text-xs leading-relaxed cursor-pointer">
+              קראתי ואני מאשרת את{" "}
+              <Link to={ROUTES.terms} target="_blank" className="underline hover:text-primary">
+                תקנון האתר
+              </Link>{" "}
+              ואת{" "}
+              <Link to={ROUTES.privacy} target="_blank" className="underline hover:text-primary">
+                מדיניות הפרטיות
+              </Link>
+            </label>
+          </div>
+          {termsError && (
+            <p id="terms_accepted-error" className="text-xs text-destructive">
+              {termsError}
+            </p>
+          )}
+        </div>
+
         <Button
           type="button"
           onClick={onSubmit}

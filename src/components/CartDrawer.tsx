@@ -38,7 +38,7 @@ export const CartDrawer = () => {
       </SheetTrigger>
       
       <SheetContent className="w-full sm:max-w-lg flex flex-col h-full" dir="rtl">
-        <SheetHeader className="flex-shrink-0">
+        <SheetHeader className="flex-shrink-0 sm:text-right">
           <SheetTitle>עגלת קניות</SheetTitle>
           <SheetDescription>
             {totalItems === 0 ? "העגלה ריקה" : `${totalItems} פריטים בעגלה`}

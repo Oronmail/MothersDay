@@ -32,7 +32,6 @@ interface UseAddToCartOptions {
 export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOptions) => {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
   const [quantity, setQuantity] = useState(1);
 
   const handleAddToCart = useCallback(
@@ -80,23 +79,17 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
 
           addItem(cartItem);
 
-          // Show success toast with undo option
+          // Show success toast with a link straight to checkout
           toast.success("המוצר נוסף לסל", {
             description: `${product.node.title}${variant.title !== "Default Title" ? ` - ${variant.title}` : ""} (${qtyToAdd})`,
             position: "top-center",
             duration: 5000,
+            // Product name carries the narrow brand font; the label stays in body type.
+            classNames: { description: "group-[.toast]:font-display" },
             action: {
               label: "לתשלום",
               onClick: () => {
                 navigate(ROUTES.checkout);
-              },
-            },
-            cancel: {
-              label: "ביטול",
-              onClick: () => {
-                // Undo by setting quantity to 0 (removes item)
-                updateQuantity(variant.id, 0);
-                toast.info("המוצר הוסר מהסל");
               },
             },
           });
@@ -111,7 +104,7 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
         }
       );
     },
-    [product, variant, quantity, addItem, updateQuantity, onSuccess, navigate]
+    [product, variant, quantity, addItem, onSuccess, navigate]
   );
 
   const incrementQuantity = useCallback(() => {

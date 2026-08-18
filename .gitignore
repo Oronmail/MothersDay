@@ -35,3 +35,4 @@ dist-ssr
 
 # Claude tooling
 .claude/
+ds-bundle/
