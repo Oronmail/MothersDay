@@ -139,7 +139,9 @@ and `resend_KEY` / `RESEND_API_KEY` (code accepts either name).
 Full set the code reads (server vars are configured in the **Vercel dashboard** for production):
 - Public: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL`, `VITE_SITE_PASSWORD`,
   `VITE_GA_MEASUREMENT_ID`, `VITE_SENTRY_DSN`, `VITE_INSTAGRAM_URL`,
-  `VITE_CHECKOUT_ENABLED`, `VITE_PAYMENT_SIMULATION_ENABLED`.
+  `VITE_CHECKOUT_ENABLED`, `VITE_PAYMENT_SIMULATION_ENABLED`,
+  `VITE_META_PIXEL_ID` (Meta/Instagram Pixel — unset until the Meta Business account exists;
+  all funnel events go through `src/lib/tracking.ts`, which fans out to GA4 + Meta Pixel).
 - Server: `SUPABASE_Secret_KEY` (service role), `RESEND_API_KEY`/`resend_KEY`,
   `ORDER_CONFIRMATION_FROM_EMAIL`/`RESEND_FROM_EMAIL`, `ORDER_CONFIRMATION_REPLY_TO`, `SUPPORT_EMAIL`,
   `ORDER_ACCESS_SECRET` (dedicated HMAC secret for order-access tokens; set in all Vercel envs),

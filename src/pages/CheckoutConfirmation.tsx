@@ -5,6 +5,7 @@ import { ROUTES } from "@/lib/routes";
 import { Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useCartStore } from "@/stores/cartStore";
+import { trackPurchase } from "@/lib/tracking";
 import { CheckoutHeader } from "@/components/checkout/CheckoutHeader";
 import { Footer } from "@/components/Footer";
 import { AlertCircle, CheckCircle, Clock, Loader2, XCircle } from "lucide-react";
@@ -170,20 +171,18 @@ export default function CheckoutConfirmation() {
 
     useCartStore.getState().clearCart();
 
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "purchase", {
-        transaction_id: orderId,
-        value: order.total_price,
-        currency: order.currency_code || "ILS",
-        shipping: order.shipping_cost ?? 0,
-        items: order.line_items.map((item) => ({
-          item_id: item.variant_id,
-          item_name: item.title,
-          price: parseFloat(item.price),
-          quantity: item.quantity,
-        })),
-      });
-    }
+    trackPurchase({
+      orderId,
+      value: order.total_price,
+      currency: order.currency_code,
+      shipping: order.shipping_cost,
+      items: order.line_items.map((item) => ({
+        item_id: item.variant_id,
+        item_name: item.title,
+        price: parseFloat(item.price),
+        quantity: item.quantity,
+      })),
+    });
   }, [order, orderId]);
 
   if (loadState === "loading") {

@@ -26,6 +26,7 @@ import {
   getOrderAccessStorageKey,
 } from "@/lib/checkoutConfig";
 import { CheckoutApiError, createPayment } from "@/lib/api";
+import { cartItemToTracked, trackAddPaymentInfo, trackBeginCheckout } from "@/lib/tracking";
 
 /** Israeli phone numbers are written many ways ("050-123-4567", "050 1234567"). */
 const stripPhoneFormatting = (value: string) => value.replace(/[\s().-]/g, "");
@@ -138,6 +139,7 @@ export default function Checkout() {
   const { data: settings } = useStoreSettings();
   const orderInProgress = useRef(false);
   const hasSavedAddressRef = useRef(false);
+  const beginCheckoutTracked = useRef(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState<PaymentNoticeKind | null>(null);
@@ -188,6 +190,13 @@ export default function Checkout() {
       navigate(ROUTES.home, { replace: true });
     }
   }, [items.length, navigate, isReturningFromPayment]);
+
+  // Funnel: report checkout entry once per visit to this page
+  useEffect(() => {
+    if (beginCheckoutTracked.current || items.length === 0) return;
+    beginCheckoutTracked.current = true;
+    trackBeginCheckout(items.map(cartItemToTracked));
+  }, [items]);
 
   // Pre-fill email when user logs in
   useEffect(() => {
@@ -364,6 +373,7 @@ export default function Checkout() {
 
       // Live checkout: hand the customer over to PayPlus's hosted page.
       setIsRedirectingToPayment(true);
+      trackAddPaymentInfo(items.map(cartItemToTracked));
       const { paymentPageUrl } = await createPayment(orderId, orderAccessToken);
       window.location.assign(paymentPageUrl);
     } catch (error) {

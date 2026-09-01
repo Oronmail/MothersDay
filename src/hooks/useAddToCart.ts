@@ -5,6 +5,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { ProductEdge } from "@/lib/types";
 import { startSpan } from "@/lib/sentry";
 import { ROUTES } from "@/lib/routes";
+import { cartItemToTracked, trackAddToCart } from "@/lib/tracking";
 
 interface VariantNode {
   id: string;
@@ -78,6 +79,7 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
           };
 
           addItem(cartItem);
+          trackAddToCart(cartItemToTracked(cartItem));
 
           // Show success toast with a link straight to checkout
           toast.success("המוצר נוסף לסל", {

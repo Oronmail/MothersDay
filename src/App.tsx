@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { trackPageView } from "@/lib/tracking";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 
@@ -38,15 +39,11 @@ const AdminLoginPage = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 
-// Track SPA route changes in Google Analytics
+// Track SPA route changes (GA4 page_view + Meta Pixel PageView)
 function GaRouteTracker() {
   const location = useLocation();
   useEffect(() => {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', 'page_view', {
-        page_path: location.pathname + location.search,
-      });
-    }
+    trackPageView(location.pathname + location.search);
   }, [location]);
   return null;
 }

@@ -8,6 +8,7 @@ import {
   MAIN_COLLECTION_HANDLE
 } from "@/lib/api";
 import { ProductEdge } from "@/lib/types";
+import { trackViewItem } from "@/lib/tracking";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
@@ -143,6 +144,19 @@ export default function ProductDetail() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, [data?.id]);
+
+  // Funnel: report each product view (GA4 view_item / Meta ViewContent)
+  useEffect(() => {
+    if (!data) return;
+    const variant = data.variants.edges[0]?.node;
+    trackViewItem({
+      item_id: variant?.id || data.id,
+      item_name: data.title,
+      price: parseFloat(variant?.price.amount || data.priceRange.minVariantPrice.amount),
+      quantity: 1,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.id]);
 
   const handleAddToCart = () => {

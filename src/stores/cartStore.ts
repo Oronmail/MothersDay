@@ -4,6 +4,7 @@ import { createOrder } from '@/lib/api';
 import { CartItem, ShippingAddress } from '@/lib/types';
 import { MAX_ITEM_QUANTITY } from '@/lib/checkoutConfig';
 import { startSpan, captureException, logger } from '@/lib/sentry';
+import { cartItemToTracked, trackRemoveFromCart } from '@/lib/tracking';
 
 interface CartStore {
   items: CartItem[];
@@ -63,6 +64,10 @@ export const useCartStore = create<CartStore>()(
       },
 
       removeItem: (variantId) => {
+        const removed = get().items.find(item => item.variantId === variantId);
+        if (removed) {
+          trackRemoveFromCart(cartItemToTracked(removed));
+        }
         set({
           items: get().items.filter(item => item.variantId !== variantId)
         });

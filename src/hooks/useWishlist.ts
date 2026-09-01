@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 import { useLocalWishlistStore } from '@/stores/wishlistStore';
+import { trackAddToWishlist } from '@/lib/tracking';
 
 /**
  * Hook to check whether a single product is in the current user's wishlist,
@@ -53,6 +54,7 @@ export function useWishlistToggle(productId: string | undefined) {
         store.remove(productId);
       } else {
         store.add(productId);
+        trackAddToWishlist(productId);
       }
       return;
     }
@@ -74,6 +76,7 @@ export function useWishlistToggle(productId: string | undefined) {
           .from('wishlists')
           .insert({ user_id: user.id, product_id: productId });
         setIsInServerWishlist(true);
+        trackAddToWishlist(productId);
       }
     } finally {
       setIsLoading(false);
