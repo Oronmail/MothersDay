@@ -86,8 +86,7 @@ requests get 401). Two ways to let PayPlus reach the preview callback:
 
 ## 4. Test on a preview deployment
 
-Push the branch → Vercel builds a preview. On the preview URL run through
-`docs/payplus-go-live-tests.md`… short version:
+Push the branch → Vercel builds a preview. On the preview URL:
 
 1. Order + pay a low-amount product with a real card → order flips to `paid`,
    confirmation shows the card's last 4, email arrives, cart empties,
