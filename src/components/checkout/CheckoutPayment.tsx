@@ -8,34 +8,31 @@ interface CheckoutPaymentProps {
 }
 
 /**
- * The payment step is completed on PayPlus's hosted page, not here — this
- * section only tells the customer what to expect before the redirect.
+ * Payment happens on PayPlus's hosted page after submit, so when checkout is
+ * live this section renders nothing (per Eden/Oron, 2026-09-01) — the order
+ * button and its secure-payment note live in the summary column. The section
+ * only appears for the dev simulation mode and for the pre-launch
+ * checkout-disabled notice.
  */
 export function CheckoutPayment({
   checkoutEnabled = false,
   paymentSimulationEnabled = false,
 }: CheckoutPaymentProps) {
+  if (checkoutEnabled && !paymentSimulationEnabled) return null;
+
   return (
     <section className="space-y-4">
       <h2 className="text-lg">תשלום</h2>
 
-      <div className="border border-border p-4 space-y-3">
+      <div className="border border-border p-4">
         <div className="flex items-start gap-2">
           <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground">
             {paymentSimulationEnabled
               ? "הדמיית תשלום פעילה: לחיצה על כפתור ההזמנה תדמה רכישה מלאה לצורכי בדיקה בלבד, כולל אישור הזמנה ומייל. לא יבוצע חיוב."
-              : checkoutEnabled
-                ? "לאחר לחיצה על כפתור ההזמנה נעביר אותך לעמוד התשלום המאובטח של PayPlus להשלמת התשלום, ומיד אחר כך תחזרי לאישור ההזמנה."
-                : "הזמנות אונליין עדיין לא פעילות. אפשר להמשיך לעיין בחנות, אבל עדיין לא ניתן להשלים הזמנה."}
+              : "הזמנות אונליין עדיין לא פעילות. אפשר להמשיך לעיין בחנות, אבל עדיין לא ניתן להשלים הזמנה."}
           </p>
         </div>
-
-        {!paymentSimulationEnabled && (
-          <p className="text-xs text-muted-foreground">
-            אמצעי תשלום: כרטיסי אשראי ויזה, מאסטרקארד, אמריקן אקספרס ודיינרס.
-          </p>
-        )}
       </div>
     </section>
   );
