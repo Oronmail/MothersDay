@@ -33,8 +33,10 @@ const escapeXml = (value: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
+// encodeURI percent-encodes the Hebrew handles - XML entity escaping alone is
+// not URL encoding, and sitemap <loc> values must be valid URLs.
 const toAbsoluteUrl = (siteUrl: string, path: string) =>
-  `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  encodeURI(`${siteUrl}${path.startsWith("/") ? path : `/${path}`}`);
 
 const toIsoDate = (value?: string | null) => {
   if (!value) return undefined;
@@ -50,12 +52,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const siteUrl = getRequestSiteUrl(req);
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_Secret_KEY;
+  // Public catalog reads only - the anon key is enough (RLS allows public
+  // SELECT); keep the service key strictly for order-writing functions.
+  const supabaseKey =
+    process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_Secret_KEY;
 
   const entries: SitemapEntry[] = [...STATIC_ROUTES];
 
-  if (supabaseUrl && supabaseServiceKey) {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  if (supabaseUrl && supabaseKey) {
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const [{ data: products }, { data: collections }] = await Promise.all([
       supabase

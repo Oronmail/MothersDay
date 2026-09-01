@@ -76,7 +76,7 @@ const buildAddressHtml = (shippingAddress?: OrderEmailAddress | null) => {
     shippingAddress.street,
     shippingAddress.city,
     shippingAddress.phone ? `טלפון: ${shippingAddress.phone}` : "",
-  ].filter(Boolean);
+  ].filter((line): line is string => Boolean(line));
 
   if (lines.length === 0) {
     return "";

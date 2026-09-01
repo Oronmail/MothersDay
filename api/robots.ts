@@ -26,13 +26,21 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const siteUrl = getRequestSiteUrl(req);
+  // Note: a UA-specific group REPLACES the "*" group for that crawler, so each
+  // AI-crawler group must repeat the /api/ and /admin/ disallows itself.
   const body = [
     "User-agent: *",
     "Allow: /",
     "Disallow: /api/",
     "Disallow: /admin/",
     "",
-    ...AI_CRAWLERS.flatMap((agent) => [`User-agent: ${agent}`, "Allow: /", ""]),
+    ...AI_CRAWLERS.flatMap((agent) => [
+      `User-agent: ${agent}`,
+      "Allow: /",
+      "Disallow: /api/",
+      "Disallow: /admin/",
+      "",
+    ]),
     `Sitemap: ${siteUrl}/sitemap.xml`,
   ].join("\n");
 

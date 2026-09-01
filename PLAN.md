@@ -25,15 +25,11 @@ This file tracks the remaining work we already identified during the pre-launch 
   - canonical, Open Graph, Twitter, and JSON-LD tags
 - Set `VITE_SITE_URL` to the final production domain.
 - Submit the sitemap in Google Search Console after the final domain and copy are confirmed.
-- Reconnect the payment provider and verify:
-  - payment creation
-  - callback handling
-  - successful paid order flow
-  - failed payment flow
-  - confirmation page behavior
-- Re-enable checkout only after payment tests pass:
-  - `VITE_CHECKOUT_ENABLED=true`
-  - `CHECKOUT_ENABLED=true`
+- PayPlus is wired (2026-09, branch `launch/payplus`): `create-payment` → hosted page
+  redirect → HMAC-verified `payplus-callback` (+ IPN check on return) → paid → email.
+  Follow `docs/payplus-go-live.md`: apply the two pending Supabase migrations, add the
+  PayPlus env vars, test on a preview deployment, then enable
+  `VITE_CHECKOUT_ENABLED=true` + `CHECKOUT_ENABLED=true` in Production.
 
 ## Quality and UX follow-up
 
@@ -45,7 +41,9 @@ This file tracks the remaining work we already identified during the pre-launch 
 
 ## Security and operations
 
-- Remove `.env` from git tracking and rotate secrets listed in [SECURITY-TODO.md](/Users/oronsmac/MothersDay/SECURITY-TODO.md).
+- `.env` is untracked; rotate the historical secrets (old Shopify token, site password)
+  noted in SECURITY-TODO.md, and rotate the Supabase anon key if the Jan-2026 tracked
+  `.env` was never purged from git history.
 - Verify Vercel environment variables are correct for production.
 - Review Supabase permissions and admin/API access before launch.
 - After payment goes live, consider adding rate limiting or abuse protection to order/payment endpoints.

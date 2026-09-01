@@ -3,11 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import { getOrderAccessSecret, isValidOrderAccessToken } from "./_lib/orderAccess.js";
 
 /**
- * Vercel API route: GET /api/get-order?id=<orderId>
+ * GET /api/get-order?id=<orderId>&token=<orderAccessToken>
  *
- * Fetches order data using the service role key (bypasses RLS).
- * Used by the checkout confirmation page for guest orders where
- * RLS blocks anon reads (null = null is false in SQL).
+ * Fetches an order with the service role (guest orders are unreadable via RLS).
+ * Access is gated by the HMAC order-access token. Used by the confirmation
+ * page, which also polls it briefly while a PayPlus callback is settling.
  */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,25 +23,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_Secret_KEY;
-
   if (!supabaseUrl || !supabaseServiceKey) {
     return res.status(500).json({ error: "Missing Supabase configuration" });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } });
   const accessSecret = getOrderAccessSecret();
 
-  const { data, error } = await supabase
-    .from("orders")
-    .select("id, order_number, user_id, guest_email, line_items, shipping_address, total_price, shipping_cost, currency_code, financial_status, fulfillment_status, created_at, updated_at, notes")
-    .eq("id", orderId)
-    .single();
+  const { data, error } = await supabase.from("orders").select("*").eq("id", orderId).single();
 
   if (error || !data) {
     return res.status(404).json({ error: "Order not found" });
   }
 
-  const ownerRef = data.user_id || data.guest_email;
+  const ownerRef = data.user_id || data.guest_email || data.customer_email;
   if (!ownerRef || !isValidOrderAccessToken(orderId, ownerRef, token, accessSecret)) {
     return res.status(404).json({ error: "Order not found" });
   }
@@ -61,5 +56,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     created_at: data.created_at,
     updated_at: data.updated_at,
     notes: data.notes,
+    // Payment fields (null until the payments migration is applied / order is paid)
+    paid_at: data.paid_at ?? null,
+    payment_method: data.payment_method ?? null,
+    payment_card_last4: data.card_last4 ?? null,
+    payment_card_brand: data.card_brand ?? null,
   });
 }

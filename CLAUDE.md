@@ -18,7 +18,7 @@ before the official launch.
 
 History: originally scaffolded in **Lovable** and connected to **Shopify**. The code has since
 been **migrated off Shopify** — the catalog and orders now live in **Supabase**, and payments use
-**CreditGuard / Hyp**. Some older docs (`PROJECT.md`, `SECURITY-TODO.md`) still mention
+**PayPlus** (Israeli processor; the earlier CreditGuard/Hyp code was removed in 2026-09 without ever going live). Some older docs (`PROJECT.md`, `SECURITY-TODO.md`) still mention
 Shopify/Lovable and are **stale** — trust this file and the code over them.
 
 ## Tech stack
@@ -28,7 +28,7 @@ Shopify/Lovable and are **stale** — trust this file and the code over them.
 - **Backend:** Supabase (Postgres + Auth + RLS) and Vercel **serverless functions** in `api/`
 - **Email:** Resend (order confirmations); Supabase Auth SMTP sends magic-link/signup emails
   (branded RTL templates in `supabase/email-templates/`, pasted into the Supabase dashboard)
-- **Payments:** CreditGuard / **Hyp** (Israeli processor) — XML API, hosted payment page in iframe
+- **Payments:** **PayPlus** (Israeli processor) — REST API (`docs.payplus.co.il`), hosted payment page via full-page redirect; orders are marked paid only by the HMAC-verified server callback (+ IPN cross-check)
 - **Hosting:** Vercel, deployed from GitHub repo `Oronmail/MothersDay` (branch `main`)
 - **Monitoring:** Sentry; Analytics: Google Analytics (`G-RZ3NF8NX21`)
 
@@ -71,8 +71,13 @@ Outside the layout: `/auth`, `/admin/login`, `/admin/*` (AdminDashboard), `*` (N
 
 - `create-order.ts` — creates order in Supabase with **service role** (bypasses RLS), recomputes
   pricing server-side, normalizes phone to `+972`. Returns `{ orderId, orderNumber, orderAccessToken }`.
-- `create-payment.ts` — starts a Hyp payment session, returns hosted payment URL for the iframe.
-- `payment-callback.ts` — Hyp redirects here; validates MAC, marks order `paid`, redirects to confirmation.
+- `create-payment.ts` — creates/reuses a PayPlus `generateLink` hosted-page link for a pending order
+  (amount from the order row, requires the order-access token), returns `paymentPageUrl` for a redirect.
+- `payplus-callback.ts` — PayPlus server-to-server callback: verifies `hash` = HMAC-SHA256(secret, raw body),
+  dedupes via `payment_events`, marks paid atomically via the `mark_order_paid()` RPC, sends the Resend email.
+  Also handles declines (order stays `pending`) and refunds.
+- `payplus-return.ts` — the customer returns here from the hosted page; never trusts the redirect params,
+  confirms via `POST /PaymentPages/ipn`, then redirects to confirmation or back to `/checkout?payment=failed|cancelled`.
 - `simulate-payment.ts` — dev/test only: marks paid + sends email. Gated by `VITE_PAYMENT_SIMULATION_ENABLED`.
 - `get-order.ts` — fetches an order for the confirmation page (validates access token, service role).
 - `gov-address.ts` — same-origin proxy for the data.gov.il cities/streets datasets used by the
@@ -110,12 +115,20 @@ gracefully. Checkout prefills contact + shipping fields for logged-in users from
 ## Checkout / payment flow
 
 `Checkout.tsx` → validate (Zod) → compute shipping (35₪ if subtotal < 350₪, else free) →
-`cartStore.createOrder()` → `/api/create-order`. Then, depending on flags:
-- `VITE_CHECKOUT_ENABLED=true` → `/api/create-payment` → Hyp iframe → `/api/payment-callback` → confirmation.
-- `VITE_PAYMENT_SIMULATION_ENABLED=true` → `/api/simulate-payment` (dev) → confirmation.
+`cartStore.createOrder()` → `/api/create-order` (prices/shipping recomputed server-side; user derived
+from the Supabase JWT in the `Authorization` header; the cart is NOT cleared yet). Then, per flags:
+- `VITE_CHECKOUT_ENABLED=true` (+ server `CHECKOUT_ENABLED=true`) → `/api/create-payment` → full-page
+  redirect to the PayPlus hosted page → PayPlus POSTs `/api/payplus-callback` (marks paid, emails) and
+  sends the browser to `/api/payplus-return` → `/checkout/confirmation/:orderId?token=…`. The confirmation
+  page shows paid vs "מאמתים את התשלום" (brief polling), clears the cart and fires the GA `purchase`
+  event only once the order is actually `paid`. Declined/cancelled → `/checkout?payment=failed|cancelled`.
+- `VITE_PAYMENT_SIMULATION_ENABLED=true` → `/api/simulate-payment` (dev only; server refuses when
+  `VERCEL_ENV=production`) → confirmation.
 
 **Feature flags (currently OFF for production until payments are verified):**
-`VITE_CHECKOUT_ENABLED`, `CHECKOUT_ENABLED`, `VITE_PAYMENT_SIMULATION_ENABLED`, `PAYMENT_SIMULATION_ENABLED`.
+`VITE_CHECKOUT_ENABLED` (client) and `CHECKOUT_ENABLED` (server) — BOTH must be `true`; the server no
+longer falls back to the `VITE_` value. `VITE_PAYMENT_SIMULATION_ENABLED`/`PAYMENT_SIMULATION_ENABLED`
+enable the fake-payment dev flow (hard-refused in the production environment).
 
 ## Environment variables
 
@@ -129,8 +142,9 @@ Full set the code reads (server vars are configured in the **Vercel dashboard** 
   `VITE_CHECKOUT_ENABLED`, `VITE_PAYMENT_SIMULATION_ENABLED`.
 - Server: `SUPABASE_Secret_KEY` (service role), `RESEND_API_KEY`/`resend_KEY`,
   `ORDER_CONFIRMATION_FROM_EMAIL`/`RESEND_FROM_EMAIL`, `ORDER_CONFIRMATION_REPLY_TO`, `SUPPORT_EMAIL`,
-  `ORDER_ACCESS_SECRET` (falls back to `SUPABASE_Secret_KEY`),
-  Hyp: `HYP_SERVER_URL`, `HYP_USER`, `HYP_PASSWORD`, `HYP_TERMINAL`, `HYP_MID`,
+  `ORDER_ACCESS_SECRET` (dedicated HMAC secret for order-access tokens; set in all Vercel envs),
+  PayPlus: `PAYPLUS_API_KEY`, `PAYPLUS_SECRET_KEY`, `PAYPLUS_PAYMENT_PAGE_UID`,
+  `PAYPLUS_API_BASE` (default production `https://restapi.payplus.co.il/api/v1.0`; staging `restapidev`),
   `CHECKOUT_ENABLED`, `PAYMENT_SIMULATION_ENABLED`.
 
 ## SEO build step
@@ -155,5 +169,8 @@ explicitly allows AI crawlers). `public/llms.txt` describes the brand for LLM cr
 - Never commit secrets; `.env` stays untracked.
 - Anything that writes orders/payments must use a server-side function (RLS blocks anon writes).
 - Older `.md` docs reference Shopify/Lovable — outdated; this file is the source of truth.
-- The site is live but checkout is off — don't enable `*_CHECKOUT_ENABLED` without verifying the
-  full Hyp payment + callback + confirmation + email flow first (see `PLAN.md`).
+- The site is live but checkout is off — don't enable `*_CHECKOUT_ENABLED` in Production without
+  running the full PayPlus flow (link → hosted page → callback → paid → email → confirmation) on a
+  Preview deployment first, and a real low-amount charge + refund in Production (see `PLAN.md`).
+- Orders schema: payment columns + `payment_events` + `mark_order_paid()` live in
+  `supabase/migrations/20260901120000_payments_and_hardening.sql` — the API assumes it is applied.

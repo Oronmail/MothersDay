@@ -1,0 +1,109 @@
+# PayPlus go-live runbook
+
+Written 2026-09-01 on the `launch/payplus` branch. Do these in order; nothing here
+enables checkout in production — that is the last, deliberate step.
+
+## 1. Apply the database migrations (one-time, ~1 minute)
+
+Two migration files are pending in `supabase/migrations/`:
+
+1. `20260611170000_product_admin_fields.sql` — product admin fields (sku, stock, weight…)
+2. `20260901120000_payments_and_hardening.sql` — payment columns, `payment_events`,
+   `mark_order_paid()`, drops the anon orders-insert policy, admin read on addresses,
+   `is_admin()` hardening, drops the dead `unlinked_orders` table and stale storage policies.
+
+Either paste each file into the **Supabase Dashboard → SQL Editor** (project
+`yptpcpxyefboptosfxkh`, run 20260611 first, then 20260901), or from a terminal with
+the database password:
+
+```bash
+supabase link --project-ref yptpcpxyefboptosfxkh   # asks for the DB password
+supabase db push                                    # applies pending migrations
+```
+
+Safe while checkout is off: everything is additive except dropping a policy and a
+table nothing uses.
+
+Sanity check afterwards (SQL editor):
+
+```sql
+select column_name from information_schema.columns
+ where table_name = 'orders' and column_name in ('paid_at','payment_page_request_uid','customer_email');
+select policyname from pg_policies where tablename = 'orders';  -- "Insert orders" must be GONE
+select proname from pg_proc where proname = 'mark_order_paid';
+```
+
+## 2. PayPlus dashboard once-over
+
+- Copy from the dashboard (per the onboarding email): **API Key**, **Secret Key**,
+  **Payment Page UID** (and note Terminal UID for support calls).
+- On the payment page settings: language Hebrew, currency ILS, enable the payment
+  methods you want (credit cards; Bit / Apple Pay / Google Pay if approved).
+- The success-redirect method (GET vs POST) can stay at its default — the site
+  handles both.
+- Decide on **חשבונית+** (auto invoice/receipt). If you subscribe, tell the dev —
+  `generateLink` should then send `initial_invoice: true` (one-line change).
+
+## 3. Vercel environment variables
+
+Values live only in the PayPlus dashboard — never commit them. Either add them in
+Vercel → Project `mothers-day` → Settings → Environment Variables, or:
+
+```bash
+vercel env add PAYPLUS_API_KEY production        # paste the API key
+vercel env add PAYPLUS_SECRET_KEY production     # paste the secret key
+vercel env add PAYPLUS_PAYMENT_PAGE_UID production
+# Preview gets the same values for now (PayPlus gave us production credentials only;
+# tests are low-amount real charges per their own onboarding email, refunded after):
+vercel env add PAYPLUS_API_KEY preview
+vercel env add PAYPLUS_SECRET_KEY preview
+vercel env add PAYPLUS_PAYMENT_PAGE_UID preview
+```
+
+`PAYPLUS_API_BASE` is optional — unset means production
+(`https://restapi.payplus.co.il/api/v1.0`). If PayPlus ever provides staging
+credentials, set it to `https://restapidev.payplus.co.il/api/v1.0` in Preview.
+
+Already set: `ORDER_ACCESS_SECRET` (all envs, added 2026-09-01). Still missing and
+recommended: `VITE_SENTRY_DSN` (create a Sentry project; CSP already allows the
+ingest hosts).
+
+Enable checkout **in Preview only** for testing:
+
+```bash
+vercel env add CHECKOUT_ENABLED preview        # value: true
+vercel env add VITE_CHECKOUT_ENABLED preview   # value: true
+```
+
+Note: if the Vercel project has Deployment Protection on Preview, PayPlus cannot
+reach `/api/payplus-callback` on a preview URL — disable protection for the test,
+or test on production with checkout still off elsewhere.
+
+## 4. Test on a preview deployment
+
+Push the branch → Vercel builds a preview. On the preview URL run through
+`docs/payplus-go-live-tests.md`… short version:
+
+1. Order + pay a low-amount product with a real card → order flips to `paid`,
+   confirmation shows the card's last 4, email arrives, cart empties,
+   admin shows the transaction details. Refund it from the PayPlus dashboard →
+   order flips to `refunded`.
+2. Decline path: cancel on the hosted page → back at checkout with the cart intact.
+3. Replay the callback (PayPlus panel "resend" if available) → no second email.
+4. Check `payment_events` rows in Supabase for each step.
+
+## 5. Production cutover
+
+1. `CHECKOUT_ENABLED=true` + `VITE_CHECKOUT_ENABLED=true` in **Production**, redeploy.
+2. One real low-amount charge end-to-end, then refund it from the PayPlus dashboard
+   (their onboarding email recommends exactly this, ideally once per card brand).
+3. Delete the 11 test orders from April (order_number 8–19) in Supabase if you want
+   clean books: `delete from orders where order_number between 8 and 19;`
+4. Submit the sitemap in Search Console; watch Vercel logs + PayPlus transactions
+   panel for the first day.
+
+## Rollback
+
+Set `CHECKOUT_ENABLED=false` + `VITE_CHECKOUT_ENABLED=false` in Production and
+redeploy — the store returns to "הזמנות אונליין ייפתחו בקרוב" mode. Orders already
+paid are unaffected.
