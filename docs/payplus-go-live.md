@@ -1,32 +1,24 @@
 # PayPlus go-live runbook
 
-**Status as of 1 Sep 2026, afternoon** — live checklist first, full reference below.
+**Status as of 1 Sep 2026, end of day** — payments are DONE and tested with real money; the site is deployed to production with the store closed. Live checklist first, full reference below.
 
-## ✅ Done
+## ✅ Done (verified live)
 
-- [x] Migrations `20260611170000` (product fields) + `20260901120000` (payments & hardening) applied and sanity-checked
-- [x] PayPlus dashboard configured, **Invoice+ subscribed**; invoice flow wired in code (commit `0281ac1`)
-- [x] PayPlus credentials in Vercel **Production** — verified working against PayPlus's live API
-- [x] PayPlus credentials + `CHECKOUT_ENABLED`/`VITE_CHECKOUT_ENABLED=true` + Resend email vars in **Preview** (note: the checkout flags exist in Preview ONLY — filter the env list by environment to see them; Production has none on purpose until launch)
-- [x] `ORDER_ACCESS_SECRET` in all environments
-- [x] **Protection Bypass for Automation** enabled (system env var; code appends it to PayPlus URLs on previews)
+- [x] All 3 migrations applied (product fields, payments & hardening, invoice/consent fields)
+- [x] PayPlus credentials verified against their production API; env complete in Production + Preview
+- [x] **Real payment tests on the preview:** order #23 (₪85, paid → same-day void reflected as refunded) and #24 (₪60, paid; refund pending). Declined card-check, cancel-path, HMAC verification, idempotency and void handling all exercised with live traffic
+- [x] **Invoice+ final mode:** our server creates the tax invoice via the books API right after the charge (instant, `prevent_email`) — document #4001 created as proof; panel auto-generation turned OFF (it had produced the duplicate #4000); invoice link stored on the order, shown in admin, on the confirmation page and in the email
+- [x] Supabase Auth redirect URLs configured; `VITE_SENTRY_DSN` set (Production + Preview; activates on each new build)
+- [x] Confirmation email redesigned from the package-card artwork (wine header, closing line, invoice link, mobile-fluid); test email delivered
+- [x] **Production deployed from `main`** with `CHECKOUT_ENABLED=false` + `VITE_CHECKOUT_ENABLED=false` — everything is live except purchasing
 
 ## ⏳ Remaining
 
-1. **Preview payment test — ready NOW, nothing blocks it.** Guest checkout doesn't need the Supabase items below.
-   - Open the branch preview (Vercel login needed to view):
-     `https://mothers-day-git-launch-payplus-oronmails-projects.vercel.app`
-   - Add a cheap product (בלוק תכנון קטן, ₪25) → checkout as **guest** with a real card.
-   - Expect: PayPlus page → pay → confirmation shows paid + card last-4 → email arrives (with invoice link once the invoice migration is in) → admin order shows the payment card → PayPlus panel shows the transaction.
-   - Then: **refund it from the PayPlus dashboard** → the order flips to `refunded` by itself.
-   - Also try: cancel on the PayPlus page (→ back at checkout, cart intact) and a declined attempt if possible.
-2. **Supabase dashboard tasks — currently blocked by the status.supabase.com auth incident** (try an incognito window first; `ERR_TOO_MANY_REDIRECTS` is often just cookies). When you're back in:
-   - Run migration `20260901150000_invoice_fields.sql` (2 columns, 10 seconds) — until then invoices simply aren't linked, nothing breaks.
-   - Authentication → URL Configuration → Redirect URLs (section 3.5 below) — until then, login-from-checkout falls back to the homepage; guest checkout unaffected.
-3. **`VITE_SENTRY_DSN`** (recommended): Sentry → your project → Settings → Client Keys (DSN) → copy the `https://…ingest…sentry.io/…` URL → Vercel env for Production + Preview.
-4. **Eden's sign-off** on the copy decisions (cancellation fee waived, 14-day defect window, delivery ranges, newsletter promise, Terms/Privacy rewrite).
-5. **Production cutover** (section 5 below): add `CHECKOUT_ENABLED` + `VITE_CHECKOUT_ENABLED` = `true` in Production → redeploy → one real charge + refund → delete April test orders #8–#19 → submit sitemap.
-6. **After testing**: regenerate the automation-bypass secret (Deployment Protection page) and consider PR + merge `launch/payplus` → `main` (that's what puts all of this live).
+1. **PayPlus panel housekeeping:** cancel duplicate document **#4001** (the API one; #4000 stays), and **refund the ₪60** of order #24.
+2. **Eden's review** on the live site: the rewritten Terms/Returns/Shipping/Privacy, the softened newsletter promise, checkout look (asterisks, no payment box), and the new email design.
+3. **Before launch:** delete the test orders (April's #8–#19 and today's #22–#24) — `delete from orders where order_number between 8 and 24;` — and regenerate the automation-bypass secret (Deployment Protection page).
+4. **Cutover:** set the two checkout flags to `true` in Production, redeploy, one last real charge + refund, submit the sitemap in Search Console, watch Sentry + the PayPlus panel for the first day.
+5. Rollback stays: flags to `false`, redeploy.
 
 ---
 
