@@ -110,7 +110,10 @@ const buildHtml = ({
   simulated = false,
   invoiceUrl = null,
 }: Omit<OrderEmailPayload, "to">) => {
-  const logoUrl = `${siteUrl.replace(/\/$/, "")}/logo.png`;
+  // Email images must load in any inbox regardless of which deployment sent
+  // the email (preview URLs sit behind Vercel auth) — always the public site.
+  const logoUrl = "https://www.mothersday.co.il/logo.png";
+  void siteUrl;
   const supportEmail = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
   const simulationBanner = simulated
     ? `
