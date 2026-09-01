@@ -1,7 +1,36 @@
 # PayPlus go-live runbook
 
-Written 2026-09-01 on the `launch/payplus` branch. Do these in order; nothing here
-enables checkout in production — that is the last, deliberate step.
+**Status as of 1 Sep 2026, afternoon** — live checklist first, full reference below.
+
+## ✅ Done
+
+- [x] Migrations `20260611170000` (product fields) + `20260901120000` (payments & hardening) applied and sanity-checked
+- [x] PayPlus dashboard configured, **Invoice+ subscribed**; invoice flow wired in code (commit `0281ac1`)
+- [x] PayPlus credentials in Vercel **Production** — verified working against PayPlus's live API
+- [x] PayPlus credentials + `CHECKOUT_ENABLED`/`VITE_CHECKOUT_ENABLED=true` + Resend email vars in **Preview** (note: the checkout flags exist in Preview ONLY — filter the env list by environment to see them; Production has none on purpose until launch)
+- [x] `ORDER_ACCESS_SECRET` in all environments
+- [x] **Protection Bypass for Automation** enabled (system env var; code appends it to PayPlus URLs on previews)
+
+## ⏳ Remaining
+
+1. **Preview payment test — ready NOW, nothing blocks it.** Guest checkout doesn't need the Supabase items below.
+   - Open the branch preview (Vercel login needed to view):
+     `https://mothers-day-git-launch-payplus-oronmails-projects.vercel.app`
+   - Add a cheap product (בלוק תכנון קטן, ₪25) → checkout as **guest** with a real card.
+   - Expect: PayPlus page → pay → confirmation shows paid + card last-4 → email arrives (with invoice link once the invoice migration is in) → admin order shows the payment card → PayPlus panel shows the transaction.
+   - Then: **refund it from the PayPlus dashboard** → the order flips to `refunded` by itself.
+   - Also try: cancel on the PayPlus page (→ back at checkout, cart intact) and a declined attempt if possible.
+2. **Supabase dashboard tasks — currently blocked by the status.supabase.com auth incident** (try an incognito window first; `ERR_TOO_MANY_REDIRECTS` is often just cookies). When you're back in:
+   - Run migration `20260901150000_invoice_fields.sql` (2 columns, 10 seconds) — until then invoices simply aren't linked, nothing breaks.
+   - Authentication → URL Configuration → Redirect URLs (section 3.5 below) — until then, login-from-checkout falls back to the homepage; guest checkout unaffected.
+3. **`VITE_SENTRY_DSN`** (recommended): Sentry → your project → Settings → Client Keys (DSN) → copy the `https://…ingest…sentry.io/…` URL → Vercel env for Production + Preview.
+4. **Eden's sign-off** on the copy decisions (cancellation fee waived, 14-day defect window, delivery ranges, newsletter promise, Terms/Privacy rewrite).
+5. **Production cutover** (section 5 below): add `CHECKOUT_ENABLED` + `VITE_CHECKOUT_ENABLED` = `true` in Production → redeploy → one real charge + refund → delete April test orders #8–#19 → submit sitemap.
+6. **After testing**: regenerate the automation-bypass secret (Deployment Protection page) and consider PR + merge `launch/payplus` → `main` (that's what puts all of this live).
+
+---
+
+# Reference (original steps)
 
 ## 1. Apply the database migrations (one-time, ~1 minute)
 
