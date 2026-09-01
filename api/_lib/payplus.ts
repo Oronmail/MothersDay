@@ -383,8 +383,10 @@ export async function createInvoiceDocument(
     language: "he",
     currency_code: "ILS",
     vatType: "vat-type-included",
+    // NOTE: unlike generateLink (customer_name), the books API wants `name` —
+    // verified live 2026-09-01 (422 missing-customer.name-param otherwise).
     customer: {
-      customer_name: params.customer.name || "לקוחת יום האם",
+      name: params.customer.name || "לקוחת יום האם",
       email: params.customer.email,
     },
     items: params.items.map((item) => ({
@@ -406,13 +408,18 @@ export async function createInvoiceDocument(
   };
 
   const parsed = (await payplusPost(cfg, "/books/docs/new/inv_tax_receipt", body)) as Record<string, unknown>;
-  // Response is flat (docUID / number / originalDocAddress), possibly under data.
-  const doc = (parsed["data"] as Record<string, unknown> | undefined) ?? parsed;
-  const str = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
+  // Live response (2026-09-01) nests the document under `details`:
+  // { status: "success", details: { docUID, number, originalDocAddress, copyDocAddress, docLink } }
+  const doc =
+    (parsed["details"] as Record<string, unknown> | undefined) ??
+    (parsed["data"] as Record<string, unknown> | undefined) ??
+    parsed;
+  const str = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : typeof v === "number" ? String(v) : null);
   return {
     docUid: str(doc["docUID"]) ?? str(doc["doc_uid"]),
     number: str(doc["number"]) ?? str(doc["docu_number"]),
-    url: str(doc["originalDocAddress"]) ?? str(doc["copyDocAddress"]) ?? str(doc["original_url"]),
+    // Prefer the hosted viewer link (renders in any browser); fall back to the PDFs.
+    url: str(doc["docLink"]) ?? str(doc["originalDocAddress"]) ?? str(doc["copyDocAddress"]) ?? str(doc["original_url"]),
     raw: parsed,
   };
 }

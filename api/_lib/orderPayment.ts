@@ -144,6 +144,22 @@ export async function createAndStoreInvoice(supabase: SupabaseClient, orderId: s
     }
   } catch (error) {
     console.error("createAndStoreInvoice failed:", orderId, error);
+    // Failure audit row — a silent invoice failure cost us a debugging round
+    // on 2026-09-01; never again.
+    await supabase
+      .from("payment_events")
+      .insert({
+        order_id: orderId,
+        provider: "payplus",
+        event_key: `invoice-failed:${orderId}:${Date.now()}`,
+        event_type: "InvoiceCreate",
+        status_code: "error",
+        verified: false,
+        payload: { error: error instanceof Error ? error.message : String(error) },
+      })
+      .then(({ error: auditError }) => {
+        if (auditError) console.error("invoice failure audit insert failed:", auditError);
+      });
   }
 }
 
