@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
+import { SEO } from "@/components/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEO title="העמוד לא נמצא" noindex />
       <AnnouncementBanner />
       <Header />
       <main className="flex-1 flex items-center justify-center px-4">

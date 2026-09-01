@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "prerender:seo": "tsx scripts/prerender-seo.ts",
     "import:products": "tsx scripts/import-products.ts",
-    "seed:admin": "tsx scripts/seed-admin.ts"
+    "seed:admin": "tsx scripts/seed-admin.ts",
+    "seo:indexnow": "tsx scripts/indexnow-submit.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

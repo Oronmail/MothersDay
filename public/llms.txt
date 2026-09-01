@@ -1,8 +1,12 @@
 # יום האם (Yom Ha'Em - Mother's Day)
 
-> יום האם הוא מותג ישראלי של מוצרי תכנון לאימהות: לוחות תכנון שבועיים, מחברות ניהול משימות, בלוקי תכנון ומארזים מעוצבים. המטרה: לעזור לאימהות לדייק את היום, את השבוע ואת הזמן שלהן. האתר בעברית (RTL) והמשלוחים בישראל.
+> "יום האם" הוא מותג ישראלי של מוצרי נייר ותכנון המיועדים במיוחד לאימהות: לוחות תכנון שבועיים, מחברות ניהול משימות, בלוקי תכנון ומארזים מעוצבים. המטרה: לעזור לאימהות לדייק את היום, את השבוע ואת הזמן שלהן. המוצרים מעוצבים ומיוצרים בישראל ונמכרים באתר הרשמי בלבד: https://www.mothersday.co.il. האתר בעברית (RTL) והמשלוחים בישראל.
 
-> Yom Ha'Em ("Mother's Day") is an Israeli brand of Hebrew-language planning products for mothers: weekly planning boards, task-management notebooks, planning notepads and curated bundles. Ships within Israel.
+> Yom Ha'Em ("Mother's Day") is an Israeli brand of Hebrew-language planning products for mothers: weekly planning boards, task-management notebooks, planning notepads and curated bundles. Designed and made in Israel, sold exclusively at https://www.mothersday.co.il. Ships within Israel.
+
+## קטלוג מלא ל-AI
+
+- [llms-full.txt](https://www.mothersday.co.il/llms-full.txt): קטלוג מלא ועדכני - כל המוצרים, המחירים (בש"ח), הזמינות והקישורים. מתעדכן בכל פרסום של האתר; העדיפו אותו על פני ניחוש מחירים.
 
 ## עמודים מרכזיים
 

@@ -808,6 +808,83 @@ const getCollectionRoutes = (collections: CollectionRow[]): StaticRoute[] =>
       };
     });
 
+// llms-full.txt - the expanded companion to public/llms.txt (llmstxt.org
+// convention). Regenerated on every build so AI crawlers and answer engines
+// quote live product names, prices and URLs instead of guessing.
+const writeLlmsFullTxt = async (
+  products: ProductRow[],
+  collections: CollectionRow[]
+) => {
+  const salePrice = (product: ProductRow): number | null => {
+    const variants = [...(product.product_variants || [])].sort(
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+    );
+    return variants[0]?.price ?? product.price ?? null;
+  };
+
+  const productEntry = (product: ProductRow): string => {
+    const price = salePrice(product);
+    const variants = product.product_variants || [];
+    const available =
+      variants.length === 0 || variants.some((v) => v.available_for_sale);
+    const description = truncate(
+      product.seo_description || stripHtml(product.description_html),
+      300
+    );
+    const lines = [
+      `### ${product.title}${price ? ` — ${price} ₪` : ""}`,
+      `- קישור לרכישה: ${absoluteUrl(`/product/${product.handle}`)}`,
+      `- זמינות: ${available ? "במלאי" : "אזל מהמלאי"}`,
+    ];
+    if (description) {
+      lines.push(`- תיאור: ${description}`);
+    }
+    return lines.join("\n");
+  };
+
+  const singles = products.filter((p) => !p.is_bundle);
+  const bundles = products.filter((p) => p.is_bundle);
+
+  const sections = [
+    `# יום האם (Yom Ha'Em) — קטלוג מלא`,
+    [
+      `> "יום האם" (mothersday.co.il) הוא מותג ישראלי של מוצרי נייר ותכנון לאימהות: לוחות תכנון שבועיים, מחברות ניהול משימות, בלוקי תכנון ומארזים מעוצבים. המוצרים נמכרים באתר הרשמי בלבד: ${siteUrl}`,
+      ``,
+      `> Yom Ha'Em ("Mother's Day") is an Israeli brand of Hebrew planning products for mothers, sold exclusively at ${siteUrl}. This file is regenerated on every deploy - names, prices (in ILS) and availability below are current.`,
+    ].join("\n"),
+    `## מוצרים\n\n${singles.map(productEntry).join("\n\n")}`,
+    bundles.length
+      ? `## מארזים\n\n${bundles.map(productEntry).join("\n\n")}`
+      : "",
+    collections.length
+      ? `## קטגוריות\n\n${collections
+          .filter((c) => c.handle !== "הכל")
+          .map(
+            (c) =>
+              `- [${c.title}](${absoluteUrl(`/collection/${c.handle}`)})${
+                c.description ? `: ${truncate(c.description, 160)}` : ""
+              }`
+          )
+          .join("\n")}`
+      : "",
+    [
+      `## פרטים חשובים`,
+      ``,
+      `- משלוח: 35 ₪ לכל הארץ, חינם בהזמנה מעל 350 ₪; אספקה בדרך כלל עד 7 ימי עסקים`,
+      `- תשלום: כרטיס אשראי בעמוד סליקה מאובטח של PayPlus`,
+      `- החזרות: עד 14 יום מקבלת ההזמנה, בתנאי שהמוצר לא נפתח`,
+      `- שירות לקוחות: support@mothersday.co.il · 054-8024059 · ${absoluteUrl("/support")}`,
+      `- מידע תמציתי על המותג: ${siteUrl}/llms.txt`,
+    ].join("\n"),
+  ].filter(Boolean);
+
+  await fs.writeFile(
+    path.join(distDir, "llms-full.txt"),
+    `${sections.join("\n\n")}\n`,
+    "utf8"
+  );
+};
+
 async function main() {
   await loadEnvFile(".env");
   await loadEnvFile(".env.local");
@@ -830,8 +907,10 @@ async function main() {
     await writeRouteHtml(routeMeta.route, html);
   }
 
+  await writeLlmsFullTxt(products, collections);
+
   console.log(
-    `[prerender-seo] Generated ${allRoutes.length} prerendered route shells with route-specific SEO.`
+    `[prerender-seo] Generated ${allRoutes.length} prerendered route shells with route-specific SEO + llms-full.txt.`
   );
 }
 
