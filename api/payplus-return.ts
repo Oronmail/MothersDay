@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
 import { getPayPlusConfig, getPaymentBaseUrl, ipnCheck, UUID_RE } from "./_lib/payplus.js";
-import { markOrderPaid, PermanentPaymentError, sendPaidOrderEmail } from "./_lib/orderPayment.js";
+import { createAndStoreInvoice, markOrderPaid, PermanentPaymentError, sendPaidOrderEmail } from "./_lib/orderPayment.js";
 
 /**
  * GET|POST /api/payplus-return?orderId=…[&fail=1|&cancel=1]
@@ -92,6 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               raw: status.raw,
             });
             if (result.updated) {
+              await createAndStoreInvoice(supabase, orderId);
               await sendPaidOrderEmail(supabase, orderId, base);
             }
             return res.redirect(302, confirmationUrl);

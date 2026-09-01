@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./orderAccess.js";
 import { sendOrderConfirmationEmail } from "./orderConfirmationEmail.js";
+import { createInvoiceDocument, getInvoiceMode, getPayPlusConfig } from "./payplus.js";
 
 /**
  * Shared "mark paid → side effects" path used by both the PayPlus server
@@ -68,6 +69,82 @@ export async function markOrderPaid(
     customerEmail: row?.customer_email ?? null,
     userId: row?.user_id ?? null,
   };
+}
+
+/**
+ * Invoice+ "api" mode: create the tax invoice/receipt for a just-paid order and
+ * store its number/URL on the row. Runs once per order (guarded by the
+ * invoice_number already being set + PayPlus's unique_identifier dedupe).
+ * Never throws — a failed invoice must not fail the payment flow; the document
+ * can always be issued manually from the PayPlus panel.
+ */
+export async function createAndStoreInvoice(supabase: SupabaseClient, orderId: string): Promise<void> {
+  if (getInvoiceMode() !== "api") return;
+  try {
+    const { data: order } = await supabase.from("orders").select("*").eq("id", orderId).single();
+    if (!order || order.financial_status !== "paid" || !order.provider_transaction_id) return;
+    if (order.invoice_number || order.invoice_url) return; // already issued
+
+    let email: string | null = order.customer_email || order.guest_email;
+    if (!email && order.user_id) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(order.user_id);
+      email = authUser?.user?.email ?? null;
+    }
+    if (!email) return;
+
+    const lineItems = (Array.isArray(order.line_items) ? order.line_items : []) as Array<{
+      title?: string;
+      quantity?: number;
+      price?: string;
+    }>;
+    const items = lineItems.map((item) => ({
+      name: item.title || "פריט",
+      quantity: Math.max(1, Math.trunc(item.quantity ?? 1)),
+      price: Number(item.price ?? 0),
+    }));
+    const shippingCost = Number(order.shipping_cost ?? 0);
+    if (shippingCost > 0) items.push({ name: "משלוח", quantity: 1, price: shippingCost });
+
+    const shippingAddress = (order.shipping_address ?? {}) as { full_name?: string };
+    const invoice = await createInvoiceDocument(getPayPlusConfig(), {
+      transactionUid: order.provider_transaction_id,
+      uniqueIdentifier: order.id,
+      orderNumber: order.order_number,
+      amount: Number(order.paid_amount ?? order.total_price),
+      customer: { name: shippingAddress.full_name || "", email },
+      items,
+      paymentDate: order.paid_at ? new Date(order.paid_at) : new Date(),
+      cardLast4: order.card_last4 ?? null,
+      cardBrand: order.card_brand ?? null,
+    });
+
+    // Audit row (also captures the raw response while the integration is young).
+    await supabase.from("payment_events").insert({
+      order_id: orderId,
+      provider: "payplus",
+      event_key: `invoice:${orderId}`,
+      event_type: "InvoiceCreate",
+      status_code: invoice.number ? "ok" : "no_number",
+      amount: Number(order.paid_amount ?? order.total_price),
+      currency: "ILS",
+      verified: true,
+      payload: invoice.raw ?? {},
+    });
+
+    if (invoice.number || invoice.url) {
+      const { error } = await supabase
+        .from("orders")
+        .update({ invoice_number: invoice.number, invoice_url: invoice.url })
+        .eq("id", orderId);
+      if (error && error.code !== "PGRST204" && error.code !== "42703") {
+        console.error("createAndStoreInvoice: store failed", orderId, error);
+      }
+    } else {
+      console.error("createAndStoreInvoice: no document in response", orderId, JSON.stringify(invoice.raw).slice(0, 400));
+    }
+  } catch (error) {
+    console.error("createAndStoreInvoice failed:", orderId, error);
+  }
 }
 
 /**

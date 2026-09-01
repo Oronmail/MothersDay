@@ -36,11 +36,19 @@ export const isPayPlusConfigured = () =>
   Boolean(process.env.PAYPLUS_API_KEY && process.env.PAYPLUS_SECRET_KEY && process.env.PAYPLUS_PAYMENT_PAGE_UID);
 
 /**
- * Invoice+ (חשבונית+): the business subscribed, so PayPlus issues the tax
- * invoice/receipt automatically per charge. Set PAYPLUS_INVOICE_ENABLED=false
- * to stop requesting documents without a code change.
+ * Invoice+ (חשבונית+) mode:
+ *  - "api"  (default): we create the document ourselves right after the charge
+ *           via POST /books/docs/new — instant, prevent_email so only OUR
+ *           branded email reaches the customer (with the invoice link).
+ *  - "auto": PayPlus generates it (initial_invoice on the payment link);
+ *           document appears 1–2 minutes after the charge, per their docs.
+ *  - "off":  no documents requested.
  */
-export const isInvoiceEnabled = () => process.env.PAYPLUS_INVOICE_ENABLED !== "false";
+export type InvoiceMode = "api" | "auto" | "off";
+export function getInvoiceMode(): InvoiceMode {
+  if (process.env.PAYPLUS_INVOICE_ENABLED === "false" || process.env.PAYPLUS_INVOICE_MODE === "off") return "off";
+  return process.env.PAYPLUS_INVOICE_MODE === "auto" ? "auto" : "api";
+}
 
 /**
  * Base URL for refURL_* and confirmation links.
@@ -141,9 +149,10 @@ export async function generatePaymentLink(
     sendEmailFailure: false,
     send_failure_callback: true,
     create_token: false,
-    // Invoice+ — auto invoice/receipt per charge; prices are VAT-inclusive
-    // (item vat_type 0), so the business is a VAT-registered dealer.
-    ...(isInvoiceEnabled() ? { initial_invoice: true, paying_vat: true } : {}),
+    // Invoice+ "auto" mode only — in the default "api" mode we create the
+    // document ourselves after the charge (books/docs/new), so requesting one
+    // here as well would double-issue it.
+    ...(getInvoiceMode() === "auto" ? { initial_invoice: true, paying_vat: true } : {}),
     refURL_success: params.successUrl,
     refURL_failure: params.failureUrl,
     refURL_cancel: params.cancelUrl,
@@ -327,6 +336,84 @@ export function extractCallbackTransaction(payload: Record<string, unknown>): Ca
     method: str(t["method"]) ?? (Object.keys(card).length > 0 ? "credit-card" : null),
     cardLast4: str(card["four_digits"]),
     cardBrand: str(card["brand_name"]),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Invoice+ — create a tax invoice/receipt for a completed charge
+// (POST /books/docs/new/{docType}; docs.payplus.co.il "Create new document")
+// ---------------------------------------------------------------------------
+
+export interface CreateInvoiceParams {
+  transactionUid: string;
+  /** Their duplicate-creation guard — we pass the orderId. */
+  uniqueIdentifier: string;
+  orderNumber: number | string;
+  amount: number; // decimal ILS, VAT included
+  customer: { name: string; email: string };
+  items: Array<{ name: string; quantity: number; price: number }>;
+  paymentDate?: Date;
+  cardLast4?: string | null;
+  cardBrand?: string | null;
+}
+
+export interface CreatedInvoice {
+  docUid: string | null;
+  number: string | null;
+  url: string | null;
+  raw: unknown;
+}
+
+const CARD_TYPES = new Set(["visa", "mastercard", "amex", "discover", "diners", "jcb", "maestro"]);
+
+function israelDate(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem" }).format(d); // YYYY-MM-DD
+}
+
+export async function createInvoiceDocument(
+  cfg: PayPlusConfig,
+  params: CreateInvoiceParams
+): Promise<CreatedInvoice> {
+  const brand = (params.cardBrand ?? "").toLowerCase();
+  const body = {
+    transaction_uuid: params.transactionUid,
+    unique_identifier: params.uniqueIdentifier,
+    more_info: `הזמנה #${params.orderNumber}`,
+    prevent_email: true, // the store's own branded email carries the link
+    language: "he",
+    currency_code: "ILS",
+    vatType: "vat-type-included",
+    customer: {
+      customer_name: params.customer.name || "לקוחת יום האם",
+      email: params.customer.email,
+    },
+    items: params.items.map((item) => ({
+      name: item.name.slice(0, 120),
+      quantity: item.quantity,
+      price: item.price,
+    })),
+    payments: [
+      {
+        payment_type: "credit-card",
+        payment_date: israelDate(params.paymentDate ?? new Date()),
+        amount: params.amount,
+        currency_code: "ILS",
+        ...(params.cardLast4 ? { four_digits: params.cardLast4 } : {}),
+        ...(CARD_TYPES.has(brand) ? { card_type: brand } : {}),
+      },
+    ],
+    totalAmount: params.amount,
+  };
+
+  const parsed = (await payplusPost(cfg, "/books/docs/new/inv_tax_receipt", body)) as Record<string, unknown>;
+  // Response is flat (docUID / number / originalDocAddress), possibly under data.
+  const doc = (parsed["data"] as Record<string, unknown> | undefined) ?? parsed;
+  const str = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
+  return {
+    docUid: str(doc["docUID"]) ?? str(doc["doc_uid"]),
+    number: str(doc["number"]) ?? str(doc["docu_number"]),
+    url: str(doc["originalDocAddress"]) ?? str(doc["copyDocAddress"]) ?? str(doc["original_url"]),
+    raw: parsed,
   };
 }
 

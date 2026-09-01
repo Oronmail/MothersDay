@@ -70,12 +70,15 @@ select proname from pg_proc where proname = 'mark_order_paid';
   methods you want (credit cards; Bit / Apple Pay / Google Pay if approved).
 - The success-redirect method (GET vs POST) can stay at its default — the site
   handles both.
-- **חשבונית+ — decided and wired (2026-09-01):** the business subscribed;
-  `generateLink` sends `initial_invoice: true` + `paying_vat: true`, the callback
-  stores the document number/URL on the order, the admin shows a link, and the
-  confirmation email links the invoice. Requires migration
-  `20260901150000_invoice_fields.sql` (2 columns). Kill switch:
-  `PAYPLUS_INVOICE_ENABLED=false`.
+- **חשבונית+ — decided and wired (2026-09-01, "api" mode):** right after a
+  verified charge the server creates the tax invoice/receipt itself
+  (`POST /books/docs/new/inv_tax_receipt`, linked by `transaction_uuid`,
+  `prevent_email: true`) — so PayPlus sends the customer nothing; the document
+  number/URL is stored on the order, shown in the admin, linked on the
+  confirmation page and in our confirmation email. Do NOT enable auto invoice
+  generation in the PayPlus panel (double documents), and leave the Invoice+
+  Callback URL empty. Requires migration `20260901150000_invoice_fields.sql`.
+  Modes via `PAYPLUS_INVOICE_MODE`: `api` (default) / `auto` / `off`.
 
 ## 3. Vercel environment variables
 
