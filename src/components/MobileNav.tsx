@@ -164,8 +164,19 @@ export const MobileNav = () => {
             בלוג
           </button>
 
-          {/* אודות / צור קשר / שאלות נפוצות לא מופיעים כאן בכוונה:
-              במובייל מגיעים אליהם דרך "שירות לקוחות" ו"יום האם" שבפוטר. */}
+          <button
+            onClick={() => handleNavigate(ROUTES.about)}
+            className="py-3 text-right font-medium hover:text-primary transition-colors"
+          >
+            אודות
+          </button>
+
+          <button
+            onClick={() => handleNavigate(ROUTES.support)}
+            className="py-3 text-right font-medium hover:text-primary transition-colors"
+          >
+            שירות לקוחות
+          </button>
 
           <div className="h-px bg-border my-2" />
 

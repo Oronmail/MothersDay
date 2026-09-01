@@ -84,13 +84,15 @@ const Profile = () => {
     
     setSaving(true);
 
+    // Upsert: if the profiles row is missing (e.g. created before the signup
+    // trigger existed), a plain update would touch 0 rows and still "succeed".
     const { error } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
+        id: user.id,
         full_name: data.full_name || null,
         phone: data.phone || null,
-      })
-      .eq("id", user.id);
+      });
 
     if (error) {
       toast({
@@ -135,8 +137,8 @@ const Profile = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
                   <div className="space-y-6 mb-6">
                   <div className="space-y-2">
-                    <label className="text-sm">אימייל</label>
-                    <Input value={user?.email || ""} disabled className="bg-muted" dir="ltr" />
+                    <label htmlFor="profile-email" className="text-sm">אימייל</label>
+                    <Input id="profile-email" value={user?.email || ""} disabled className="bg-muted" dir="ltr" />
                     <p className="text-xs text-muted-foreground">לא ניתן לשנות את האימייל</p>
                   </div>
 
@@ -206,24 +208,24 @@ const Profile = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link to={ROUTES.orders}>
-                <Button variant="outline" className="w-full justify-between">
+              <Button asChild variant="outline" className="w-full justify-between">
+                <Link to={ROUTES.orders}>
                   <div className="flex items-center gap-2">
                     <img src={shoppingBagIcon} alt="" className="h-4 w-4" />
                     <span>היסטוריית הזמנות</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to={ROUTES.wishlist}>
-                <Button variant="outline" className="w-full justify-between">
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-between">
+                <Link to={ROUTES.wishlist}>
                   <div className="flex items-center gap-2">
                     <img src={heartIcon} alt="" className="h-4 w-4" />
                     <span>רשימת משאלות</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardContent>
           </Card>
           </div>

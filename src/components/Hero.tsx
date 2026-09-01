@@ -72,7 +72,11 @@ export const Hero = () => {
             loop
             muted
             playsInline
-            preload="metadata"
+            // Only the variant for the current device is mounted (useIsMobile is
+            // correct on the very first render), and it autoplays immediately -
+            // so let it load; the poster paints the frame until playback starts.
+            preload="auto"
+            poster={isMobile ? '/videos/Hero/hero-mobile-poster.jpg' : '/videos/Hero/hero-drawer-poster.jpg'}
             aria-hidden="true"
           >
             {isMobile ? (

@@ -154,7 +154,9 @@ export const Header = () => {
               <SearchModal />
             </div>
             <nav className="flex items-center gap-6 text-lg font-display">
-              <DropdownMenu>
+              {/* dir="rtl" lives on the DropdownMenu root (Radix passes it down to the
+                  rendered content); the Content component doesn't accept a dir prop. */}
+              <DropdownMenu dir="rtl">
                 <DropdownMenuTrigger asChild>
                   <button className={desktopNavTriggerClassName}>
                     מוצרים
@@ -162,7 +164,6 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  dir="rtl"
                   align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}
@@ -199,7 +200,7 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              <DropdownMenu>
+              <DropdownMenu dir="rtl">
                 <DropdownMenuTrigger asChild>
                   <button className={desktopNavTriggerClassName}>
                     מארזים
@@ -207,7 +208,6 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  dir="rtl"
                   align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}
@@ -272,7 +272,7 @@ export const Header = () => {
                 בלוג
               </button>
               
-              <DropdownMenu>
+              <DropdownMenu dir="rtl">
                 <DropdownMenuTrigger asChild>
                   <button className={desktopNavTriggerClassName}>
                     עוד
@@ -280,7 +280,6 @@ export const Header = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  dir="rtl"
                   align="end"
                   sideOffset={14}
                   className={desktopNavMenuClassName}

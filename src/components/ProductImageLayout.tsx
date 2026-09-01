@@ -339,23 +339,6 @@ export const ProductImageLayout: React.FC<ProductImageLayoutProps> = ({
         );
       }
 
-
-        // Custom layout - render in 2-column grid with custom aspect ratios
-        return (
-          <div className="grid grid-cols-2 gap-1">
-            {layout.mainImages.map((imageIndex, i) => {
-              const aspectRatio = layout.aspectRatios[i] || "10/7";
-              // Check if this image should span full width (aspect ratio contains "full")
-              const isFullWidth = aspectRatio.includes("full");
-              return renderImage(
-                imageIndex,
-                aspectRatio.replace("-full", ""),
-                isFullWidth ? "col-span-2" : undefined
-              );
-            })}
-          </div>
-        );
-
       default:
         // Fallback to 2x2 grid
         return (

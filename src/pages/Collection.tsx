@@ -24,21 +24,28 @@ import heartIcon from "@/assets/heart-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
 import { SEO, getBreadcrumbStructuredData } from "@/components/SEO";
 import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Hero assets mapping by collection handle
-const getCollectionHeroAssets = (handle: string): { image: string; video: string | null } => {
-  const heroAssets: Record<string, { image: string; video: string | null }> = {
+type CollectionHeroAssets = { image: string; video: string | null; videoPoster?: string };
+
+const getCollectionHeroAssets = (handle: string): CollectionHeroAssets => {
+  // ?v= bumped after the 2026-09 re-encode (smaller files, same names).
+  const heroAssets: Record<string, CollectionHeroAssets> = {
     'frontpage': {
       image: collectionHeroFrontpage,
-      video: '/videos/collection-hero-frontpage.mp4?v=2'
+      video: '/videos/collection-hero-frontpage.mp4?v=3',
+      videoPoster: '/videos/collection-hero-frontpage-poster.jpg'
     },
     'מוצרי-תכנון-שבועיים': {
       image: collectionHeroWeekly,
-      video: '/videos/collection-hero-weekly.mp4?v=3'
+      video: '/videos/collection-hero-weekly.mp4?v=4',
+      videoPoster: '/videos/collection-hero-weekly-poster.jpg'
     },
     'מוצרי-תכנון-משלימים': {
       image: collectionHeroComplementary,
-      video: '/videos/ProductVideos/comlete.mp4'
+      video: '/videos/ProductVideos/comlete.mp4?v=2',
+      videoPoster: '/videos/ProductVideos/comlete-poster.jpg'
     }
   };
 
@@ -117,6 +124,9 @@ const Collection = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { handle } = useParams<{ handle: string }>();
+  // Mount only ONE of the two collection videos (desktop hero / mobile closer).
+  // Both used to be in the DOM with CSS hiding one - so every device downloaded both.
+  const isMobile = useIsMobile();
   // Check if video should autoplay (no play button)
   const shouldAutoplay =
     handle === "frontpage" ||
@@ -275,12 +285,13 @@ const Collection = () => {
               />
             </div>
             
-            {/* Right side - Video (only if video exists) */}
-            {hasVideo && (
+            {/* Right side - Video (only if video exists; desktop only - not mounted on mobile) */}
+            {hasVideo && !isMobile && (
               <div className="hidden md:block overflow-hidden relative bg-muted md:h-full">
                 <video
                   ref={videoRef}
                   src={heroAssets.video!}
+                  poster={heroAssets.videoPoster}
                   className="w-full h-full object-cover"
                   playsInline
                   loop
@@ -390,12 +401,14 @@ const Collection = () => {
       </ErrorBoundary>
 
       {/* Collection video — mobile only, below the products (on desktop it lives in
-          the hero beside the image). Loops silently as a closing "in-use" moment. */}
-      {hasVideo && (
+          the hero beside the image). Loops silently as a closing "in-use" moment.
+          Mounted only on mobile so desktop never downloads it. */}
+      {hasVideo && isMobile && (
         <section className="md:hidden pb-4">
           <div className="w-full aspect-[4/5] overflow-hidden bg-muted">
             <video
               src={heroAssets.video!}
+              poster={heroAssets.videoPoster}
               className="w-full h-full object-cover"
               playsInline
               loop

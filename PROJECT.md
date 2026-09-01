@@ -1,5 +1,7 @@
 # PROJECT DOCUMENTATION
 
+> **Historical document — see the current `CLAUDE.md`. Secrets have been redacted.**
+
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Tech Stack](#tech-stack)
@@ -27,7 +29,7 @@ E-commerce website for Hebrew-speaking mothers selling planning products (planne
 - Shopify-powered e-commerce
 - Direct product sales
 - Bundle offerings
-- Password-protected site access (Password: "mt")
+- Password-protected site access (Password: "<redacted>")
 
 ### Key Features
 - Hebrew RTL support
@@ -84,7 +86,7 @@ E-commerce website for Hebrew-speaking mothers selling planning products (planne
 / (root)
 ├── / → UnderConstruction page (public landing)
 ├── /auth → Authentication page
-└── /site → SiteAccess wrapper (password gate: "mt")
+└── /site → SiteAccess wrapper (password gate: "<redacted>")
     ├── /site → Index (home page)
     ├── /site/profile → User profile
     ├── /site/addresses → Address management
@@ -133,7 +135,7 @@ export const buildCollectionPath = (handle: string): string =>
 ### Password Gate
 - Implemented in `src/components/PasswordGate.tsx`
 - Wraps `/site/*` routes via `SiteAccess.tsx`
-- Password stored in session: "mt"
+- Password stored in session: "<redacted>"
 - Uses session storage to persist authentication
 
 ---
@@ -262,7 +264,7 @@ All located in `src/components/ui/`:
 ```typescript
 SHOPIFY_API_VERSION = '2025-07'
 SHOPIFY_STORE_DOMAIN = 'lovable-project-mrc80.myshopify.com'
-STOREFRONT_TOKEN = '944d8f74c990ae0bcbaef8ecdf255745'
+STOREFRONT_TOKEN = '<redacted>'
 MAIN_COLLECTION_HANDLE = 'הכל' // Main collection for all products
 ```
 
@@ -624,7 +626,7 @@ npm run preview
 
 ### Current State
 1. **Wishlist Removed**: Wishlist feature removed from UI but table still exists in database
-2. **Password Gate**: Site protected with password "mt" at `/site/*` routes
+2. **Password Gate**: Site protected with password "<redacted>" at `/site/*` routes
 3. **Under Construction**: Root `/` shows "Under Construction" page
 4. **No Bold Text**: User preference - avoid bold text throughout site
 

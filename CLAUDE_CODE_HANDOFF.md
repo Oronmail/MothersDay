@@ -1,5 +1,7 @@
 # Claude Code → Lovable Handoff Document
 
+> **Historical document — see the current `CLAUDE.md`. Secrets have been redacted.**
+
 **Project**: יום האם (Yom Ha'Em) E-Commerce Platform
 **Date**: 2025-12-02
 **Version**: 1.3.1
@@ -208,11 +210,11 @@ addBreadcrumb('User clicked checkout', 'user-action', { cartTotal: 150 });
 ```bash
 # Shopify Configuration
 VITE_SHOPIFY_STORE_DOMAIN="lovable-project-mrc80.myshopify.com"
-VITE_SHOPIFY_STOREFRONT_TOKEN="944d8f74c990ae0bcbaef8ecdf255745"
+VITE_SHOPIFY_STOREFRONT_TOKEN="<redacted>"
 VITE_SHOPIFY_API_VERSION="2025-07"
 
 # Site Access
-VITE_SITE_PASSWORD="mt"
+VITE_SITE_PASSWORD="<redacted>"
 
 # Sentry Error Tracking
 # VITE_SENTRY_DSN="your-sentry-dsn-here"  # Uncomment and add in production

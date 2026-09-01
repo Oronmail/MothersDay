@@ -1,5 +1,7 @@
 # Security Cleanup — mothersdayil
 
+> **Historical document — see the current `CLAUDE.md`. Secrets have been redacted.**
+
 The `.env` file is currently tracked in git with real secrets. This was flagged in a Jan 2026 audit.
 
 ## When ready, do the following:
@@ -21,5 +23,5 @@ The `.env` file is currently tracked in git with real secrets. This was flagged 
 
 3. **Rotate these secrets:**
    - Shopify Storefront Access Token
-   - Site password (currently `mt` — very weak)
+   - Site password (currently `<redacted>` — very weak)
    - Optionally: Sentry DSN, Supabase anon key

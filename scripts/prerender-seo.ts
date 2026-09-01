@@ -27,6 +27,7 @@ type ProductRow = {
   updated_at: string | null;
   price: number | null;
   vendor: string | null;
+  is_bundle: boolean | null;
   product_images?: Array<{
     url: string;
     alt_text: string | null;
@@ -110,8 +111,10 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
+// encodeURI percent-encodes Hebrew route segments (product/collection handles)
+// so canonical/og/JSON-LD URLs are valid URLs, not raw Unicode paths.
 const absoluteUrl = (route: string) =>
-  route === "/" ? siteUrl : `${siteUrl}${route}`;
+  route === "/" ? siteUrl : encodeURI(`${siteUrl}${route}`);
 
 const NAV_LINKS: BodyLink[] = [
   { href: "/products", label: "כל המוצרים" },
@@ -209,7 +212,8 @@ const buildStaticRoutes = (products: ProductRow[]): StaticRoute[] => {
   };
 
   const productLinks = products.map(productLink);
-  const setLinks = products.filter((p) => p.title.startsWith("מארז")).map(productLink);
+  // Bundles are flagged in the DB (products.is_bundle) - never inferred from the title.
+  const setLinks = products.filter((p) => p.is_bundle).map(productLink);
 
   const productItemList = (routeUrl: string, name: string, rows: ProductRow[]) => ({
     "@context": "https://schema.org",
@@ -278,7 +282,7 @@ const buildStaticRoutes = (products: ProductRow[]): StaticRoute[] => {
       structuredData: productItemList(
         absoluteUrl("/sets"),
         "מארזי התכנון של יום האם",
-        products.filter((p) => p.title.startsWith("מארז"))
+        products.filter((p) => p.is_bundle)
       ),
       bodyHtml: renderStaticBody({
         heading: "כל המארזים",
@@ -474,7 +478,13 @@ const applySeoToHtml = (template: string, route: string, meta: StaticRoute) => {
     `<meta name="robots" content="${robots}">`,
     `<meta name="robots" content="${robots}">`
   );
-  if (!meta.noindex) {
+  // No canonical in the ROOT shell (dist/index.html): Vercel's SPA rewrite
+  // serves that same file for any route without its own prerendered shell
+  // (e.g. a product added after the last deploy). A homepage canonical there
+  // would tell crawlers every such page IS the homepage - a missing canonical
+  // is safer than a wrong one. The client-side <SEO> component sets the
+  // correct canonical on hydration for all routes, homepage included.
+  if (!meta.noindex && route !== "/") {
     html = upsertTag(
       html,
       /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
@@ -612,8 +622,10 @@ const writeRouteHtml = async (route: string, html: string) => {
 
 const getSupabaseClient = () => {
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  // Public catalog reads only - prefer the anon key (RLS allows public SELECT);
+  // the service key is a fallback for environments that only define it.
   const supabaseKey =
-    process.env.SUPABASE_Secret_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_Secret_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     return null;
@@ -633,7 +645,7 @@ const fetchProducts = async (): Promise<ProductRow[]> => {
 
   const { data, error } = await supabase
     .from("products")
-    .select("handle,title,description_html,seo_title,seo_description,updated_at,price,vendor,product_images(url,alt_text,position),product_variants(price,available_for_sale,sort_order)")
+    .select("handle,title,description_html,seo_title,seo_description,updated_at,price,vendor,is_bundle,product_images(url,alt_text,position),product_variants(price,available_for_sale,sort_order)")
     .eq("status", "active")
     .order("title");
 

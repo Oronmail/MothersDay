@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import {
   INSTAGRAM_URL,
   SITE_NAME,
@@ -59,6 +58,12 @@ const upsertLinkTag = (rel: string, href: string) => {
   tag.setAttribute("href", href);
 };
 
+const removeLinkTag = (rel: string) => {
+  if (typeof document === "undefined") return;
+
+  document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`)?.remove();
+};
+
 const removeMetaTag = (attribute: "name" | "property", key: string) => {
   if (typeof document === "undefined") return;
 
@@ -76,6 +81,12 @@ type DomSeoConfig = {
   type: "website" | "product" | "article";
   noindex: boolean;
   structuredData?: object;
+  /**
+   * Cleanup mode (component unmount): restore neutral defaults and REMOVE the
+   * canonical link instead of pointing it anywhere - a page without an <SEO>
+   * must not inherit the previous page's (or the homepage's) canonical.
+   */
+  removeCanonical?: boolean;
 };
 
 const applyDomSeo = ({
@@ -87,6 +98,7 @@ const applyDomSeo = ({
   type,
   noindex,
   structuredData,
+  removeCanonical,
 }: DomSeoConfig) => {
   if (typeof document === "undefined") return;
 
@@ -97,7 +109,9 @@ const applyDomSeo = ({
   upsertMetaTag("name", "description", description);
   upsertMetaTag("name", "theme-color", "#4d3c40");
   upsertMetaTag("name", "format-detection", "telephone=no");
-  upsertMetaTag("name", "robots", noindex ? "noindex,nofollow" : "index,follow");
+  // "noindex,follow" - same value the prerender shells write, so the client
+  // never flips a prerendered noindex,follow into a different directive.
+  upsertMetaTag("name", "robots", noindex ? "noindex,follow" : "index,follow");
 
   if (keywords) {
     upsertMetaTag("name", "keywords", keywords);
@@ -120,7 +134,11 @@ const applyDomSeo = ({
   upsertMetaTag("name", "twitter:description", description);
   upsertMetaTag("name", "twitter:image", image);
 
-  upsertLinkTag("canonical", url);
+  if (removeCanonical) {
+    removeLinkTag("canonical");
+  } else {
+    upsertLinkTag("canonical", url);
+  }
 
   const existingStructuredData = document.head.querySelector<HTMLScriptElement>(
     'script[data-seo-structured="true"]'
@@ -141,8 +159,10 @@ const applyDomSeo = ({
 };
 
 /**
- * SEO component using React Helmet for meta tags
- * Supports Open Graph, Twitter Cards, and JSON-LD structured data
+ * SEO component - writes meta tags straight into document.head (single
+ * mechanism; the Helmet path was removed because it duplicated every tag the
+ * DOM writer already upserts over the prerendered shell).
+ * Supports Open Graph, Twitter Cards, and JSON-LD structured data.
  */
 export const SEO = ({
   title,
@@ -185,6 +205,9 @@ export const SEO = ({
       structuredData,
     });
 
+    // On unmount restore neutral defaults so a page that renders no <SEO> of
+    // its own never keeps the previous page's title/description/robots, and
+    // gets NO canonical at all (a missing canonical is safer than a wrong one).
     return () => {
       applyDomSeo({
         title: defaultSEO.defaultTitle,
@@ -193,6 +216,7 @@ export const SEO = ({
         url: siteUrl,
         type: "website",
         noindex: false,
+        removeCanonical: true,
       });
     };
   }, [
@@ -207,47 +231,7 @@ export const SEO = ({
     type,
   ]);
 
-  return (
-    <Helmet>
-      <html lang="he" dir="rtl" />
-      {/* Basic Meta Tags */}
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      {keywords && <meta name="keywords" content={keywords} />}
-      <link rel="canonical" href={pageUrl} />
-
-      {/* Robots */}
-      {noindex && <meta name="robots" content="noindex,nofollow" />}
-
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={pageUrl} />
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:image" content={absoluteImageUrl} />
-      <meta property="og:image:alt" content={pageTitle} />
-      <meta property="og:site_name" content={defaultSEO.siteName} />
-      <meta property="og:locale" content="he_IL" />
-
-      {/* Twitter Card */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={pageUrl} />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={absoluteImageUrl} />
-
-      {/* Additional Meta Tags */}
-      <meta name="format-detection" content="telephone=no" />
-      <meta name="theme-color" content="#4d3c40" />
-
-      {/* Structured Data (JSON-LD) */}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
-    </Helmet>
-  );
+  return null;
 };
 
 /**

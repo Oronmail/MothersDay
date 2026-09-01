@@ -21,7 +21,7 @@ export const FounderStory = () => {
 
         {/* Full width image */}
         <div className="max-w-xs md:max-w-sm lg:max-w-md mx-auto mb-8 md:mb-12">
-          <img src={founderImage} alt="Behind Mothers Day there is a mother" className="w-full h-auto object-cover" />
+          <img src={founderImage} alt="מאחורי יום האם יש אימא - עדן, מייסדת המותג" className="w-full h-auto object-cover" />
         </div>
 
         {/* Text content */}

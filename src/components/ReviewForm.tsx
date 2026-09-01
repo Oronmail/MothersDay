@@ -56,8 +56,16 @@ export const ReviewForm = ({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Field limits mirror the DB CHECK constraints on the reviews table
+  // (body 2..2000, name <=80, kids_count <=40, kids_ages <=80), so she can
+  // never hit an opaque database error from a too-long value.
+  const BODY_MAX = 2000;
+  const NAME_MAX = 80;
+  const KIDS_COUNT_MAX = 40;
+  const KIDS_AGES_MAX = 80;
+
   const isValid =
-    rating > 0 && body.trim() && name.trim() && kidsCount.trim() && kidsAges.trim();
+    rating > 0 && body.trim().length >= 2 && name.trim() && kidsCount.trim() && kidsAges.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +150,11 @@ export const ReviewForm = ({
                   placeholder="איך המוצר השפיע על יום האם שלך?"
                   className="mt-2 min-h-[120px] text-right"
                   dir="rtl"
+                  maxLength={BODY_MAX}
                 />
+                <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
+                  {body.length}/{BODY_MAX}
+                </p>
               </div>
 
               {/* שם */}
@@ -154,6 +166,7 @@ export const ReviewForm = ({
                   onChange={(e) => setName(e.target.value)}
                   className="mt-2 text-right"
                   dir="rtl"
+                  maxLength={NAME_MAX}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   יופיע באופן פומבי עם חוות הדעת שלך
@@ -171,6 +184,7 @@ export const ReviewForm = ({
                     placeholder="למשל 2"
                     className="mt-2 text-right"
                     dir="rtl"
+                    maxLength={KIDS_COUNT_MAX}
                   />
                 </div>
                 <div>
@@ -182,6 +196,7 @@ export const ReviewForm = ({
                     placeholder="למשל 3 ו-6"
                     className="mt-2 text-right"
                     dir="rtl"
+                    maxLength={KIDS_AGES_MAX}
                   />
                 </div>
               </div>

@@ -40,7 +40,8 @@ if (isRecoveryLanding) {
 
   createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
-      <Sentry.ErrorBoundary fallback={<ErrorFallback />} showDialog>
+      {/* No showDialog: Sentry's crash-report dialog is English-only - wrong for a Hebrew RTL audience. */}
+      <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
         <App />
       </Sentry.ErrorBoundary>
     </HelmetProvider>

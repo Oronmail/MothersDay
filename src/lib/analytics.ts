@@ -23,6 +23,8 @@ export const initAnalytics = () => {
   document.head.appendChild(script);
 
   window.gtag("js", new Date());
-  window.gtag("config", ANALYTICS_MEASUREMENT_ID);
+  // send_page_view: false - GaRouteTracker (App.tsx) reports every page_view,
+  // including the initial load; the config default would double-count it.
+  window.gtag("config", ANALYTICS_MEASUREMENT_ID, { send_page_view: false });
   window.__analyticsInitialized = true;
 };

@@ -33,8 +33,7 @@ export const initSentry = () => {
     // Trace propagation targets - only our own domains
     tracePropagationTargets: [
       "localhost",
-      /^https:\/\/yomhaem\.co\.il/,
-      /^https:\/\/mothersday\.co\.il/,
+      /^https:\/\/(www\.)?mothersday\.co\.il/,
       /^https:\/\/.*\.supabase\.co/,
     ],
 
@@ -110,14 +109,12 @@ export const initSentry = () => {
       return breadcrumb;
     },
   });
-
-  console.log("Sentry: Initialized successfully");
 };
 
 /**
  * Manually capture an exception
  */
-export const captureException = (error: Error, context?: Record<string, any>) => {
+export const captureException = (error: Error, context?: Record<string, unknown>) => {
   if (import.meta.env.MODE !== "production") {
     console.error("Sentry (dev):", error, context);
     return;
@@ -134,7 +131,7 @@ export const captureException = (error: Error, context?: Record<string, any>) =>
 export const captureMessage = (
   message: string,
   level: Sentry.SeverityLevel = "info",
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) => {
   if (import.meta.env.MODE !== "production") {
     console.log(`Sentry (dev) [${level}]:`, message, context);
@@ -170,7 +167,7 @@ export const setUserContext = (user: { id: string; email?: string; username?: st
 /**
  * Add breadcrumb for debugging
  */
-export const addBreadcrumb = (message: string, category: string, data?: Record<string, any>) => {
+export const addBreadcrumb = (message: string, category: string, data?: Record<string, unknown>) => {
   if (import.meta.env.MODE !== "production") {
     console.log(`Sentry (dev) breadcrumb [${category}]:`, message, data);
     return;
@@ -188,9 +185,11 @@ export const addBreadcrumb = (message: string, category: string, data?: Record<s
  * Create a custom span for performance tracking
  * Use this to track important user actions and API calls
  */
+type SpanAttributeValue = Parameters<Sentry.Span["setAttribute"]>[1];
+
 export const startSpan = <T>(
-  options: { op: string; name: string; attributes?: Record<string, any> },
-  callback: (span: any) => T
+  options: { op: string; name: string; attributes?: Record<string, SpanAttributeValue> },
+  callback: (span: Sentry.Span | null) => T
 ): T => {
   if (import.meta.env.MODE !== "production") {
     console.log(`Sentry (dev) span [${options.op}]:`, options.name, options.attributes);
@@ -219,7 +218,7 @@ export const startSpan = <T>(
  * Available in production mode when enableLogs is true
  */
 export const logger = {
-  trace: (message: string, context?: Record<string, any>) => {
+  trace: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.log(`[TRACE] ${message}`, context);
       return;
@@ -227,7 +226,7 @@ export const logger = {
     Sentry.logger.trace(message, context);
   },
 
-  debug: (message: string, context?: Record<string, any>) => {
+  debug: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.log(`[DEBUG] ${message}`, context);
       return;
@@ -235,7 +234,7 @@ export const logger = {
     Sentry.logger.debug(message, context);
   },
 
-  info: (message: string, context?: Record<string, any>) => {
+  info: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.log(`[INFO] ${message}`, context);
       return;
@@ -243,7 +242,7 @@ export const logger = {
     Sentry.logger.info(message, context);
   },
 
-  warn: (message: string, context?: Record<string, any>) => {
+  warn: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.warn(`[WARN] ${message}`, context);
       return;
@@ -251,7 +250,7 @@ export const logger = {
     Sentry.logger.warn(message, context);
   },
 
-  error: (message: string, context?: Record<string, any>) => {
+  error: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.error(`[ERROR] ${message}`, context);
       return;
@@ -259,7 +258,7 @@ export const logger = {
     Sentry.logger.error(message, context);
   },
 
-  fatal: (message: string, context?: Record<string, any>) => {
+  fatal: (message: string, context?: Record<string, unknown>) => {
     if (import.meta.env.MODE !== "production") {
       console.error(`[FATAL] ${message}`, context);
       return;
@@ -271,9 +270,9 @@ export const logger = {
    * Template literal function for interpolating variables
    * Usage: logger.fmt`Cache miss for user: ${userId}`
    */
-  fmt: (strings: TemplateStringsArray, ...values: any[]) => {
+  fmt: (strings: TemplateStringsArray, ...values: unknown[]) => {
     return strings.reduce((result, str, i) => {
-      return result + str + (values[i] !== undefined ? values[i] : '');
+      return result + str + (values[i] !== undefined ? String(values[i]) : '');
     }, '');
   },
 };
