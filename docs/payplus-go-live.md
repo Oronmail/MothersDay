@@ -75,9 +75,14 @@ vercel env add CHECKOUT_ENABLED preview        # value: true
 vercel env add VITE_CHECKOUT_ENABLED preview   # value: true
 ```
 
-Note: if the Vercel project has Deployment Protection on Preview, PayPlus cannot
-reach `/api/payplus-callback` on a preview URL — disable protection for the test,
-or test on production with checkout still off elsewhere.
+Note: this project HAS Deployment Protection on Previews (verified — anonymous
+requests get 401). Two ways to let PayPlus reach the preview callback:
+- **Recommended:** Vercel → Settings → Deployment Protection → enable
+  **Protection Bypass for Automation**. Vercel then injects
+  `VERCEL_AUTOMATION_BYPASS_SECRET`, and `create-payment` automatically appends
+  the bypass token to the PayPlus callback/return URLs on non-production
+  deployments (already coded). Redeploy the preview after enabling.
+- Or temporarily switch Vercel Authentication to "Only Production".
 
 ## 4. Test on a preview deployment
 

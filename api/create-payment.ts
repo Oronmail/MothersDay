@@ -119,6 +119,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const base = getPaymentBaseUrl(req);
+    // Preview deployments sit behind Vercel Deployment Protection; PayPlus can
+    // only reach the callback/return URLs there with the automation-bypass
+    // token (Vercel injects it once "Protection Bypass for Automation" is
+    // enabled). Never appended in production.
+    const bypass =
+      process.env.VERCEL_ENV !== "production"
+        ? process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+        : undefined;
+    const withBypass = (url: string) =>
+      bypass ? `${url}${url.includes("?") ? "&" : "?"}x-vercel-protection-bypass=${bypass}` : url;
     const returnBase = `${base}/api/payplus-return?orderId=${encodeURIComponent(orderId)}`;
 
     const link = await generatePaymentLink(getPayPlusConfig(), {
@@ -135,10 +145,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ...item,
         shipping: shippingCost > 0 && index === items.length - 1,
       })),
-      successUrl: returnBase,
-      failureUrl: `${returnBase}&fail=1`,
-      cancelUrl: `${returnBase}&cancel=1`,
-      callbackUrl: `${base}/api/payplus-callback`,
+      successUrl: withBypass(returnBase),
+      failureUrl: withBypass(`${returnBase}&fail=1`),
+      cancelUrl: withBypass(`${returnBase}&cancel=1`),
+      callbackUrl: withBypass(`${base}/api/payplus-callback`),
     });
 
     const { error: updateError } = await supabase
