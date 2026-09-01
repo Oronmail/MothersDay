@@ -29,6 +29,24 @@ type OrderEmailPayload = {
 const DEFAULT_SUPPORT_EMAIL = "support@mothersday.co.il";
 const DEFAULT_ORDER_CONFIRMATION_FROM = "יום האם <orders@noreply.mothersday.co.il>";
 
+/**
+ * Design follows the printed package card (yom_haem_package_card_105x105):
+ * the card's wine front is the header image, its palette and closing line
+ * carry through. Email images always load from the public site — preview
+ * deployment URLs sit behind Vercel auth and would break in inboxes.
+ */
+const CANONICAL_SITE = "https://www.mothersday.co.il";
+const HEADER_IMAGE = `${CANONICAL_SITE}/email/order-header.png`;
+const DISPLAY_FONT_URL = `${CANONICAL_SITE}/fonts/FbEinstein-ConThin.woff2`;
+
+// Palette sampled from the card artwork.
+const WINE = "#76535a"; // card front background / headline ink
+const CREAM = "#f6f2ee"; // card back background
+const CREAM_DEEP = "#efe8e2"; // address block
+const INK = "#5f4a50"; // body text
+const INK_SOFT = "#8a767c"; // secondary text
+const HAIRLINE = "#e4d9d3";
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -44,23 +62,19 @@ const formatCurrency = (amount: number, currencyCode = "ILS") =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-const buildLineItemsHtml = (
-  lineItems: OrderEmailLineItem[],
-  currencyCode: string
-) =>
+const buildLineItemsHtml = (lineItems: OrderEmailLineItem[], currencyCode: string) =>
   lineItems
     .map((item) => {
       const lineTotal = Number(item.price) * item.quantity;
-
       return `
         <tr>
-          <td align="right" style="padding:10px 0;font-size:15px;line-height:1.5;color:#4d3c40;">
+          <td align="right" style="padding:12px 0;font-size:15px;line-height:1.5;color:${INK};border-bottom:1px solid ${HAIRLINE};">
             ${escapeHtml(item.title)}
           </td>
-          <td align="center" style="padding:10px 0;font-size:14px;color:#6b5b60;white-space:nowrap;">
+          <td align="center" style="padding:12px 0;font-size:14px;color:${INK_SOFT};white-space:nowrap;border-bottom:1px solid ${HAIRLINE};">
             ${item.quantity}
           </td>
-          <td align="left" style="padding:10px 0;font-size:14px;color:#4d3c40;white-space:nowrap;">
+          <td align="left" style="padding:12px 0;font-size:14px;color:${INK};white-space:nowrap;border-bottom:1px solid ${HAIRLINE};">
             ${escapeHtml(formatCurrency(lineTotal, currencyCode))}
           </td>
         </tr>
@@ -69,27 +83,21 @@ const buildLineItemsHtml = (
     .join("");
 
 const buildAddressHtml = (shippingAddress?: OrderEmailAddress | null) => {
-  if (!shippingAddress) {
-    return "";
-  }
-
+  if (!shippingAddress) return "";
   const lines = [
     shippingAddress.full_name,
     shippingAddress.street,
     shippingAddress.city,
     shippingAddress.phone ? `טלפון: ${shippingAddress.phone}` : "",
   ].filter((line): line is string => Boolean(line));
-
-  if (lines.length === 0) {
-    return "";
-  }
+  if (lines.length === 0) return "";
 
   return `
     <tr>
-      <td style="padding:0 32px 24px;">
-        <div style="background-color:#faf6f2;padding:16px 18px;text-align:right;">
-          <div style="font-size:14px;font-weight:bold;color:#4d3c40;margin-bottom:8px;">כתובת למשלוח</div>
-          <div style="font-size:14px;line-height:1.8;color:#6b5b60;">
+      <td style="padding:0 28px 26px;">
+        <div style="background-color:${CREAM_DEEP};padding:16px 18px;text-align:right;">
+          <div style="font-size:13px;font-weight:bold;color:${WINE};margin-bottom:8px;">כתובת למשלוח</div>
+          <div style="font-size:14px;line-height:1.8;color:${INK};">
             ${lines.map((line) => escapeHtml(line)).join("<br />")}
           </div>
         </div>
@@ -110,16 +118,13 @@ const buildHtml = ({
   simulated = false,
   invoiceUrl = null,
 }: Omit<OrderEmailPayload, "to">) => {
-  // Email images must load in any inbox regardless of which deployment sent
-  // the email (preview URLs sit behind Vercel auth) — always the public site.
-  const logoUrl = "https://www.mothersday.co.il/logo.png";
-  void siteUrl;
+  void siteUrl; // images/links are pinned to the canonical site (see note above)
   const supportEmail = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
   const simulationBanner = simulated
     ? `
       <tr>
-        <td align="center" style="padding:0 32px 20px;">
-          <div style="background-color:#f7ede5;color:#7a5d4f;font-size:13px;line-height:1.7;padding:12px 16px;text-align:center;">
+        <td align="center" style="padding:0 28px 20px;">
+          <div style="background-color:${CREAM_DEEP};color:${INK};font-size:13px;line-height:1.7;padding:12px 16px;text-align:center;">
             זוהי הזמנה לדוגמה לצורכי בדיקה בלבד. לא בוצע חיוב בפועל.
           </div>
         </td>
@@ -132,80 +137,134 @@ const buildHtml = ({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* The brand display face — honored by Apple Mail and friends, safely
+       ignored elsewhere (falls back to the system font). */
+    @font-face {
+      font-family: 'FbEinstein';
+      src: url('${DISPLAY_FONT_URL}') format('woff2');
+      font-weight: 300;
+      font-style: normal;
+    }
+    @media only screen and (max-width: 480px) {
+      .container { width: 100% !important; }
+      .inner-pad { padding-left: 18px !important; padding-right: 18px !important; }
+      .headline { font-size: 26px !important; }
+      .closing { font-size: 22px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f4ede7;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4ede7;padding:40px 0;">
+<body style="margin:0;padding:0;background-color:${CREAM};font-family:'Assistant',Arial,Helvetica,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;">הזמנה מספר ${orderNumber} התקבלה — כל הפרטים בפנים</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${CREAM};padding:28px 0;">
     <tr>
-      <td align="center">
-        <table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;max-width:480px;width:100%;">
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" class="container" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background-color:#fffdfb;">
+
+          <!-- The package card front -->
           <tr>
-            <td align="center" style="padding:32px 24px 16px;">
-              <img src="${escapeHtml(logoUrl)}" alt="יום האם" height="60" style="height:60px;" />
+            <td>
+              <a href="${CANONICAL_SITE}" style="text-decoration:none;">
+                <img src="${HEADER_IMAGE}" alt="יום האם" width="520"
+                     style="display:block;width:100%;height:auto;border:0;" />
+              </a>
             </td>
           </tr>
+
           <tr>
-            <td align="center" style="padding:0 24px 8px;">
-              <h1 style="margin:0;font-size:22px;color:#4d3c40;">ההזמנה שלך התקבלה</h1>
+            <td align="center" style="padding:34px 28px 6px;">
+              <div style="font-size:20px;line-height:1;color:${WINE};">&#9825;</div>
             </td>
           </tr>
+
           <tr>
-            <td align="center" style="padding:8px 32px 24px;font-size:15px;line-height:1.7;color:#6b5b60;">
-              מספר הזמנה <strong style="color:#4d3c40;">#${orderNumber}</strong><br />
+            <td align="center" class="inner-pad" style="padding:10px 28px 4px;">
+              <h1 class="headline" style="margin:0;font-family:'FbEinstein','Assistant',Arial,sans-serif;font-weight:300;font-size:30px;line-height:1.25;color:${WINE};">
+                ההזמנה שלך התקבלה!
+              </h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" class="inner-pad" style="padding:10px 32px 26px;font-size:15px;line-height:1.7;color:${INK};">
+              מספר הזמנה <strong style="color:${WINE};">#${orderNumber}</strong><br />
               תודה שבחרת ביום האם. ריכזנו כאן את פרטי ההזמנה שלך.
             </td>
           </tr>
           ${simulationBanner}
+
+          <!-- Order lines -->
           <tr>
-            <td style="padding:0 32px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+            <td class="inner-pad" style="padding:0 28px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                 <tr>
-                  <td align="right" style="padding-bottom:10px;font-size:14px;font-weight:bold;color:#4d3c40;border-bottom:1px solid #e8ddd4;">מוצר</td>
-                  <td align="center" style="padding-bottom:10px;font-size:14px;font-weight:bold;color:#4d3c40;border-bottom:1px solid #e8ddd4;">כמות</td>
-                  <td align="left" style="padding-bottom:10px;font-size:14px;font-weight:bold;color:#4d3c40;border-bottom:1px solid #e8ddd4;">סכום</td>
+                  <td align="right" style="padding-bottom:10px;font-size:12px;letter-spacing:1px;font-weight:bold;color:${WINE};border-bottom:1px solid ${WINE};">מוצר</td>
+                  <td align="center" style="padding-bottom:10px;font-size:12px;letter-spacing:1px;font-weight:bold;color:${WINE};border-bottom:1px solid ${WINE};">כמות</td>
+                  <td align="left" style="padding-bottom:10px;font-size:12px;letter-spacing:1px;font-weight:bold;color:${WINE};border-bottom:1px solid ${WINE};">סכום</td>
                 </tr>
                 ${buildLineItemsHtml(lineItems, currencyCode)}
                 <tr>
-                  <td colspan="3" style="padding-top:12px;border-top:1px solid #e8ddd4;"></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="right" style="padding:4px 0;font-size:14px;color:#6b5b60;">משלוח</td>
-                  <td align="left" style="padding:4px 0;font-size:14px;color:#4d3c40;">
-                    ${escapeHtml(formatCurrency(shippingCost, currencyCode))}
+                  <td colspan="2" align="right" style="padding:12px 0 4px;font-size:14px;color:${INK_SOFT};">משלוח</td>
+                  <td align="left" style="padding:12px 0 4px;font-size:14px;color:${INK};">
+                    ${escapeHtml(shippingCost === 0 ? "חינם" : formatCurrency(shippingCost, currencyCode))}
                   </td>
                 </tr>
                 <tr>
-                  <td colspan="2" align="right" style="padding:8px 0 0;font-size:16px;font-weight:bold;color:#4d3c40;">סה״כ</td>
-                  <td align="left" style="padding:8px 0 0;font-size:16px;font-weight:bold;color:#4d3c40;">
+                  <td colspan="2" align="right" style="padding:8px 0 0;font-size:17px;font-weight:bold;color:${WINE};">סה״כ</td>
+                  <td align="left" style="padding:8px 0 0;font-size:17px;font-weight:bold;color:${WINE};">
                     ${escapeHtml(formatCurrency(totalPrice, currencyCode))}
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
+
           ${buildAddressHtml(shippingAddress)}
+
+          <!-- CTA + invoice -->
           <tr>
-            <td align="center" style="padding:0 32px 32px;">
+            <td align="center" style="padding:2px 28px 10px;">
               <a href="${escapeHtml(confirmationUrl)}"
-                 style="display:inline-block;padding:14px 40px;background-color:#4d3c40;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;">
+                 style="display:inline-block;padding:14px 44px;background-color:${WINE};color:${CREAM};text-decoration:none;font-size:16px;">
                 לצפייה באישור ההזמנה
               </a>
             </td>
           </tr>
-          ${invoiceUrl ? `
+          ${
+            invoiceUrl
+              ? `
           <tr>
-            <td align="center" style="padding:0 32px 24px;font-size:13px;">
-              <a href="${escapeHtml(invoiceUrl)}" style="color:#6b5b60;text-decoration:underline;">לצפייה בחשבונית / קבלה</a>
+            <td align="center" style="padding:0 28px 8px;font-size:13.5px;">
+              <a href="${escapeHtml(invoiceUrl)}" style="color:${INK_SOFT};text-decoration:underline;">לצפייה בחשבונית / קבלה</a>
             </td>
-          </tr>` : ""}
+          </tr>`
+              : ""
+          }
+
+          <!-- The card's closing line -->
           <tr>
-            <td style="padding:0 32px;">
-              <hr style="border:none;border-top:1px solid #e8ddd4;margin:0;" />
+            <td align="center" class="inner-pad" style="padding:30px 28px 6px;">
+              <div class="closing" style="font-family:'FbEinstein','Assistant',Arial,sans-serif;font-weight:300;font-size:24px;color:${WINE};line-height:1.3;">
+                כי מגיע לך יום האם טוב יותר
+              </div>
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding:20px 32px 28px;font-size:12px;color:#a09090;line-height:1.7;">
-              לכל שאלה אפשר לענות למייל הזה או לפנות אלינו ב-${escapeHtml(supportEmail)}
-              <br />יום האם — מוצרי תכנון לאימהות
+            <td align="center" style="padding:6px 28px 30px;">
+              <div style="font-size:16px;color:${WINE};line-height:1.6;">&#9825;<br /><span style="font-size:14px;">עדן</span></div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 28px;">
+              <hr style="border:none;border-top:1px solid ${HAIRLINE};margin:0;" />
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:18px 28px 26px;font-size:12px;color:${INK_SOFT};line-height:1.9;">
+              <a href="${CANONICAL_SITE}" style="color:${INK_SOFT};text-decoration:none;">mothersday.co.il</a>
+              &nbsp;·&nbsp; <a href="mailto:${escapeHtml(supportEmail)}" style="color:${INK_SOFT};text-decoration:underline;">${escapeHtml(supportEmail)}</a>
+              <br />אפשר פשוט לענות למייל הזה — אנחנו כאן.
             </td>
           </tr>
         </table>
@@ -237,7 +296,7 @@ const buildText = ({
     : [];
 
   return [
-    `ההזמנה שלך התקבלה`,
+    `ההזמנה שלך התקבלה!`,
     `מספר הזמנה: #${orderNumber}`,
     simulated ? `זוהי הזמנה לדוגמה לצורכי בדיקה בלבד. לא בוצע חיוב.` : "",
     "",
@@ -249,7 +308,7 @@ const buildText = ({
           currencyCode
         )}`
     ),
-    `משלוח: ${formatCurrency(shippingCost, currencyCode)}`,
+    `משלוח: ${shippingCost === 0 ? "חינם" : formatCurrency(shippingCost, currencyCode)}`,
     `סה"כ: ${formatCurrency(totalPrice, currencyCode)}`,
     addressLines.length ? "" : "",
     addressLines.length ? "כתובת למשלוח:" : "",
@@ -258,6 +317,7 @@ const buildText = ({
     `לצפייה באישור ההזמנה: ${confirmationUrl}`,
     invoiceUrl ? `לצפייה בחשבונית / קבלה: ${invoiceUrl}` : "",
     "",
+    "כי מגיע לך יום האם טוב יותר",
     "יום האם",
   ]
     .filter(Boolean)
@@ -276,9 +336,7 @@ export const sendOrderConfirmationEmail = async (payload: OrderEmailPayload) => 
     process.env.ORDER_CONFIRMATION_FROM_EMAIL ||
     process.env.RESEND_FROM_EMAIL ||
     DEFAULT_ORDER_CONFIRMATION_FROM;
-  const replyTo =
-    process.env.ORDER_CONFIRMATION_REPLY_TO ||
-    supportEmail;
+  const replyTo = process.env.ORDER_CONFIRMATION_REPLY_TO || supportEmail;
 
   const subject = payload.simulated
     ? `הזמנה לדוגמה #${payload.orderNumber} התקבלה | יום האם`
