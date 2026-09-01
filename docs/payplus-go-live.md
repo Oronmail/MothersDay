@@ -81,8 +81,14 @@ requests get 401). Two ways to let PayPlus reach the preview callback:
   **Protection Bypass for Automation**. Vercel then injects
   `VERCEL_AUTOMATION_BYPASS_SECRET`, and `create-payment` automatically appends
   the bypass token to the PayPlus callback/return URLs on non-production
-  deployments (already coded). Redeploy the preview after enabling.
-- Or temporarily switch Vercel Authentication to "Only Production".
+  deployments (already coded; never in production). Redeploy the preview after
+  enabling. **Security note:** the token rides in those URLs (Vercel's documented
+  query-param mechanism), so PayPlus stores it in the refURL fields and it appears
+  briefly in the tester's browser — it grants preview-view access only, but treat
+  it as a test-window secret: **regenerate it in the same settings screen when
+  preview testing is done.**
+- Or temporarily switch Vercel Authentication to "Only Production" and skip the
+  bypass entirely.
 
 ## 4. Test on a preview deployment
 
