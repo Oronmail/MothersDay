@@ -4,3 +4,8 @@
 ALTER TABLE orders
   ADD COLUMN IF NOT EXISTS invoice_number TEXT,
   ADD COLUMN IF NOT EXISTS invoice_url    TEXT;
+
+-- Consent audit: the checkout form requires accepting the site terms before an
+-- order can be created; record when that happened.
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ;

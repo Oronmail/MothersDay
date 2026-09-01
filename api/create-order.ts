@@ -204,6 +204,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     customer_email: customerEmail,
     subtotal,
     expires_at: new Date(Date.now() + ORDER_EXPIRY_HOURS * 3600_000).toISOString(),
+    // The Zod-validated checkout form requires the terms checkbox; the order
+    // records when that consent was given.
+    terms_accepted_at: new Date().toISOString(),
   };
 
   try {

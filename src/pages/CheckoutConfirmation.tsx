@@ -34,6 +34,8 @@ type ConfirmationOrder = Omit<Order, "financial_status"> & {
   payment_method?: string | null;
   payment_card_last4?: string | null;
   payment_card_brand?: string | null;
+  invoice_number?: string | null;
+  invoice_url?: string | null;
 };
 
 type LoadState = "loading" | "ready" | "not_found" | "network_error" | "no_token";
@@ -306,6 +308,18 @@ export default function CheckoutConfirmation() {
 
           {isPaid && paymentLine && (
             <p className="text-sm text-muted-foreground">{paymentLine}</p>
+          )}
+          {isPaid && order.invoice_url && (
+            <p className="text-sm">
+              <a
+                href={order.invoice_url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline text-muted-foreground hover:text-foreground"
+              >
+                לצפייה בחשבונית / קבלה
+              </a>
+            </p>
           )}
 
           {isPaid && (

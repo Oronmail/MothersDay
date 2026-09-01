@@ -139,8 +139,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, ignored: "no_order_ref" });
   }
 
-  // Refunds also hit this endpoint (account-level callback).
-  if (txn.transactionType === "Refund") {
+  // Refunds — and same-day voids ("Cancel", seen live 2026-09-01) — also hit
+  // this endpoint; both un-pay the order from the store's perspective.
+  if (txn.transactionType === "Refund" || txn.transactionType === "Cancel") {
     const { error } = await supabase
       .from("orders")
       .update({ financial_status: "refunded", refunded_at: new Date().toISOString() })

@@ -61,5 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     payment_method: data.payment_method ?? null,
     payment_card_last4: data.card_last4 ?? null,
     payment_card_brand: data.card_brand ?? null,
+    invoice_number: data.invoice_number ?? null,
+    invoice_url: data.invoice_url ?? null,
   });
 }
