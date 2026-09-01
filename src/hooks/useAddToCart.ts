@@ -108,7 +108,8 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
   );
 
   const incrementQuantity = useCallback(() => {
-    setQuantity((prev) => Math.min(prev + 1, 99)); // Max 99
+    // Matches the per-line cap enforced by /api/create-order.
+    setQuantity((prev) => Math.min(prev + 1, 20));
   }, []);
 
   const decrementQuantity = useCallback(() => {

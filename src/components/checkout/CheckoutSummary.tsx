@@ -10,12 +10,15 @@ import { CartItem } from "@/lib/types";
 import { LazyImage } from "@/components/LazyImage";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
+import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
   subtotal: number;
   shippingCost: number;
   isSubmitting: boolean;
+  /** True while the browser is being handed over to the PayPlus payment page */
+  isRedirectingToPayment?: boolean;
   checkoutEnabled: boolean;
   paymentSimulationEnabled?: boolean;
   onSubmit: () => void;
@@ -26,6 +29,7 @@ export function CheckoutSummary({
   subtotal,
   shippingCost,
   isSubmitting,
+  isRedirectingToPayment = false,
   checkoutEnabled,
   paymentSimulationEnabled = false,
   onSubmit,
@@ -116,8 +120,14 @@ export function CheckoutSummary({
                   <button
                     type="button"
                     onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                    className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors"
-                    aria-label={`הגדילי כמות עבור ${item.product.node.title}`}
+                    disabled={item.quantity >= MAX_ITEM_QUANTITY}
+                    title={item.quantity >= MAX_ITEM_QUANTITY ? MAX_ITEM_QUANTITY_MESSAGE : undefined}
+                    className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    aria-label={
+                      item.quantity >= MAX_ITEM_QUANTITY
+                        ? MAX_ITEM_QUANTITY_MESSAGE
+                        : `הגדילי כמות עבור ${item.product.node.title}`
+                    }
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
@@ -186,12 +196,17 @@ export function CheckoutSummary({
           onClick={onSubmit}
           className="w-full"
           size="lg"
-          disabled={items.length === 0 || isSubmitting || !canSubmit}
+          disabled={items.length === 0 || isSubmitting || isRedirectingToPayment || !canSubmit}
         >
-          {isSubmitting ? (
+          {isRedirectingToPayment ? (
             <>
               <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-              {paymentSimulationEnabled ? "יוצר הזמנה לדוגמה..." : "יוצר הזמנה..."}
+              מעבירים אותך לתשלום מאובטח...
+            </>
+          ) : isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+              {paymentSimulationEnabled ? "יוצרים הזמנה לדוגמה..." : "יוצרים את ההזמנה..."}
             </>
           ) : paymentSimulationEnabled ? (
             <>השלמת הזמנה לדוגמה — &#8362;{totalPrice.toFixed(2)}</>
@@ -208,8 +223,9 @@ export function CheckoutSummary({
         </p>
       </div>
 
-      {/* Spacer for fixed bottom bar on mobile */}
-      <div className="h-24 md:hidden" />
+      {/* Spacer for the fixed bottom bar on mobile. The bar stacks terms +
+          button + secure-payment note inside p-4, so it runs ~150px tall. */}
+      <div className="h-40 md:hidden" />
     </div>
   );
 }

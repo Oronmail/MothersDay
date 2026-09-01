@@ -178,7 +178,23 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       .single();
 
     if (error || !data) return null;
-    return transformProduct(data);
+    const product = transformProduct(data);
+
+    // Published collections for the breadcrumb (skip "הכל" — it's the
+    // master-ordering collection, not a browse destination).
+    const { data: cpRows } = await supabase
+      .from('collection_products')
+      .select('collections(title, handle, is_published, sort_order)')
+      .eq('product_id', product.id);
+    const collections = (cpRows ?? [])
+      .map((row: any) => (Array.isArray(row.collections) ? row.collections[0] : row.collections))
+      .filter((c: any) => c && c.is_published && c.handle !== MAIN_COLLECTION_HANDLE)
+      .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    product.collections = {
+      edges: collections.map((c: any) => ({ node: { title: c.title, handle: c.handle } })),
+    };
+
+    return product;
   });
 }
 
@@ -397,19 +413,83 @@ export async function createOrder(
     phone?: string;
   },
   shippingCost: number,
-  userId?: string,
   notes?: string,
 ): Promise<{ orderId: string; orderNumber: number; orderAccessToken: string }> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+  // The server derives the customer from the JWT — never from the request body.
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
+
   const response = await fetch('/api/create-order', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items, email, shippingAddress, shippingCost, userId, notes }),
+    headers,
+    body: JSON.stringify({ items, email, shippingAddress, shippingCost, notes }),
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(err.error || 'Failed to create order');
+    throw new CheckoutApiError(
+      err.message || err.error || 'Failed to create order',
+      err.error || 'unknown_error',
+      response.status,
+    );
   }
 
   return response.json();
+}
+
+/** Error carrying the server's machine-readable `error` code so the UI can explain it. */
+export class CheckoutApiError extends Error {
+  code: string;
+  status: number;
+
+  constructor(message: string, code: string, status: number) {
+    super(message);
+    this.name = 'CheckoutApiError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
+export interface CreatePaymentResult {
+  paymentPageUrl: string;
+  pageRequestUid: string;
+}
+
+/**
+ * Opens a PayPlus payment page for an existing order.
+ * Resolves with the hosted page URL the browser must navigate to.
+ * Throws a CheckoutApiError whose `code` is `already_paid` (409),
+ * `checkout_disabled` (503), or whatever the server reported.
+ */
+export async function createPayment(
+  orderId: string,
+  orderAccessToken: string,
+): Promise<CreatePaymentResult> {
+  const response = await fetch('/api/create-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, orderAccessToken }),
+  });
+
+  const payload = await response.json().catch(() => null) as
+    | (Partial<CreatePaymentResult> & { error?: string; message?: string })
+    | null;
+
+  if (!response.ok) {
+    throw new CheckoutApiError(
+      payload?.message || payload?.error || 'Failed to start payment',
+      payload?.error || 'unknown_error',
+      response.status,
+    );
+  }
+
+  if (!payload?.paymentPageUrl) {
+    throw new CheckoutApiError('Missing payment page URL', 'missing_payment_url', response.status);
+  }
+
+  return { paymentPageUrl: payload.paymentPageUrl, pageRequestUid: payload.pageRequestUid ?? '' };
 }

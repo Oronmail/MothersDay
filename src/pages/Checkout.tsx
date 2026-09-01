@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,20 +20,28 @@ import {
   CAN_SUBMIT_CHECKOUT,
   CHECKOUT_DISABLED_MESSAGE,
   CHECKOUT_ENABLED,
+  MAX_ITEM_QUANTITY_MESSAGE,
   PAYMENT_SIMULATION_ENABLED,
   PAYMENT_SIMULATION_MESSAGE,
   getOrderAccessStorageKey,
 } from "@/lib/checkoutConfig";
+import { CheckoutApiError, createPayment } from "@/lib/api";
+
+/** Israeli phone numbers are written many ways ("050-123-4567", "050 1234567"). */
+const stripPhoneFormatting = (value: string) => value.replace(/[\s().-]/g, "");
 
 const checkoutSchema = z.object({
   email: z.string().email("כתובת אימייל לא תקינה"),
   phone: z
     .string()
     .min(1, "מספר טלפון נדרש")
-    .regex(/^0\d{8,9}$/, "מספר טלפון ישראלי לא תקין (10 ספרות, מתחיל ב-0)"),
+    .transform(stripPhoneFormatting)
+    .refine((value) => /^0\d{8,9}$/.test(value), {
+      message: "מספר טלפון ישראלי לא תקין (9-10 ספרות, מתחיל ב-0). אפשר להקליד עם מקפים",
+    }),
   full_name: z.string().min(2, "שם מלא נדרש (לפחות 2 תווים)"),
-  city: z.string().min(2, "יש לבחור עיר"),
-  street: z.string().min(2, "יש לבחור רחוב"),
+  city: z.string().min(2, "יש לבחור או להקליד עיר"),
+  street: z.string().min(2, "יש לבחור או להקליד רחוב"),
   house_number: z.string().min(1, "מספר בית נדרש"),
   apartment: z.string().optional(),
   postal_code: z.string().optional(),
@@ -75,14 +83,69 @@ function splitStreetLine(line: string): { street: string; house_number: string; 
   return { street: rest, house_number: "", apartment };
 }
 
+type PaymentNoticeKind = "failed" | "cancelled" | "error";
+
+const PAYMENT_NOTICES: Record<PaymentNoticeKind, { title: string; description: string }> = {
+  failed: {
+    title: "התשלום לא אושר",
+    description:
+      "לא בוצע חיוב. אפשר לנסות שוב או להשתמש בכרטיס אחר — הפרטים שמילאת נשמרו בעגלה.",
+  },
+  cancelled: {
+    title: "ביטלת את התשלום",
+    description: "לא בוצע חיוב. העגלה שלך מחכה כאן, אפשר להשלים את ההזמנה מתי שנוח לך.",
+  },
+  error: {
+    title: "משהו השתבש בתהליך התשלום",
+    description: "לא בוצע חיוב. כדאי לנסות שוב, ואם זה חוזר על עצמו נשמח שתכתבי לנו.",
+  },
+};
+
+/** Turns a server error from /api/create-order into something a customer can act on. */
+function describeOrderError(error: unknown): string {
+  const code = error instanceof CheckoutApiError ? error.code : "";
+  const message = error instanceof Error ? error.message : "";
+  const haystack = `${code} ${message}`.toLowerCase();
+
+  if (haystack.includes("quantity")) {
+    return `${MAX_ITEM_QUANTITY_MESSAGE}. יש לעדכן את הכמות בסיכום ההזמנה ולנסות שוב.`;
+  }
+  if (
+    haystack.includes("unavailable") ||
+    haystack.includes("not_available") ||
+    haystack.includes("out_of_stock") ||
+    haystack.includes("item_not_found") ||
+    haystack.includes("product_not_found") ||
+    haystack.includes("variant")
+  ) {
+    return "אחד המוצרים בעגלה כבר לא זמין. יש להסיר אותו מסיכום ההזמנה ולנסות שוב.";
+  }
+  if (
+    haystack.includes("network") ||
+    haystack.includes("failed to fetch") ||
+    haystack.includes("load failed")
+  ) {
+    return "בעיית תקשורת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב";
+  }
+  return "אנא נסי שנית";
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { items, isLoading, createOrder } = useCartStore();
   const { data: settings } = useStoreSettings();
   const orderInProgress = useRef(false);
   const hasSavedAddressRef = useRef(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<PaymentNoticeKind | null>(null);
+
+  const paymentParam = searchParams.get("payment");
+  // Keeps the empty-cart redirect from bouncing a customer who just came back
+  // from PayPlus — the param is cleaned from the URL as soon as it's read.
+  const isReturningFromPayment = paymentParam !== null || paymentNotice !== null;
 
   const subtotal = items.reduce(
     (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
@@ -108,12 +171,23 @@ export default function Checkout() {
     },
   });
 
-  // Redirect to home if cart is empty (but not during order submission)
+  // Read the payment result PayPlus sent us back with, then drop it from the
+  // URL so a refresh doesn't re-show the banner.
   useEffect(() => {
-    if (items.length === 0 && !orderInProgress.current) {
+    if (!paymentParam) return;
+    setPaymentNotice(
+      paymentParam === "failed" || paymentParam === "cancelled" ? paymentParam : "error"
+    );
+    setSearchParams({}, { replace: true });
+  }, [paymentParam, setSearchParams]);
+
+  // Redirect to home if cart is empty (but not during order submission, and
+  // never while showing a payment result — that customer deserves an explanation)
+  useEffect(() => {
+    if (items.length === 0 && !orderInProgress.current && !isReturningFromPayment) {
       navigate(ROUTES.home, { replace: true });
     }
-  }, [items.length, navigate]);
+  }, [items.length, navigate, isReturningFromPayment]);
 
   // Pre-fill email when user logs in
   useEffect(() => {
@@ -182,6 +256,7 @@ export default function Checkout() {
     const email = user?.email || data.email;
     orderInProgress.current = true;
     setIsSubmittingOrder(true);
+    setPaymentNotice(null);
 
     const streetFull = data.apartment
       ? `${data.street} ${data.house_number}, דירה ${data.apartment}`
@@ -197,57 +272,55 @@ export default function Checkout() {
       phone: data.phone,
     };
 
+    let createdOrder: { orderId: string; orderNumber: number; orderAccessToken: string };
     try {
-      const { orderId, orderNumber, orderAccessToken } = await createOrder(
-        email,
-        shippingAddress,
-        shippingCost,
-        user?.id,
-        data.notes
-      );
+      createdOrder = await createOrder(email, shippingAddress, shippingCost, data.notes);
+    } catch (error) {
+      orderInProgress.current = false;
+      setIsSubmittingOrder(false);
+      toast.error("יצירת ההזמנה נכשלה", { description: describeOrderError(error) });
+      return;
+    }
 
+    const { orderId, orderNumber, orderAccessToken } = createdOrder;
+
+    // The confirmation page reads the token back from here when PayPlus
+    // returns the customer without it (private-mode storage may refuse).
+    try {
       sessionStorage.setItem(getOrderAccessStorageKey(orderId), orderAccessToken);
+    } catch {
+      // Non-fatal: the payment redirect carries the token in the URL too.
+    }
 
-      // Remember the address for the next checkout (first order of a
-      // logged-in user without a saved address). Fire-and-forget.
-      if (user?.id && !hasSavedAddressRef.current) {
-        void supabase
-          .from("addresses")
-          .insert({
-            user_id: user.id,
-            label: "בית",
-            full_name: data.full_name,
-            street: streetFull,
-            city: data.city,
-            postal_code: data.postal_code || null,
-            phone: data.phone,
-            is_default: true,
-          })
-          .then(({ error }) => {
-            if (error) console.warn("Failed to save address for future checkouts", error);
-          });
-      }
-
-      toast.success(PAYMENT_SIMULATION_ENABLED ? "הזמנת הדוגמה נוצרה בהצלחה!" : "ההזמנה נוצרה בהצלחה!", {
-        description: `מספר הזמנה: ${orderNumber}`,
-      });
-
-      if (typeof window.gtag === 'function') {
-        window.gtag('event', 'purchase', {
-          transaction_id: orderId,
-          value: subtotal + shippingCost,
-          currency: 'ILS',
-          shipping: shippingCost,
-          items: items.map(item => ({
-            item_id: item.variantId,
-            item_name: item.product.node.title,
-            price: parseFloat(item.price.amount),
-            quantity: item.quantity,
-          })),
+    // Remember the address for the next checkout (first order of a
+    // logged-in user without a saved address). Fire-and-forget.
+    if (user?.id && !hasSavedAddressRef.current) {
+      void supabase
+        .from("addresses")
+        .insert({
+          user_id: user.id,
+          label: "בית",
+          full_name: data.full_name,
+          street: streetFull,
+          city: data.city,
+          postal_code: data.postal_code || null,
+          phone: data.phone,
+          is_default: true,
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Failed to save address for future checkouts", error);
         });
-      }
+    }
 
+    // The GA `purchase` event belongs on the confirmation page — nothing has
+    // been paid for yet at this point.
+
+    try {
       if (PAYMENT_SIMULATION_ENABLED) {
+        toast.success("הזמנת הדוגמה נוצרה בהצלחה!", {
+          description: `מספר הזמנה: ${orderNumber}`,
+        });
+
         const simulationResponse = await fetch("/api/simulate-payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -284,25 +357,78 @@ export default function Checkout() {
           window.location.assign(simulationResult.confirmationUrl);
           return;
         }
+
+        navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
+        return;
       }
 
-      navigate(`${ROUTES.checkoutConfirmation}/${orderId}`, { replace: true });
+      // Live checkout: hand the customer over to PayPlus's hosted page.
+      setIsRedirectingToPayment(true);
+      const { paymentPageUrl } = await createPayment(orderId, orderAccessToken);
+      window.location.assign(paymentPageUrl);
     } catch (error) {
+      // The order was already paid for (double submit / stale tab) — nothing
+      // left to charge, just show the confirmation.
+      if (error instanceof CheckoutApiError && error.code === "already_paid") {
+        navigate(
+          `${ROUTES.checkoutConfirmation}/${orderId}?token=${encodeURIComponent(orderAccessToken)}`,
+          { replace: true }
+        );
+        return;
+      }
+
       orderInProgress.current = false;
       setIsSubmittingOrder(false);
-      const message =
-        error instanceof Error && error.message.includes("network")
-          ? "בעיית תקשורת. בדוק את החיבור לאינטרנט"
-          : "אנא נסה שנית";
+      setIsRedirectingToPayment(false);
 
-      toast.error("יצירת ההזמנה נכשלה", { description: message });
+      const description =
+        error instanceof CheckoutApiError && error.code === "checkout_disabled"
+          ? CHECKOUT_DISABLED_MESSAGE
+          : `${describeOrderError(error).replace(/\.$/, "")}. ההזמנה שלך נשמרה אצלנו (מספר ${orderNumber}) ולא בוצע חיוב.`;
+
+      toast.error(
+        PAYMENT_SIMULATION_ENABLED ? "הדמיית התשלום נכשלה" : "לא הצלחנו לפתוח את עמוד התשלום",
+        { description }
+      );
     }
   });
 
-  if (items.length === 0) return null;
+  const notice = paymentNotice ? PAYMENT_NOTICES[paymentNotice] : null;
+
+  if (items.length === 0 && !notice) return null;
+
+  const paymentNoticeBanner = notice && (
+    <div role="status" className="border border-border bg-muted p-4 space-y-1">
+      <p className="text-sm font-medium">{notice.title}</p>
+      <p className="text-sm text-muted-foreground">{notice.description}</p>
+    </div>
+  );
+
+  // A customer can land back here with an emptied cart (e.g. paid in another
+  // tab). Explain instead of silently bouncing them to the homepage.
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <SEO title="תשלום" description="עמוד התשלום של יום האם." noindex />
+        <CheckoutHeader />
+        <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 space-y-6">
+          {paymentNoticeBanner}
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">העגלה שלך ריקה כרגע.</p>
+            <Link to={ROUTES.home} className="underline hover:text-primary">
+              חזרה לחנות
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+    // pb-40 on mobile keeps the fixed CTA bar (z-40) from covering the footer
+    // once the page is scrolled all the way down.
+    <div className="min-h-screen bg-background flex flex-col pb-40 md:pb-0" dir="rtl">
       <SEO
         title="תשלום"
         description="עמוד התשלום של יום האם."
@@ -315,6 +441,7 @@ export default function Checkout() {
           <div className="flex flex-col md:flex-row gap-8">
             {/* Right column (RTL main): form sections */}
             <div className="flex-1 space-y-8">
+              {paymentNoticeBanner}
               <CheckoutContactForm
                 form={form}
                 isLoggedIn={!!user}
@@ -340,6 +467,7 @@ export default function Checkout() {
                   subtotal={subtotal}
                   shippingCost={shippingCost}
                   isSubmitting={isLoading || isSubmittingOrder}
+                  isRedirectingToPayment={isRedirectingToPayment}
                   checkoutEnabled={CHECKOUT_ENABLED}
                   paymentSimulationEnabled={PAYMENT_SIMULATION_ENABLED}
                   onSubmit={handleSubmit}

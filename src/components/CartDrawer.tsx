@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Minus, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import shoppingBagIcon from "@/assets/shopping-bag-icon.png";
 import { useCartStore } from "@/stores/cartStore";
 import { ROUTES } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
+import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,7 +92,13 @@ export const CartDrawer = () => {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                            aria-label={`הגדילי כמות עבור ${item.product.node.title}`}
+                            disabled={item.quantity >= MAX_ITEM_QUANTITY}
+                            title={item.quantity >= MAX_ITEM_QUANTITY ? MAX_ITEM_QUANTITY_MESSAGE : undefined}
+                            aria-label={
+                              item.quantity >= MAX_ITEM_QUANTITY
+                                ? MAX_ITEM_QUANTITY_MESSAGE
+                                : `הגדילי כמות עבור ${item.product.node.title}`
+                            }
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -120,7 +127,7 @@ export const CartDrawer = () => {
                 </div>
                 
                 <Button onClick={handleCheckout} className="w-full" size="lg" disabled={items.length === 0}>
-                  <ExternalLink className="w-4 h-4 ml-2" />
+                  <ArrowLeft className="w-4 h-4 ml-2" aria-hidden="true" />
                   מעבר לתשלום
                 </Button>
               </div>

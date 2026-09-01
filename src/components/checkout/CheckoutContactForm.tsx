@@ -37,7 +37,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
           />
           <p className="text-sm text-muted-foreground">
             כבר יש לך חשבון?{" "}
-            <Link to="/auth" className="underline hover:text-foreground">
+            <Link to="/auth?next=/checkout" className="underline hover:text-foreground">
               התחבר/י
             </Link>
           </p>

@@ -38,6 +38,11 @@ export interface Product {
   images: { edges: Array<{ node: { url: string; altText: string | null } }> };
   variants: { edges: Array<{ node: ProductVariant }> };
   options: Array<{ name: string; values: string[] }>;
+  /**
+   * Published collections containing this product (first = breadcrumb).
+   * Populated only by getProductByHandle (the product page).
+   */
+  collections?: { edges: Array<{ node: { title: string; handle: string } }> };
   imageLayout: string | null;
   pageQuantity: string | null;
   pageSize: string | null;
@@ -126,12 +131,17 @@ export interface Order {
   total_price: number;
   shipping_cost: number | null;
   currency_code: string;
-  financial_status: 'pending' | 'paid' | 'refunded';
+  financial_status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
   fulfillment_status: 'unfulfilled' | 'shipped' | 'delivered';
   tracking_number: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
+  /** Payment details (set once the order is paid via PayPlus). */
+  paid_at?: string | null;
+  payment_method?: string | null;
+  payment_card_last4?: string | null;
+  payment_card_brand?: string | null;
 }
 
 // ===========================

@@ -13,6 +13,8 @@ interface AddressAutocompleteProps {
   onChange: (value: string, code?: number) => void;
   placeholder: string;
   disabled?: boolean;
+  /** Called when the government lookup fails, so the form can offer free text */
+  onLookupError?: (hasError: boolean) => void;
 }
 
 const CITIES_RESOURCE_ID = "b7cf8f14-64a2-4b33-8d4b-edb286fdbd37";
@@ -21,6 +23,9 @@ const STREETS_RESOURCE_ID = "a7296d1a-f8c9-4b70-96c2-6ebb4352f8e3";
 // directly. api/gov-address.ts proxies it same-origin (Vite proxies the same
 // path to data.gov.il in local dev — see vite.config.ts).
 const API_BASE = "/api/gov-address";
+
+// data.gov.il is a third party that goes down; never let it block checkout.
+const LOOKUP_TIMEOUT_MS = 6000;
 
 // Cache: fetch all cities/streets once, filter client-side for instant prefix matching
 const cache: Record<string, AutocompleteResult[]> = {};
@@ -48,10 +53,18 @@ async function fetchAllRecords(
       params.set("filters", JSON.stringify(filters));
     }
 
-    const response = await fetch(`${API_BASE}?${params}`);
+    const response = await fetchWithTimeout(`${API_BASE}?${params}`);
+    if (!response.ok) {
+      throw new Error(`Address lookup failed (${response.status})`);
+    }
+
     const data = await response.json();
 
-    if (!data.success || !data.result?.records?.length) break;
+    if (!data.success) {
+      throw new Error("Address lookup returned an unsuccessful response");
+    }
+
+    if (!data.result?.records?.length) break;
 
     for (const record of data.result.records) {
       const name = (record[nameField] as string)?.trim();
@@ -65,6 +78,17 @@ async function fetchAllRecords(
 
   cache[cacheKey] = allRecords;
   return allRecords;
+}
+
+/** A slow lookup is as bad as a failed one — give up after LOOKUP_TIMEOUT_MS. */
+async function fetchWithTimeout(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LOOKUP_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -90,13 +114,25 @@ export function AddressAutocomplete({
   onChange,
   placeholder,
   disabled = false,
+  onLookupError,
 }: AddressAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<AutocompleteResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [allItems, setAllItems] = useState<AutocompleteResult[]>([]);
+  const [hasError, setHasError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const onLookupErrorRef = useRef(onLookupError);
+
+  useEffect(() => {
+    onLookupErrorRef.current = onLookupError;
+  }, [onLookupError]);
+
+  const reportError = useCallback((failed: boolean) => {
+    setHasError(failed);
+    onLookupErrorRef.current?.(failed);
+  }, []);
 
   // Sync external value changes
   useEffect(() => {
@@ -107,10 +143,17 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (type === "city") {
       fetchAllRecords(CITIES_RESOURCE_ID, "cities", "שם_ישוב", "סמל_ישוב")
-        .then(setAllItems)
-        .catch(() => setAllItems([]));
+        .then((records) => {
+          setAllItems(records);
+          reportError(false);
+        })
+        .catch((error) => {
+          console.warn("City lookup failed — falling back to free text", error);
+          setAllItems([]);
+          reportError(true);
+        });
     }
-  }, [type]);
+  }, [type, reportError]);
 
   useEffect(() => {
     if (type === "street" && cityCode) {
@@ -123,10 +166,17 @@ export function AddressAutocomplete({
         "סמל_רחוב",
         { "סמל_ישוב": cityCode }
       )
-        .then(setAllItems)
-        .catch(() => setAllItems([]));
+        .then((records) => {
+          setAllItems(records);
+          reportError(false);
+        })
+        .catch((error) => {
+          console.warn("Street lookup failed — falling back to free text", error);
+          setAllItems([]);
+          reportError(true);
+        });
     }
-  }, [type, cityCode]);
+  }, [type, cityCode, reportError]);
 
   // Client-side prefix filter — instant, no API calls
   const filterResults = useCallback(
@@ -201,6 +251,8 @@ export function AddressAutocomplete({
   }, [results]);
 
   const listboxId = `${type}-listbox`;
+  const hintId = `${type}-lookup-hint`;
+  const isListboxOpen = isOpen && results.length > 0;
 
   return (
     <div ref={containerRef} className="relative">
@@ -212,15 +264,24 @@ export function AddressAutocomplete({
           if (results.length > 0) setIsOpen(true);
           else filterResults(query);
         }}
-        placeholder={placeholder}
+        placeholder={hasError ? "הקלידי את הכתובת" : placeholder}
         disabled={disabled}
         autoComplete="off"
         role="combobox"
-        aria-expanded={isOpen && results.length > 0}
-        aria-controls={listboxId}
+        aria-expanded={isListboxOpen}
+        aria-autocomplete="list"
+        aria-controls={isListboxOpen ? listboxId : undefined}
+        aria-describedby={hasError ? hintId : undefined}
         aria-activedescendant={highlightedIndex >= 0 ? `${listboxId}-${highlightedIndex}` : undefined}
       />
-      {isOpen && results.length > 0 && (
+      {hasError && (
+        <p id={hintId} className="mt-1 text-xs text-muted-foreground">
+          {type === "city"
+            ? "לא הצלחנו לטעון את רשימת הערים — אפשר להקליד את הכתובת ידנית"
+            : "לא הצלחנו לטעון את רשימת הרחובות — אפשר להקליד את הכתובת ידנית"}
+        </p>
+      )}
+      {isListboxOpen && (
         <ul
           id={listboxId}
           role="listbox"

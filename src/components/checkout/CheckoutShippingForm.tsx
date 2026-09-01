@@ -12,19 +12,36 @@ interface CheckoutShippingFormProps {
 
 export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
   const [cityCode, setCityCode] = useState<number | undefined>();
-  const cityValue = form.watch("city");
+  const [isResolvingCityCode, setIsResolvingCityCode] = useState(false);
+  const [streetLookupFailed, setStreetLookupFailed] = useState(false);
+  const cityValue = form.watch("city") || "";
 
   // The street autocomplete needs the city code. When the city arrives as
   // text (prefilled saved address, or typed fully without picking a
-  // suggestion), resolve the code by exact name so the street field unlocks.
+  // suggestion), resolve the code by exact name so the street suggestions work.
   useEffect(() => {
     if (!cityValue || cityCode) return;
     let active = true;
+    setIsResolvingCityCode(true);
     findCityCode(cityValue).then((code) => {
-      if (active && code) setCityCode(code);
+      if (!active) return;
+      if (code) setCityCode(code);
+      setIsResolvingCityCode(false);
     });
     return () => { active = false; };
   }, [cityValue, cityCode]);
+
+  // data.gov.il is a third party. When we can't resolve the city (service down,
+  // or a city name that isn't in the dataset) the street field stays open for
+  // free text rather than blocking the order. The hint only appears once she
+  // actually starts typing a street, so it doesn't flicker while typing a city.
+  const streetValue = form.watch("street") || "";
+  const showManualStreetHint =
+    !streetLookupFailed &&
+    !cityCode &&
+    !isResolvingCityCode &&
+    cityValue.trim().length >= 2 &&
+    streetValue.trim().length > 0;
 
   return (
     <section className="space-y-4">
@@ -81,9 +98,14 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 placeholder="הקלד/י שם רחוב..."
-                disabled={!cityCode}
+                onLookupError={setStreetLookupFailed}
               />
             </FormControl>
+            {showManualStreetHint && (
+              <p className="text-xs text-muted-foreground">
+                לא הצלחנו לטעון את רשימת הרחובות לעיר הזו — אפשר להקליד את שם הרחוב ידנית
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createOrder } from '@/lib/api';
 import { CartItem, ShippingAddress } from '@/lib/types';
+import { MAX_ITEM_QUANTITY } from '@/lib/checkoutConfig';
 import { startSpan, captureException, logger } from '@/lib/sentry';
 
 interface CartStore {
@@ -17,7 +18,6 @@ interface CartStore {
     userEmail: string,
     shippingAddress: ShippingAddress,
     shippingCost: number,
-    userId?: string,
     notes?: string
   ) => Promise<{ orderId: string; orderNumber: number; orderAccessToken: string }>;
 }
@@ -51,9 +51,13 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
+        // The order API rejects more than MAX_ITEM_QUANTITY per line — clamp
+        // here so the cart can never hold a quantity checkout would refuse.
+        const capped = Math.min(quantity, MAX_ITEM_QUANTITY);
+
         set({
           items: get().items.map(item =>
-            item.variantId === variantId ? { ...item, quantity } : item
+            item.variantId === variantId ? { ...item, quantity: capped } : item
           )
         });
       },
@@ -74,7 +78,6 @@ export const useCartStore = create<CartStore>()(
         userEmail: string,
         shippingAddress: ShippingAddress,
         shippingCost: number,
-        userId?: string,
         notes?: string
       ) => {
         return startSpan(
@@ -85,11 +88,10 @@ export const useCartStore = create<CartStore>()(
               itemCount: get().items.length,
               hasEmail: !!userEmail,
               hasShippingAddress: !!shippingAddress,
-              hasUserId: !!userId,
             },
           },
           async () => {
-            const { items, setLoading, clearCart } = get();
+            const { items, setLoading } = get();
 
             if (items.length === 0) {
               const error = new Error('Cart is empty');
@@ -118,12 +120,13 @@ export const useCartStore = create<CartStore>()(
                 userEmail,
                 shippingAddress,
                 shippingCost,
-                userId,
                 notes
               );
 
               logger.info('Order created successfully', { orderId: result.orderId, orderNumber: result.orderNumber });
-              clearCart();
+              // The cart is deliberately NOT cleared here: the customer still has
+              // to pay. A declined card must return them to a full cart.
+              // CheckoutConfirmation clears it once the order is confirmed paid.
               return result;
             } catch (error) {
               logger.error('Failed to create order', {
@@ -134,7 +137,6 @@ export const useCartStore = create<CartStore>()(
                 context: 'createOrder',
                 itemCount: items.length,
                 userEmail,
-                userId,
               });
               throw error;
             } finally {

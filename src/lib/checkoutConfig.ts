@@ -12,3 +12,15 @@ export const PAYMENT_SIMULATION_MESSAGE =
 
 export const getOrderAccessStorageKey = (orderId: string) =>
   `order-access:${orderId}`;
+
+/** Guards the one-time GA `purchase` event per order (survives a page refresh). */
+export const getPurchaseEventStorageKey = (orderId: string) =>
+  `ga-purchase:${orderId}`;
+
+/**
+ * Maximum quantity the server accepts per line item (`/api/create-order`).
+ * The UI enforces the same cap so a customer never hits a server rejection.
+ */
+export const MAX_ITEM_QUANTITY = 20;
+
+export const MAX_ITEM_QUANTITY_MESSAGE = `אפשר להזמין עד ${MAX_ITEM_QUANTITY} יחידות מכל פריט`;
