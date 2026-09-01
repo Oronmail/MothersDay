@@ -65,7 +65,7 @@ export const NewsletterPopup = () => {
           throw error;
         }
       } else {
-        toast.success("נרשמת בהצלחה! קוד ההנחה בדרך אלייך 💛");
+        toast.success("נרשמת! נשמח לעדכן אותך 💛");
         if (typeof window.gtag === 'function') {
           window.gtag('event', 'generate_lead', { method: 'newsletter_popup' });
         }
@@ -103,8 +103,8 @@ export const NewsletterPopup = () => {
         </button>
 
         <div className="text-center mb-8">
-          <p id="newsletter-popup-title" className="text-3xl md:text-4xl font-bold tracking-wide mb-2">10% הנחה</p>
-          <p className="text-lg md:text-xl font-light tracking-wider">הצטרפי למועדון</p>
+          <p id="newsletter-popup-title" className="text-3xl md:text-4xl font-bold tracking-wide mb-2">קודם כל את</p>
+          <p className="text-lg md:text-xl font-light tracking-wider">שומעת על השקות ומבצעים</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">

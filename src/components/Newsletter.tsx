@@ -105,7 +105,7 @@ export const Newsletter = () => {
             ותהני מהבלוג שלנו על תכנון וניהול זמן לאימהות
           </p>
           <p className="text-sm md:text-base text-foreground">
-            יחד עם הטבות ופעילויות שוות.
+            ותהיי הראשונה לשמוע על השקות ומבצעים.
           </p>
         </div>
 
@@ -114,6 +114,7 @@ export const Newsletter = () => {
           <Input
             type="email"
             placeholder="הכניסי את האימייל שלך"
+            aria-label="כתובת אימייל להרשמה לרשימת התפוצה"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-48 md:w-64 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"

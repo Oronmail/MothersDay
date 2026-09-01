@@ -83,7 +83,7 @@ export const HeroNewsletterCard = () => {
       if (error?.code === "23505") {
         toast.success("כבר נרשמת! תודה 💛");
       } else {
-        toast.success("נרשמת בהצלחה! קוד ההנחה בדרך אלייך 💛");
+        toast.success("נרשמת! נשמח לעדכן אותך 💛");
         if (typeof window.gtag === "function") {
           window.gtag("event", "generate_lead", { method: "hero_newsletter" });
         }
@@ -122,11 +122,11 @@ export const HeroNewsletterCard = () => {
 
         <div className="text-center mb-6">
           <img src={heartIcon} alt="" className="w-9 h-9 mx-auto mb-2" />
-          <p className="text-sm text-foreground/70 mb-1">הירשמי עכשיו ותקבלי</p>
-          <p className="font-display text-4xl font-bold text-foreground leading-none">10% הנחה</p>
+          <p className="text-sm text-foreground/70 mb-1">הצטרפי לרשימת התפוצה</p>
+          <p className="font-display text-4xl font-bold text-foreground leading-none">קודם כל את</p>
           <img src={titleUnderline} alt="" className="w-36 mx-auto mt-1" />
-          <p className="text-sm text-foreground/70 mt-2">על ההזמנה הראשונה מהאתר!</p>
-          <p className="text-[11px] text-foreground/50 mt-1">*לא כולל מארזים</p>
+          <p className="text-sm text-foreground/70 mt-2">שומעת על השקות, מבצעים וטיפים לתכנון</p>
+          <p className="text-[11px] text-foreground/50 mt-1">*אפשר להסיר את עצמך בכל רגע</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -166,7 +166,7 @@ export const HeroNewsletterCard = () => {
             disabled={isSubmitting || !consent}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isSubmitting ? "שולח..." : "לקבלת ההטבה"}
+            {isSubmitting ? "שולח..." : "להצטרפות"}
           </Button>
         </form>
       </div>

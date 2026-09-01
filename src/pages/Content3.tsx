@@ -157,8 +157,8 @@ const Content3 = () => {
           </div>
 
           <div className="bg-muted/30 p-6 rounded-lg mt-8">
-            <p className="font-medium">בפרק הבא</p>
-            <p className="mt-2">איך מתכננים? online או נייר</p>
+            <p className="font-medium">ואיך מתכננים? online או נייר?</p>
+            <p className="mt-2">לכל אחת הדרך שלה. אצלי זה תמיד היה נייר — יש משהו בכתיבה ביד שמחייב אותי לעצור, ומאפשר לי לראות את כל השבוע במבט אחד.</p>
           </div>
         </article>
         </div>

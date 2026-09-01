@@ -59,7 +59,7 @@ function linkifyBundleDescription(
 
   let result = html;
   for (const item of bundleItems) {
-    const productPath = `/site/product/${item.product.handle}`;
+    const productPath = buildProductPath(item.product.handle);
     const name = item.product.title;
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // Replace text that is NOT already inside an <a> tag
@@ -403,16 +403,7 @@ export default function ProductDetail() {
               )}
 
               {/* Description */}
-              {handle === 'p1' ? (
-                <div className="pt-4 border-t border-border">
-                  <div dir="rtl" className="text-muted-foreground text-lg leading-relaxed space-y-3">
-                    <p>חשבת פעם על זה שרוב המשימות שלנו חוזרות על עצמן? מקלחות, הרדמות, הכביסות, החוגים, האימון, הארוחות, הכלים, להשקות את העציצים...<br />ומה אם היית עוצרת ומוצאת את הזמן האידיאלי לכל משימה ומשימה, באופן שמתאים בדיוק לך?</p>
-                    <p>המחברת של יום האם עוזרת לך לעשות סדר בכל המשימות הקבועות בחייך כאמא. ולא רק באלה שאת עושה, אלא גם באלה שאת אף פעם לא מספיקה, אלה שהיית רוצה אבל לא נשאר כוח, ואלה שתעשי "כשהילדים יגדלו". בקיצור, הכל.</p>
-                    <p>ההיכרות עם המשימות הקבועות שלך מאפשרת לך לנהל טוב יותר את המשימות המשתנות, להיות גמישה, לקבל החלטות בביטחון ואפילו להיות ספונטנית. ומעל הכל, היא נותנת לך שקט.</p>
-                    <p>כי המטרה היא לא לקבע לו״ז, אלא להרגיש שאת בשליטה ומוכנה לכל תרחיש. שאת מנהלת את המשימות, ולא הן אותך.</p>
-                  </div>
-                </div>
-              ) : (data.descriptionHtml || data.description) ? (
+              {(data.descriptionHtml || data.description) ? (
                 <div className="pt-4 border-t border-border">
                   <div className="relative">
                     <div
@@ -520,53 +511,6 @@ export default function ProductDetail() {
                   onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
                 />
               </div>
-              {/* Extra row of images 6-9 for p1 only — removed; these domain photos now live in NotebookStory */}
-              {false && images.length >= 9 && (
-                <>
-                  {/* Mobile: 3 images in a row */}
-                  <div className="grid grid-cols-3 gap-1 mt-1 md:hidden">
-                    {[5, 6, 7].map((imgIndex) => {
-                      const img = images[imgIndex];
-                      if (!img) return null;
-                      return (
-                        <button
-                          key={imgIndex}
-                          onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
-                          className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
-                          aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
-                        >
-                          <LazyImage
-                            src={getProductDetailGridImageUrl(img.node.url)}
-                            alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {/* Desktop: Grid */}
-                  <div className="hidden md:grid grid-cols-4 gap-1 mt-1">
-                    {[5, 6, 7, 8].map((imgIndex) => {
-                      const img = images[imgIndex];
-                      if (!img) return null;
-                      return (
-                        <button
-                          key={imgIndex}
-                          onClick={() => { setSelectedImageIndex(imgIndex); setLightboxOpen(true); }}
-                          className="overflow-hidden bg-secondary/10 hover:opacity-90 transition-all aspect-[4/5]"
-                          aria-label={`פתחי תמונה ${imgIndex + 1} של ${data.title}`}
-                        >
-                          <LazyImage
-                            src={getProductDetailGridImageUrl(img.node.url)}
-                            alt={img.node.altText || `${data.title} ${imgIndex + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </section>
