@@ -35,7 +35,7 @@ export interface ProductExtraCarouselConfig {
  */
 export const PRODUCTS_WITH_EXTRA_CAROUSEL: Record<string, ProductExtraCarouselConfig> = {
   // מחברת יום האם לניהול משימות קבועות - Task notebook
-  "p1": {
+  "מחברת-יום-האם": {
     hasCarousel: true,
     carouselTitle: "כלי תכנון במחברת",
     carouselImageStartIndex: 9,
@@ -80,7 +80,7 @@ const STANDARD_PRODUCT_LAYOUT: ImageLayoutConfig = {
 };
 
 export const PRODUCT_IMAGE_LAYOUT_OVERRIDES: Record<string, ImageLayoutConfig> = {
-  "p1": STANDARD_PRODUCT_LAYOUT,
+  "מחברת-יום-האם": STANDARD_PRODUCT_LAYOUT,
   "p2": {
     type: "grid-2-left-carousel-right",
     mainImages: [2, 3],
@@ -88,9 +88,9 @@ export const PRODUCT_IMAGE_LAYOUT_OVERRIDES: Record<string, ImageLayoutConfig> =
     aspectRatios: ["4/3", "4/3"],
     description: "2 stacked left, carousel right for family board"
   },
-  "p3": STANDARD_PRODUCT_LAYOUT,
-  "p4": STANDARD_PRODUCT_LAYOUT,
-  "p5": STANDARD_PRODUCT_LAYOUT,
+  "תכנון-ארוחות-שבועי": STANDARD_PRODUCT_LAYOUT,
+  "לוח-שבועי": STANDARD_PRODUCT_LAYOUT,
+  "רשימת-קניות": STANDARD_PRODUCT_LAYOUT,
   "p6": STANDARD_PRODUCT_LAYOUT,
   "p7": STANDARD_PRODUCT_LAYOUT,
   "מחברת-שורות-קטנה": STANDARD_PRODUCT_LAYOUT,

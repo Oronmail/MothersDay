@@ -18,11 +18,11 @@ interface VideoFile {
 // are pulled live from Supabase by handle (see getProductCardsByHandles), so the label
 // can never drift from the actual product again.
 const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; cropBorder?: boolean }> = {
-  "HP_VCarousel_1": { title: "מחברת יום האם לניהול משימות קבועות", handle: "p1" },
+  "HP_VCarousel_1": { title: "מחברת יום האם לניהול משימות קבועות", handle: "מחברת-יום-האם" },
   "HP_VCarousel_2": { title: "לוח משפחתי שבועי", handle: "לוח-משפחתי-שבועי" },
-  "HP_VCarousel_3": { title: "תכנון ארוחות משפחתי שבועי", handle: "p3" },
-  "HP_VCarousel_4": { title: "לוח שבועי", handle: "p4", cropBorder: true },
-  "HP_VCarousel_5": { title: "רשימת קניות / סידורים", handle: "p5" },
+  "HP_VCarousel_3": { title: "תכנון ארוחות משפחתי שבועי", handle: "תכנון-ארוחות-שבועי" },
+  "HP_VCarousel_4": { title: "לוח שבועי", handle: "לוח-שבועי", cropBorder: true },
+  "HP_VCarousel_5": { title: "רשימת קניות / סידורים", handle: "רשימת-קניות" },
 };
 
 // Display order = the order of this array (RTL direction handled by the carousel).

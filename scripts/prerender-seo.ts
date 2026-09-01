@@ -836,8 +836,8 @@ const writeLlmsFullTxt = async (
       `- קישור לרכישה: ${absoluteUrl(`/product/${product.handle}`)}`,
       `- זמינות: ${available ? "במלאי" : "אזל מהמלאי"}`,
     ];
-    // p1 = מחברת יום האם, the flagship product (same marker as api/sitemap.ts)
-    if (product.handle === "p1") {
+    // The flagship product (same marker as api/sitemap.ts)
+    if (product.handle === "מחברת-יום-האם") {
       lines.push(`- מוצר הדגל של המותג`);
     }
     if (description) {

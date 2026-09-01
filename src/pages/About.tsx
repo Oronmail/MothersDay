@@ -140,9 +140,9 @@ const About = () => {
             <p className="text-foreground/80 text-[17px] leading-[1.7]">
               בין המוצרים תמצאי את המוצרים הייחודיים ליום האם-
               <br /><br />
-              <Link to={buildProductPath("p1")} className={PRODUCT_LINK_CLASS}>מחברת לניהול משימות קבועות</Link> ו<Link to={buildProductPath("לוח-משפחתי-שבועי")} className={PRODUCT_LINK_CLASS}>לוח משפחתי שבועי</Link>,
+              <Link to={buildProductPath("מחברת-יום-האם")} className={PRODUCT_LINK_CLASS}>מחברת לניהול משימות קבועות</Link> ו<Link to={buildProductPath("לוח-משפחתי-שבועי")} className={PRODUCT_LINK_CLASS}>לוח משפחתי שבועי</Link>,
               <br /><br />
-              לצד מוצרי תכנון נוספים שמקלים על השבוע שלך כמו: <Link to={buildProductPath("p4")} className={PRODUCT_LINK_CLASS}>לוח שבועי</Link>, <Link to={buildProductPath("p3")} className={PRODUCT_LINK_CLASS}>תכנון ארוחות</Link> ו<Link to={buildProductPath("p5")} className={PRODUCT_LINK_CLASS}>רשימת קניות וסידורים</Link>.
+              לצד מוצרי תכנון נוספים שמקלים על השבוע שלך כמו: <Link to={buildProductPath("לוח-שבועי")} className={PRODUCT_LINK_CLASS}>לוח שבועי</Link>, <Link to={buildProductPath("תכנון-ארוחות-שבועי")} className={PRODUCT_LINK_CLASS}>תכנון ארוחות</Link> ו<Link to={buildProductPath("רשימת-קניות")} className={PRODUCT_LINK_CLASS}>רשימת קניות וסידורים</Link>.
             </p>
           </section>
 

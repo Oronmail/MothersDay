@@ -29,7 +29,7 @@ const REAL_REVIEWS: Record<string, Review[]> = {};
 // תוכן PLACEHOLDER — להמחשת העיצוב בפיתוח המקומי בלבד.
 // מסונן החוצה בבנייה לפרודקשן, כך שהאתר החי לעולם לא מציג חוות דעת מומצאות.
 const PLACEHOLDER_REVIEWS: Record<string, Review[]> = {
-  "p1": [
+  "מחברת-יום-האם": [
     {
       name: "[שם]",
       title: "[כותרת קצרה]",

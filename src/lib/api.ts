@@ -236,7 +236,7 @@ export async function getProductCardsByHandles(
 
 // Flagship products always surfaced first in "אימהות מוסיפות גם" (on every OTHER
 // product page). Order here = display order (first handle shows first / rightmost in RTL).
-const RECOMMENDATION_ANCHOR_HANDLES = ['לוח-משפחתי-שבועי', 'p1'];
+const RECOMMENDATION_ANCHOR_HANDLES = ['לוח-משפחתי-שבועי', 'מחברת-יום-האם'];
 const RECOMMENDATION_LIMIT = 4;
 
 export async function getProductRecommendations(

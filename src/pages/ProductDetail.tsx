@@ -510,9 +510,9 @@ export default function ProductDetail() {
                     singleIndices={gallerySingles}
                     productTitle={data.title}
                     onImageClick={(index) => { setSelectedImageIndex(index); setLightboxOpen(true); }}
-                    videoSrc={handle === "p1" ? "/videos/p1-mobile.mp4" : undefined}
-                    videoPoster={handle === "p1" ? "/videos/p1-mobile-poster.jpg" : undefined}
-                    singlesFirst={handle === "p1"}
+                    videoSrc={handle === "מחברת-יום-האם" ? "/videos/p1-mobile.mp4" : undefined}
+                    videoPoster={handle === "מחברת-יום-האם" ? "/videos/p1-mobile-poster.jpg" : undefined}
+                    singlesFirst={handle === "מחברת-יום-האם"}
                   />
                 </div>
               )}
@@ -530,7 +530,7 @@ export default function ProductDetail() {
         </section>
 
         {/* Editorial story sections — anchor product מחברת יום האם only */}
-        {handle === 'p1' && (
+        {handle === 'מחברת-יום-האם' && (
           <ErrorBoundary fallback={null}>
             <NotebookStory
               images={images}
@@ -540,7 +540,7 @@ export default function ProductDetail() {
         )}
 
         {/* Section 2: Extra Product Carousel (if configured) — hidden for p1 (replaced by NotebookStory) */}
-        {carouselConfig && handle !== 'p1' && (
+        {carouselConfig && handle !== 'מחברת-יום-האם' && (
           <ErrorBoundary fallback={<div className="py-8"><ErrorFallback message="שגיאה בטעינת תמונות נוספות" /></div>}>
             <ProductExtraCarousel
               images={images}
