@@ -321,6 +321,17 @@ export const OrderDetail = () => {
               <InfoRow label="מספר אישור" value={order.approval_number} ltr />
               <InfoRow label="מזהה עסקה" value={order.provider_transaction_id} ltr />
               <InfoRow label="מזהה דף תשלום" value={order.payment_page_request_uid} ltr />
+              <InfoRow label="מספר חשבונית" value={order.invoice_number ?? null} ltr />
+              {order.invoice_url && (
+                <a
+                  href={order.invoice_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm underline text-primary"
+                >
+                  לצפייה בחשבונית / קבלה
+                </a>
+              )}
               <InfoRow
                 label="סכום ששולם"
                 value={paidLabel && order.paid_currency && order.paid_currency !== 'ILS'

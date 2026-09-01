@@ -22,6 +22,8 @@ type OrderEmailPayload = {
   confirmationUrl: string;
   siteUrl: string;
   simulated?: boolean;
+  /** Invoice+ document link (PayPlus), when already issued. */
+  invoiceUrl?: string | null;
 };
 
 const DEFAULT_SUPPORT_EMAIL = "support@mothersday.co.il";
@@ -106,6 +108,7 @@ const buildHtml = ({
   confirmationUrl,
   siteUrl,
   simulated = false,
+  invoiceUrl = null,
 }: Omit<OrderEmailPayload, "to">) => {
   const logoUrl = `${siteUrl.replace(/\/$/, "")}/logo.png`;
   const supportEmail = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
@@ -185,6 +188,12 @@ const buildHtml = ({
               </a>
             </td>
           </tr>
+          ${invoiceUrl ? `
+          <tr>
+            <td align="center" style="padding:0 32px 24px;font-size:13px;">
+              <a href="${escapeHtml(invoiceUrl)}" style="color:#6b5b60;text-decoration:underline;">לצפייה בחשבונית / קבלה</a>
+            </td>
+          </tr>` : ""}
           <tr>
             <td style="padding:0 32px;">
               <hr style="border:none;border-top:1px solid #e8ddd4;margin:0;" />
@@ -213,6 +222,7 @@ const buildText = ({
   shippingAddress,
   confirmationUrl,
   simulated = false,
+  invoiceUrl = null,
 }: Omit<OrderEmailPayload, "to" | "siteUrl">) => {
   const addressLines = shippingAddress
     ? [
@@ -243,6 +253,7 @@ const buildText = ({
     ...addressLines,
     "",
     `לצפייה באישור ההזמנה: ${confirmationUrl}`,
+    invoiceUrl ? `לצפייה בחשבונית / קבלה: ${invoiceUrl}` : "",
     "",
     "יום האם",
   ]

@@ -80,11 +80,11 @@ export async function sendPaidOrderEmail(
   siteUrl: string
 ): Promise<void> {
   try {
+    // select("*") so a not-yet-applied optional column (e.g. invoice_url)
+    // can never break the email path.
     const { data: order } = await supabase
       .from("orders")
-      .select(
-        "id, order_number, user_id, guest_email, customer_email, line_items, shipping_address, total_price, shipping_cost, currency_code, confirmation_email_sent_at"
-      )
+      .select("*")
       .eq("id", orderId)
       .single();
 
@@ -116,6 +116,7 @@ export async function sendPaidOrderEmail(
       shippingAddress: order.shipping_address,
       confirmationUrl,
       siteUrl,
+      invoiceUrl: order.invoice_url ?? null,
     });
 
     if (result.sent) {

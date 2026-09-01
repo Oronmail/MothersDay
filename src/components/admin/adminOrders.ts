@@ -53,6 +53,8 @@ export interface AdminOrder {
   // ---- payment columns: written by the server only, never by the admin form ----
   payment_provider?: string | null;
   payment_page_request_uid?: string | null;
+  invoice_number?: string | null;
+  invoice_url?: string | null;
   provider_transaction_id?: string | null;
   payment_status_raw?: string | null;
   paid_amount?: number | string | null;

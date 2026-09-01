@@ -36,6 +36,13 @@ export const isPayPlusConfigured = () =>
   Boolean(process.env.PAYPLUS_API_KEY && process.env.PAYPLUS_SECRET_KEY && process.env.PAYPLUS_PAYMENT_PAGE_UID);
 
 /**
+ * Invoice+ (חשבונית+): the business subscribed, so PayPlus issues the tax
+ * invoice/receipt automatically per charge. Set PAYPLUS_INVOICE_ENABLED=false
+ * to stop requesting documents without a code change.
+ */
+export const isInvoiceEnabled = () => process.env.PAYPLUS_INVOICE_ENABLED !== "false";
+
+/**
  * Base URL for refURL_* and confirmation links.
  * In production the canonical VITE_SITE_URL is required — payment/email URLs
  * must never be derived from request headers there. On previews and local dev
@@ -134,6 +141,9 @@ export async function generatePaymentLink(
     sendEmailFailure: false,
     send_failure_callback: true,
     create_token: false,
+    // Invoice+ — auto invoice/receipt per charge; prices are VAT-inclusive
+    // (item vat_type 0), so the business is a VAT-registered dealer.
+    ...(isInvoiceEnabled() ? { initial_invoice: true, paying_vat: true } : {}),
     refURL_success: params.successUrl,
     refURL_failure: params.failureUrl,
     refURL_cancel: params.cancelUrl,
@@ -274,6 +284,23 @@ export interface CallbackTransaction {
   method: string | null;
   cardLast4: string | null;
   cardBrand: string | null;
+}
+
+/** Invoice+ document details carried on the charge callback (when subscribed). */
+export interface CallbackInvoice {
+  number: string | null;
+  url: string | null;
+  status: string | null;
+}
+
+export function extractCallbackInvoice(payload: Record<string, unknown>): CallbackInvoice | null {
+  const inv = payload["invoice"] as Record<string, unknown> | undefined;
+  if (!inv || typeof inv !== "object") return null;
+  const str = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : typeof v === "number" ? String(v) : null);
+  const number = str(inv["docu_number"]);
+  const url = str(inv["original_url"]) ?? str(inv["copy_url"]);
+  if (!number && !url) return null;
+  return { number, url, status: str(inv["status"]) };
 }
 
 export function extractCallbackTransaction(payload: Record<string, unknown>): CallbackTransaction {

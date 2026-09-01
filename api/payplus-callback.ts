@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
+  extractCallbackInvoice,
   extractCallbackTransaction,
   getPayPlusConfig,
   getPaymentBaseUrl,
@@ -179,6 +180,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       raw: payload,
     });
 
+    // Invoice+ document (issued with the charge) — store before the email so
+    // the email can link it. Non-fatal if the columns aren't migrated yet.
+    const invoice = extractCallbackInvoice(payload);
+    if (invoice) {
+      const { error: invoiceError } = await supabase
+        .from("orders")
+        .update({ invoice_number: invoice.number, invoice_url: invoice.url })
+        .eq("id", orderId);
+      if (invoiceError && invoiceError.code !== "PGRST204" && invoiceError.code !== "42703") {
+        console.error("payplus-callback: invoice store failed", orderId, invoiceError);
+      }
+    }
     if (result.updated) {
       await sendPaidOrderEmail(supabase, orderId, getPaymentBaseUrl(req));
     }

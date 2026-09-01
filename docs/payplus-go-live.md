@@ -41,8 +41,12 @@ select proname from pg_proc where proname = 'mark_order_paid';
   methods you want (credit cards; Bit / Apple Pay / Google Pay if approved).
 - The success-redirect method (GET vs POST) can stay at its default — the site
   handles both.
-- Decide on **חשבונית+** (auto invoice/receipt). If you subscribe, tell the dev —
-  `generateLink` should then send `initial_invoice: true` (one-line change).
+- **חשבונית+ — decided and wired (2026-09-01):** the business subscribed;
+  `generateLink` sends `initial_invoice: true` + `paying_vat: true`, the callback
+  stores the document number/URL on the order, the admin shows a link, and the
+  confirmation email links the invoice. Requires migration
+  `20260901150000_invoice_fields.sql` (2 columns). Kill switch:
+  `PAYPLUS_INVOICE_ENABLED=false`.
 
 ## 3. Vercel environment variables
 
@@ -89,6 +93,21 @@ requests get 401). Two ways to let PayPlus reach the preview callback:
   preview testing is done.**
 - Or temporarily switch Vercel Authentication to "Only Production" and skip the
   bypass entirely.
+
+## 3.5 Supabase Auth redirect list (one-time)
+
+The login flow now returns customers to checkout (`/auth?next=/checkout`), and
+Supabase only honors redirects that are allow-listed. In the Supabase dashboard →
+**Authentication → URL Configuration → Redirect URLs**, add:
+
+```
+https://www.mothersday.co.il/*
+https://mothersday.co.il/*
+https://*-oronmails-projects.vercel.app/*
+http://localhost:8080/*
+```
+
+(While you're there, Site URL should be `https://www.mothersday.co.il`.)
 
 ## 4. Test on a preview deployment
 
