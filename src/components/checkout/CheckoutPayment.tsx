@@ -37,13 +37,6 @@ export function CheckoutPayment({
           </p>
         )}
       </div>
-
-      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
-        <Lock className="h-3 w-3" />
-        {paymentSimulationEnabled
-          ? "הדמיית תשלום מאובטחת לצורכי בדיקה בלבד"
-          : "תשלום מאובטח ומוצפן"}
-      </p>
     </section>
   );
 }
