@@ -80,7 +80,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         path: `/product/${product.handle}`,
         lastmod: toIsoDate(product.updated_at),
         changefreq: "weekly",
-        priority: "0.8",
+        // p1 = מחברת יום האם, the flagship product - ranked above the rest
+        priority: product.handle === "p1" ? "0.9" : "0.8",
       });
     }
 
