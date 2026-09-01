@@ -80,6 +80,12 @@ Outside the layout: `/auth`, `/admin/login`, `/admin/*` (AdminDashboard), `*` (N
   confirms via `POST /PaymentPages/ipn`, then redirects to confirmation or back to `/checkout?payment=failed|cancelled`.
 - `simulate-payment.ts` — dev/test only: marks paid + sends email. Gated by `VITE_PAYMENT_SIMULATION_ENABLED`.
 - `get-order.ts` — fetches an order for the confirmation page (validates access token, service role).
+- `hfd-shipment.ts` — admin-only shipping actions against HFD (the delivery company; no published
+  API docs — the REST contract was reverse-engineered from their WordPress plugin, see the
+  file header). POST creates a shipment for a paid order, GET streams the label PDF, DELETE
+  cancels. Requires a Supabase JWT with `profiles.role='admin'`; writes the `hfd_*` order
+  columns (migration `20260901160000_hfd_shipping.sql`) + `tracking_number`. UI lives in the
+  admin OrderDetail card "משלוח HFD". Customer tracking: `https://run.hfd.co.il/info/{rand}`.
 - `gov-address.ts` — same-origin proxy for the data.gov.il cities/streets datasets used by the
   checkout address autocomplete (data.gov.il stopped sending CORS headers, so the browser can't
   call it directly; in local dev, `vite.config.ts` proxies the same path).
@@ -145,6 +151,9 @@ Full set the code reads (server vars are configured in the **Vercel dashboard** 
 - Server: `SUPABASE_Secret_KEY` (service role), `RESEND_API_KEY`/`resend_KEY`,
   `ORDER_CONFIRMATION_FROM_EMAIL`/`RESEND_FROM_EMAIL`, `ORDER_CONFIRMATION_REPLY_TO`, `SUPPORT_EMAIL`,
   `ORDER_ACCESS_SECRET` (dedicated HMAC secret for order-access tokens; set in all Vercel envs),
+  HFD shipping: `HFD_API_TOKEN` (JWT from the HFD customer portal — expires 2028-08; the current
+  one is a test token, replace at launch), `HFD_CLIENT_NUMBER` (15926), optional `HFD_API_BASE`,
+  `HFD_SENDER_NAME` (set in Vercel Development+Preview; Production waits for the launch token),
   PayPlus: `PAYPLUS_API_KEY`, `PAYPLUS_SECRET_KEY`, `PAYPLUS_PAYMENT_PAGE_UID`,
   `PAYPLUS_API_BASE` (default production `https://restapi.payplus.co.il/api/v1.0`; staging `restapidev`),
   `CHECKOUT_ENABLED`, `PAYMENT_SIMULATION_ENABLED`.

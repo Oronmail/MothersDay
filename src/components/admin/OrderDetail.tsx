@@ -16,7 +16,11 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Loader2, ArrowRight } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Loader2, ArrowRight, Printer, Truck } from 'lucide-react';
 import { AdminErrorState } from './AdminErrorState';
 import {
   FINANCIAL_STATUS_OPTIONS, FULFILLMENT_STATUS_OPTIONS,
@@ -26,6 +30,26 @@ import {
 
 const formatDateTime = (value?: string | null) =>
   value ? format(new Date(value), 'dd/MM/yyyy HH:mm', { locale: he }) : null;
+
+/**
+ * Calls /api/hfd-shipment with the admin's Supabase JWT.
+ * POST creates the shipment, DELETE cancels it; both act on the order row server-side.
+ */
+const hfdRequest = async (method: 'POST' | 'DELETE', orderId: string) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('פג תוקף ההתחברות. התחברי מחדש.');
+  const response = await fetch('/api/hfd-shipment', {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ orderId }),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.message || 'הפעולה מול HFD נכשלה. נסי שוב.');
+  return body;
+};
 
 /** One "label: value" row inside the payment card — rendered only when there is a value. */
 const InfoRow = ({ label, value, ltr }: { label: string; value?: string | null; ltr?: boolean }) => {
@@ -48,6 +72,8 @@ export const OrderDetail = () => {
   const [fulfillmentStatus, setFulfillmentStatus] = useState('unfulfilled');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [cancelShipmentOpen, setCancelShipmentOpen] = useState(false);
+  const [isPrintingLabel, setIsPrintingLabel] = useState(false);
 
   const { data: order, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'order', id],
@@ -96,6 +122,58 @@ export const OrderDetail = () => {
       toast.error(`שגיאה בעדכון ההזמנה: ${err.message}`);
     },
   });
+
+  const refreshOrder = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
+    queryClient.invalidateQueries({ queryKey: ['admin', 'order', id] });
+  };
+
+  const createShipmentMutation = useMutation({
+    mutationFn: () => hfdRequest('POST', id!),
+    onSuccess: (body: { shipmentNumber?: string }) => {
+      refreshOrder();
+      toast.success(`המשלוח שודר ל-HFD (מס' ${body?.shipmentNumber ?? ''})`);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const cancelShipmentMutation = useMutation({
+    mutationFn: () => hfdRequest('DELETE', id!),
+    onSuccess: () => {
+      refreshOrder();
+      toast.success('המשלוח בוטל ב-HFD');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  // Fetches the label with the admin JWT (a plain link can't send it), then opens
+  // the PDF; if the popup is blocked, falls back to downloading the file.
+  const printLabel = async () => {
+    setIsPrintingLabel(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('פג תוקף ההתחברות. התחברי מחדש.');
+      const response = await fetch(`/api/hfd-shipment?orderId=${id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.message || 'הדפסת התווית נכשלה. נסי שוב.');
+      }
+      const blobUrl = URL.createObjectURL(await response.blob());
+      if (!window.open(blobUrl, '_blank')) {
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `hfd-label-${order?.hfd_shipment_number ?? id}.pdf`;
+        link.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsPrintingLabel(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -368,6 +446,97 @@ export const OrderDetail = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* HFD shipping — created/cancelled server-side via /api/hfd-shipment */}
+          <Card>
+            <CardHeader>
+              <CardTitle>משלוח HFD</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {order.hfd_shipment_number && !order.hfd_shipment_cancelled_at ? (
+                <>
+                  <InfoRow label="מספר משלוח" value={order.hfd_shipment_number} ltr />
+                  <InfoRow label="שודר בתאריך" value={formatDateTime(order.hfd_shipment_created_at)} />
+                  {order.hfd_rand_number && (
+                    <a
+                      href={`https://run.hfd.co.il/info/${order.hfd_rand_number}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-sm underline text-primary"
+                    >
+                      מעקב אחר המשלוח באתר HFD
+                    </a>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={printLabel}
+                      disabled={isPrintingLabel}
+                    >
+                      {isPrintingLabel
+                        ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                        : <Printer className="w-4 h-4 ml-2" />}
+                      הדפסת תווית
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setCancelShipmentOpen(true)}
+                      disabled={cancelShipmentMutation.isPending}
+                    >
+                      {cancelShipmentMutation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
+                      ביטול משלוח
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {order.hfd_shipment_cancelled_at && (
+                    <p className="text-muted-foreground">
+                      משלוח {order.hfd_shipment_number} בוטל ב-
+                      {formatDateTime(order.hfd_shipment_cancelled_at)}. אפשר לשדר משלוח חדש.
+                    </p>
+                  )}
+                  {order.financial_status !== 'paid' && (
+                    <p className="text-xs text-muted-foreground">
+                      אפשר לשדר משלוח רק להזמנה ששולמה.
+                    </p>
+                  )}
+                  <Button
+                    className="w-full"
+                    onClick={() => createShipmentMutation.mutate()}
+                    disabled={createShipmentMutation.isPending || order.financial_status !== 'paid'}
+                  >
+                    {createShipmentMutation.isPending
+                      ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                      : <Truck className="w-4 h-4 ml-2" />}
+                    שדר משלוח ל-HFD
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <AlertDialog open={cancelShipmentOpen} onOpenChange={setCancelShipmentOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>לבטל את המשלוח ב-HFD?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  משלוח {order.hfd_shipment_number} יבוטל אצל HFD ומספר המעקב יימחק מההזמנה.
+                  אם השליח כבר אסף את החבילה, יש לפנות לשירות הלקוחות של HFD במקום.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>חזרה</AlertDialogCancel>
+                <AlertDialogAction onClick={() => cancelShipmentMutation.mutate()}>
+                  ביטול המשלוח
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Status */}
           <Card>

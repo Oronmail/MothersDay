@@ -69,6 +69,12 @@ export interface AdminOrder {
   cancelled_at?: string | null;
   refunded_at?: string | null;
   confirmation_email_sent_at?: string | null;
+
+  // ---- HFD shipping columns: written only by api/hfd-shipment.ts ----
+  hfd_shipment_number?: string | null;
+  hfd_rand_number?: string | null;
+  hfd_shipment_created_at?: string | null;
+  hfd_shipment_cancelled_at?: string | null;
 }
 
 const UNKNOWN_LABEL = 'לא ידוע';
