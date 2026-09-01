@@ -27,7 +27,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>אימייל</FormLabel>
+                <FormLabel>אימייל *</FormLabel>
                 <FormControl>
                   <Input type="email" dir="ltr" {...field} />
                 </FormControl>
@@ -49,7 +49,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
         name="phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>טלפון</FormLabel>
+            <FormLabel>טלפון *</FormLabel>
             <FormControl>
               <Input type="tel" dir="ltr" {...field} />
             </FormControl>

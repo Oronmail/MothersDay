@@ -52,7 +52,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
         name="full_name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>שם מלא</FormLabel>
+            <FormLabel>שם מלא *</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -66,7 +66,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
         name="city"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>עיר</FormLabel>
+            <FormLabel>עיר *</FormLabel>
             <FormControl>
               <AddressAutocomplete
                 type="city"
@@ -89,7 +89,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
         name="street"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>רחוב</FormLabel>
+            <FormLabel>רחוב *</FormLabel>
             <FormControl>
               <AddressAutocomplete
                 type="street"
@@ -115,7 +115,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
           name="house_number"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>מספר בית</FormLabel>
+              <FormLabel>מספר בית *</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -129,7 +129,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
           name="apartment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>דירה (אופציונלי)</FormLabel>
+              <FormLabel>דירה</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -144,7 +144,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
         name="postal_code"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>מיקוד (אופציונלי)</FormLabel>
+            <FormLabel>מיקוד</FormLabel>
             <FormControl>
               <Input dir="ltr" {...field} />
             </FormControl>
@@ -158,7 +158,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
         name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>הערות להזמנה (אופציונלי)</FormLabel>
+            <FormLabel>הערות להזמנה</FormLabel>
             <FormControl>
               <Textarea placeholder="הוראות מיוחדות, הערות למשלוח..." rows={3} {...field} />
             </FormControl>
