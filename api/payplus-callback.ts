@@ -150,6 +150,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, refund: true });
   }
 
+  // Only an actual money-moving Charge may mark an order paid. The hosted page
+  // also emits e.g. "Check" (J2 card validation) callbacks — seen live on
+  // 2026-09-01 — which must never flip the order even with status_code 000.
+  if (txn.transactionType !== "Charge") {
+    return res.status(200).json({ ok: true, ignored: `type_${txn.transactionType ?? "unknown"}` });
+  }
+
   // Declined attempt: record on the order, keep it pending so the customer can retry.
   if (txn.statusCode !== "000") {
     await supabase

@@ -54,7 +54,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
           <FormItem>
             <FormLabel>שם מלא</FormLabel>
             <FormControl>
-              <Input placeholder="ישראל ישראלי" {...field} />
+              <Input {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -77,7 +77,6 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
                   // Clear street when city changes
                   form.setValue("street", "");
                 }}
-                placeholder="הקלד/י שם עיר..."
               />
             </FormControl>
             <FormMessage />
@@ -97,7 +96,6 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
                 cityCode={cityCode}
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
-                placeholder="הקלד/י שם רחוב..."
                 onLookupError={setStreetLookupFailed}
               />
             </FormControl>
@@ -119,7 +117,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
             <FormItem>
               <FormLabel>מספר בית</FormLabel>
               <FormControl>
-                <Input placeholder="12" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -133,7 +131,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
             <FormItem>
               <FormLabel>דירה (אופציונלי)</FormLabel>
               <FormControl>
-                <Input placeholder="4" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -148,7 +146,7 @@ export function CheckoutShippingForm({ form }: CheckoutShippingFormProps) {
           <FormItem>
             <FormLabel>מיקוד (אופציונלי)</FormLabel>
             <FormControl>
-              <Input placeholder="1234567" dir="ltr" {...field} />
+              <Input dir="ltr" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

@@ -29,7 +29,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
               <FormItem>
                 <FormLabel>אימייל</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="your@email.com" dir="ltr" {...field} />
+                  <Input type="email" dir="ltr" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -51,7 +51,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
           <FormItem>
             <FormLabel>טלפון</FormLabel>
             <FormControl>
-              <Input type="tel" placeholder="050-123-4567" dir="ltr" {...field} />
+              <Input type="tel" dir="ltr" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

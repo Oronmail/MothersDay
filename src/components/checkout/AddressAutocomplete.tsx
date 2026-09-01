@@ -11,7 +11,7 @@ interface AddressAutocompleteProps {
   cityCode?: number;
   value: string;
   onChange: (value: string, code?: number) => void;
-  placeholder: string;
+  placeholder?: string;
   disabled?: boolean;
   /** Called when the government lookup fails, so the form can offer free text */
   onLookupError?: (hasError: boolean) => void;
@@ -112,7 +112,7 @@ export function AddressAutocomplete({
   cityCode,
   value,
   onChange,
-  placeholder,
+  placeholder = "",
   disabled = false,
   onLookupError,
 }: AddressAutocompleteProps) {
