@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 
 export const CollectionList = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export const CollectionList = () => {
   const [search, setSearch] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: collections, isLoading } = useQuery({
+  const { data: collections, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'collections'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -85,7 +86,14 @@ export const CollectionList = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את הקולקציות"
+              compact
+            />
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">אין קולקציות</p>
           ) : (
             <Table>
@@ -116,6 +124,7 @@ export const CollectionList = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label={`עריכת ${collection.title}`}
                           onClick={() => navigate(`/admin/collections/${collection.id}`)}
                         >
                           <Pencil className="w-4 h-4" />
@@ -123,6 +132,7 @@ export const CollectionList = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label={`מחיקת ${collection.title}`}
                           onClick={() => setDeleteId(collection.id)}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />

@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Check, X, Trash2, ExternalLink, Heart } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 
 // מודרציה של חוות דעת מהאתר: כל שליחה נשמרת כ"ממתינה" ומוצגת בעמוד המוצר
 // רק אחרי אישור כאן. דחייה משאירה את החוות דעת בארכיון; מחיקה היא לצמיתות.
@@ -59,7 +60,7 @@ export const ReviewList = () => {
   const queryClient = useQueryClient();
 
   // null = הטבלה חסרה (המיגרציה עוד לא הורצה)
-  const { data: reviews, isLoading } = useQuery({
+  const { data: reviews, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'reviews'],
     queryFn: async (): Promise<AdminReview[] | null> => {
       const { data, error } = await supabase
@@ -103,7 +104,20 @@ export const ReviewList = () => {
     refresh();
   };
 
-  if (isLoading) {
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">חוות דעת</h1>
+        <AdminErrorState
+          error={error}
+          onRetry={() => refetch()}
+          title="לא הצלחנו לטעון את חוות הדעת"
+        />
+      </div>
+    );
+  }
+
+  if (isLoading || reviews === undefined) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

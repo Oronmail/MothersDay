@@ -24,6 +24,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 
 interface Discount {
   id: string;
@@ -60,7 +61,7 @@ export const DiscountList = () => {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: discounts, isLoading } = useQuery({
+  const { data: discounts, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'discounts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -196,7 +197,14 @@ export const DiscountList = () => {
 
       <Card>
         <CardContent className="pt-6">
-          {!discounts || discounts.length === 0 ? (
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את הקופונים"
+              compact
+            />
+          ) : !discounts || discounts.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               עדיין אין קופונים. לחצי על "קופון חדש" כדי ליצור את הראשון.
             </p>

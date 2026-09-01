@@ -4,33 +4,23 @@ import { startOfMonth, format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
+import {
+  financialStatusBadge, fulfillmentStatusBadge, formatCurrency, getCustomerEmail, getCustomerName,
+  type AdminOrder,
+} from './adminOrders';
 
-const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: 'ממתין', className: 'bg-yellow-500/20 text-yellow-500' },
-  paid: { label: 'שולם', className: 'bg-green-500/20 text-green-500' },
-  refunded: { label: 'הוחזר', className: 'bg-red-500/20 text-red-500' },
-  unfulfilled: { label: 'לא נשלח', className: 'bg-gray-500/20 text-gray-500' },
-  shipped: { label: 'נשלח', className: 'bg-blue-500/20 text-blue-500' },
-  delivered: { label: 'נמסר', className: 'bg-green-500/20 text-green-500' },
-};
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const config = STATUS_LABELS[status] ?? { label: status, className: 'bg-gray-500/20 text-gray-500' };
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
-      {config.label}
-    </span>
-  );
-};
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(amount);
+const StatusBadge = ({ label, className }: { label: string; className: string }) => (
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+    {label}
+  </span>
+);
 
 export const Dashboard = () => {
   const monthStart = startOfMonth(new Date()).toISOString();
 
   // Orders this month (paid) for revenue + count
-  const { data: monthOrders } = useQuery({
+  const monthOrdersQuery = useQuery({
     queryKey: ['admin', 'month-orders'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,9 +32,10 @@ export const Dashboard = () => {
       return data ?? [];
     },
   });
+  const monthOrders = monthOrdersQuery.data;
 
   // Customer count
-  const { data: customerCount } = useQuery({
+  const customerCountQuery = useQuery({
     queryKey: ['admin', 'customer-count'],
     queryFn: async () => {
       const { count, error } = await supabase
@@ -55,23 +46,25 @@ export const Dashboard = () => {
       return count ?? 0;
     },
   });
+  const customerCount = customerCountQuery.data;
 
   // Recent orders
-  const { data: recentOrders } = useQuery({
+  const recentOrdersQuery = useQuery({
     queryKey: ['admin', 'recent-orders'],
-    queryFn: async () => {
+    queryFn: async (): Promise<AdminOrder[]> => {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as AdminOrder[];
     },
   });
+  const recentOrders = recentOrdersQuery.data;
 
   // Top selling products (30 days)
-  const { data: topProducts } = useQuery({
+  const topProductsQuery = useQuery({
     queryKey: ['admin', 'top-products'],
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
@@ -108,6 +101,8 @@ export const Dashboard = () => {
     },
   });
 
+  const topProducts = topProductsQuery.data;
+
   const revenue = monthOrders?.reduce((sum, o) => sum + (o.total_price ?? 0), 0) ?? 0;
   const orderCount = monthOrders?.length ?? 0;
   const avgOrder = orderCount > 0 ? revenue / orderCount : 0;
@@ -119,24 +114,37 @@ export const Dashboard = () => {
     { title: 'לקוחות', value: (customerCount ?? 0).toString(), icon: Users },
   ];
 
+  const statsError = monthOrdersQuery.isError || customerCountQuery.isError;
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">דשבורד</h1>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ title, value, icon: Icon }) => (
-          <Card key={title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-              <Icon className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {statsError ? (
+        <AdminErrorState
+          error={monthOrdersQuery.error ?? customerCountQuery.error}
+          title="לא הצלחנו לטעון את הנתונים המסכמים"
+          onRetry={() => {
+            monthOrdersQuery.refetch();
+            customerCountQuery.refetch();
+          }}
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map(({ title, value, icon: Icon }) => (
+            <Card key={title}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <Icon className="w-4 h-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent orders */}
@@ -145,7 +153,14 @@ export const Dashboard = () => {
             <CardTitle className="text-lg">הזמנות אחרונות</CardTitle>
           </CardHeader>
           <CardContent>
-            {recentOrders && recentOrders.length > 0 ? (
+            {recentOrdersQuery.isError ? (
+              <AdminErrorState
+                error={recentOrdersQuery.error}
+                onRetry={() => recentOrdersQuery.refetch()}
+                title="לא הצלחנו לטעון את ההזמנות האחרונות"
+                compact
+              />
+            ) : recentOrders && recentOrders.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -165,14 +180,14 @@ export const Dashboard = () => {
                           {order.order_number ?? order.id?.slice(0, 8)}
                         </td>
                         <td className="py-2 px-2">
-                          {order.customer_name ?? order.shipping_address?.name ?? '—'}
+                          {getCustomerName(order) ?? getCustomerEmail(order) ?? '—'}
                         </td>
                         <td className="py-2 px-2">{formatCurrency(order.total_price ?? 0)}</td>
                         <td className="py-2 px-2">
-                          <StatusBadge status={order.financial_status ?? 'pending'} />
+                          <StatusBadge {...financialStatusBadge(order.financial_status ?? 'pending')} />
                         </td>
                         <td className="py-2 px-2">
-                          <StatusBadge status={order.fulfillment_status ?? 'unfulfilled'} />
+                          <StatusBadge {...fulfillmentStatusBadge(order.fulfillment_status ?? 'unfulfilled')} />
                         </td>
                         <td className="py-2 px-2 text-muted-foreground text-xs">
                           {order.created_at
@@ -196,7 +211,14 @@ export const Dashboard = () => {
             <CardTitle className="text-lg">מוצרים מובילים (30 יום)</CardTitle>
           </CardHeader>
           <CardContent>
-            {topProducts && topProducts.length > 0 ? (
+            {topProductsQuery.isError ? (
+              <AdminErrorState
+                error={topProductsQuery.error}
+                onRetry={() => topProductsQuery.refetch()}
+                title="לא הצלחנו לטעון את המוצרים המובילים"
+                compact
+              />
+            ) : topProducts && topProducts.length > 0 ? (
               <div className="space-y-3">
                 {topProducts.map((product, i) => (
                   <div key={product.name} className="flex items-center justify-between text-sm">

@@ -11,17 +11,23 @@ export const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { login } = useAdmin();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLoginError(null);
     try {
       await login(email, password);
       navigate('/admin');
-    } catch {
-      toast.error('שגיאה בהתחברות');
+    } catch (err) {
+      // useAdmin.login throws a ready-to-show Hebrew reason (wrong password,
+      // no admin permission, no connection…).
+      const message = err instanceof Error && err.message ? err.message : 'שגיאה בהתחברות';
+      setLoginError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -67,8 +73,13 @@ export const AdminLogin = () => {
             required
             dir="ltr"
           />
+          {loginError && (
+            <p role="alert" className="text-sm text-destructive text-center">
+              {loginError}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'מתחבר...' : 'התחבר'}
+            {loading ? 'מתחברת...' : 'התחברי'}
           </Button>
         </form>
         <button

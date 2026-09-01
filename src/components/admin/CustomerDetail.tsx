@@ -10,16 +10,15 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
+import { financialStatusLabel, formatCurrency } from './adminOrders';
 
-const FINANCIAL_STATUS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: 'ממתין', variant: 'outline' },
-  paid: { label: 'שולם', variant: 'default' },
-  refunded: { label: 'הוחזר', variant: 'destructive' },
-};
-
-const formatCurrency = (amount: number | string) => {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(num || 0);
+const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  pending: 'outline',
+  paid: 'default',
+  failed: 'destructive',
+  cancelled: 'secondary',
+  refunded: 'destructive',
 };
 
 export const CustomerDetail = () => {
@@ -39,7 +38,13 @@ export const CustomerDetail = () => {
     },
   });
 
-  const { data: orders, isLoading: loadingOrders } = useQuery({
+  const {
+    data: orders,
+    isLoading: loadingOrders,
+    isError: ordersError,
+    error: ordersErrorObject,
+    refetch: refetchOrders,
+  } = useQuery({
     queryKey: ['admin', 'customer-orders', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -86,7 +91,12 @@ export const CustomerDetail = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/customers')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="חזרה לרשימת הלקוחות"
+          onClick={() => navigate('/admin/customers')}
+        >
           <ArrowRight className="w-4 h-4" />
         </Button>
         <h1 className="text-2xl font-bold">{customer.full_name ?? 'לקוח'}</h1>
@@ -166,6 +176,13 @@ export const CustomerDetail = () => {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : ordersError ? (
+            <AdminErrorState
+              error={ordersErrorObject}
+              onRetry={() => refetchOrders()}
+              title="לא הצלחנו לטעון את ההזמנות של הלקוחה"
+              compact
+            />
           ) : orders && orders.length > 0 ? (
             <Table>
               <TableHeader>
@@ -178,7 +195,7 @@ export const CustomerDetail = () => {
               </TableHeader>
               <TableBody>
                 {orders.map((order: any) => {
-                  const statusConfig = FINANCIAL_STATUS[order.financial_status] ?? FINANCIAL_STATUS.pending;
+                  const statusVariant = STATUS_VARIANT[order.financial_status] ?? 'secondary';
                   return (
                     <TableRow
                       key={order.id}
@@ -190,7 +207,7 @@ export const CustomerDetail = () => {
                       </TableCell>
                       <TableCell>{formatCurrency(order.total_price)}</TableCell>
                       <TableCell>
-                        <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                        <Badge variant={statusVariant}>{financialStatusLabel(order.financial_status)}</Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {order.created_at

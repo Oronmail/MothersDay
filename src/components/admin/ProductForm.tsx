@@ -59,6 +59,33 @@ interface VariantRow {
   available_for_sale: boolean;
 }
 
+interface ProductImageRow {
+  id: string; // real uuid, or `temp-<n>` for images uploaded before the product exists
+  url: string;
+  position: number;
+  alt_text: string;
+}
+
+const STORAGE_BUCKET = 'product-images';
+
+/**
+ * Derive the storage path from a public URL, so deleting an image also deletes the
+ * file instead of leaving it orphaned in the bucket.
+ * https://…/storage/v1/object/public/product-images/<path> → <path>
+ */
+const storagePathFromUrl = (url: string): string | null => {
+  const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  const path = url.slice(index + marker.length).split('?')[0];
+  if (!path) return null;
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
+  }
+};
+
 const IMAGE_LAYOUTS = [
   { value: 'grid-2x2', label: '2x2 רגיל' },
   { value: 'grid-2-large-2-small', label: '2 גדולות + 2 קטנות' },
@@ -130,11 +157,15 @@ export const ProductForm = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [images, setImages] = useState<Array<{ id: string; url: string; position: number }>>([]);
+  const [images, setImages] = useState<ProductImageRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const [variants, setVariants] = useState<VariantRow[]>([]);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const newVariantCounter = useRef(0);
+  // Handles are hardcoded in routes/nav/layouts and are the product's SEO URL, so
+  // editing one on an existing product is opt-in and warned about.
+  const [handleUnlocked, setHandleUnlocked] = useState(false);
+  const handleLocked = isEdit && !handleUnlocked;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -235,7 +266,12 @@ export const ProductForm = () => {
       setImages(
         (ep.product_images ?? [])
           .sort((a: any, b: any) => a.position - b.position)
-          .map((img: any) => ({ id: img.id, url: img.url, position: img.position }))
+          .map((img: any) => ({
+            id: img.id,
+            url: img.url,
+            position: img.position,
+            alt_text: img.alt_text ?? '',
+          }))
       );
       setVariants(
         (ep.product_variants ?? [])
@@ -348,12 +384,34 @@ export const ProductForm = () => {
         if (tempImages.length > 0) {
           const { error: imgError } = await supabase
             .from('product_images')
-            .insert(tempImages.map((img) => ({ product_id: productId, url: img.url, position: img.position })));
+            .insert(tempImages.map((img) => ({
+              product_id: productId,
+              url: img.url,
+              position: img.position,
+              alt_text: img.alt_text.trim() || null,
+            })));
           if (imgError) {
             console.error('Failed to persist images:', imgError);
             toast.error('המוצר נוצר אך חלק מהתמונות לא נשמרו');
           }
         }
+      }
+
+      // ---- sync image alt texts (only the ones that actually changed) ----
+      const loadedImages = ((existingProduct as Record<string, unknown> | undefined)?.product_images
+        ?? []) as Array<{ id: string; alt_text: string | null }>;
+      const originalAlt = new Map<string, string>(
+        loadedImages.map((img) => [img.id, img.alt_text ?? '']),
+      );
+      for (const img of images) {
+        if (img.id.startsWith('temp-')) continue;
+        const next = img.alt_text.trim();
+        if (next === (originalAlt.get(img.id) ?? '').trim()) continue;
+        const { error } = await supabase
+          .from('product_images')
+          .update({ alt_text: next || null })
+          .eq('id', img.id);
+        if (error) throw error;
       }
 
       // ---- sync variants ----
@@ -445,14 +503,17 @@ export const ProductForm = () => {
             url: urlData.publicUrl,
             position: newPosition,
           })
-          .select('id, url, position')
+          .select('id, url, alt_text, position')
           .single();
         if (insertError) throw insertError;
-        setImages((prev) => [...prev, imgData]);
+        setImages((prev) => [
+          ...prev,
+          { id: imgData.id, url: imgData.url, position: imgData.position, alt_text: imgData.alt_text ?? '' },
+        ]);
       } else {
         setImages((prev) => [
           ...prev,
-          { id: `temp-${Date.now()}`, url: urlData.publicUrl, position: prev.length },
+          { id: `temp-${Date.now()}`, url: urlData.publicUrl, position: prev.length, alt_text: '' },
         ]);
       }
       toast.success('התמונה הועלתה בהצלחה');
@@ -464,15 +525,30 @@ export const ProductForm = () => {
     }
   };
 
+  const updateImageAlt = (imageId: string, alt_text: string) =>
+    setImages((prev) => prev.map((img) => (img.id === imageId ? { ...img, alt_text } : img)));
+
+  // Remove the file from the bucket as well — deleting only the DB row used to leave
+  // the image orphaned in storage forever.
+  const removeFromStorage = async (url: string) => {
+    const path = storagePathFromUrl(url);
+    if (!path) return;
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([path]);
+    if (error) console.warn('Failed to delete image file from storage:', error.message);
+  };
+
   const handleDeleteImage = async (imageId: string) => {
+    const image = images.find((img) => img.id === imageId);
     if (imageId.startsWith('temp-')) {
       setImages((prev) => prev.filter((img) => img.id !== imageId));
+      if (image) await removeFromStorage(image.url);
       return;
     }
     try {
       const { error } = await supabase.from('product_images').delete().eq('id', imageId);
       if (error) throw error;
       setImages((prev) => prev.filter((img) => img.id !== imageId));
+      if (image) await removeFromStorage(image.url);
       toast.success('התמונה נמחקה');
     } catch {
       toast.error('שגיאה במחיקת התמונה');
@@ -494,7 +570,12 @@ export const ProductForm = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/products')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="חזרה לרשימת המוצרים"
+          onClick={() => navigate('/admin/products')}
+        >
           <ArrowRight className="w-4 h-4" />
         </Button>
         <h1 className="text-2xl font-bold">{isEdit ? 'עריכת מוצר' : 'מוצר חדש'}</h1>
@@ -516,8 +597,38 @@ export const ProductForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="handle">Handle (כתובת URL)</Label>
-              <Input id="handle" {...form.register('handle')} dir="ltr" />
+              <Label htmlFor="handle">כתובת המוצר (Handle)</Label>
+              <Input
+                id="handle"
+                {...form.register('handle')}
+                dir="ltr"
+                readOnly={handleLocked}
+                aria-readonly={handleLocked}
+                className={handleLocked ? 'bg-muted text-muted-foreground' : undefined}
+              />
+              {handleLocked ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    כתובת המוצר נקבעת פעם אחת. שינוי שלה שובר קישורים באתר, בתפריטים ובגוגל.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs"
+                    onClick={() => setHandleUnlocked(true)}
+                  >
+                    שינוי כתובת
+                  </Button>
+                </div>
+              ) : (
+                isEdit && (
+                  <p className="text-xs text-destructive">
+                    שימי לב: אחרי שינוי הכתובת, כל קישור קיים למוצר (כולל תוצאות גוגל וקישורים
+                    קשיחים בקוד) יוביל לדף שגיאה. שני רק אם את בטוחה.
+                  </p>
+                )
+              )}
               {form.formState.errors.handle && (
                 <p className="text-sm text-destructive">{form.formState.errors.handle.message}</p>
               )}
@@ -598,7 +709,14 @@ export const ProductForm = () => {
               <div key={v.id} className="border border-border rounded-md p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">וריאנט {i + 1}</span>
-                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeVariant(v.id)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    aria-label={`הסרת וריאנט ${i + 1}`}
+                    onClick={() => removeVariant(v.id)}
+                  >
                     <Trash2 className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 </div>
@@ -710,25 +828,40 @@ export const ProductForm = () => {
             <CardTitle>מדיה</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {images.map((img, i) => (
-                <div key={img.id} className="relative group">
-                  <img src={img.url} alt={`תמונה ${i + 1}`} className="w-full h-32 object-cover rounded" />
-                  <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                    {i + 1}
+                <div key={img.id} className="space-y-1">
+                  <div className="relative group">
+                    <img src={img.url} alt={img.alt_text || `תמונה ${i + 1}`} className="w-full h-32 object-cover rounded" />
+                    <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
+                      {i + 1}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      aria-label={`מחיקת תמונה ${i + 1}`}
+                      className="absolute top-1 right-1 h-6 w-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleDeleteImage(img.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleDeleteImage(img.id)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                  <Input
+                    value={img.alt_text}
+                    onChange={(e) => updateImageAlt(img.id, e.target.value)}
+                    placeholder="תיאור התמונה"
+                    aria-label={`תיאור לתמונה ${i + 1}`}
+                    className="h-8 text-xs"
+                  />
                 </div>
               ))}
             </div>
+            {images.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                תיאור התמונה (alt) נקרא ע"י גוגל וע"י קוראי מסך. אם נשאיר ריק — יוצג שם המוצר.
+              </p>
+            )}
             <div>
               <input
                 ref={fileInputRef}

@@ -23,6 +23,7 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, sortableKeyboardCoordinates, arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { AdminErrorState } from './AdminErrorState';
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'פעיל', variant: 'default' },
@@ -90,10 +91,10 @@ const ProductRow = ({ product, position, draggable, onEdit, onDelete }: ProductR
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onEdit}>
+          <Button variant="ghost" size="icon" aria-label={`עריכת ${product.title}`} onClick={onEdit}>
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={onDelete}>
+          <Button variant="ghost" size="icon" aria-label={`מחיקת ${product.title}`} onClick={onDelete}>
             <Trash2 className="w-4 h-4 text-destructive" />
           </Button>
         </div>
@@ -109,7 +110,7 @@ export const ProductList = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [items, setItems] = useState<any[]>([]);
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'products'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -216,7 +217,14 @@ export const ProductList = () => {
           )}
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את המוצרים"
+              compact
+            />
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">אין מוצרים</p>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

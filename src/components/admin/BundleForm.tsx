@@ -37,6 +37,8 @@ interface BundleItemEntry {
   productTitle: string;
   productPrice: number;
   quantity: number;
+  isDraft: boolean;
+  missing: boolean;
 }
 
 const IMAGE_LAYOUTS = [
@@ -93,15 +95,15 @@ export const BundleForm = () => {
     },
   });
 
-  // Fetch available non-bundle products
+  // All non-bundle products — drafts included. Filtering to status='active' used to
+  // make a bundle that contains a draft product show "מוצר לא נמצא".
   const { data: availableProducts } = useQuery({
     queryKey: ['admin', 'products-for-bundle'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, price')
+        .select('id, title, price, status')
         .eq('is_bundle', false)
-        .eq('status', 'active')
         .order('title');
       if (error) throw error;
       return data ?? [];
@@ -170,6 +172,8 @@ export const BundleForm = () => {
           productTitle: product?.title ?? 'מוצר לא נמצא',
           productPrice: product?.price ?? 0,
           quantity: bi.quantity,
+          isDraft: product?.status === 'draft',
+          missing: !product,
         };
       });
       setBundleItems(items);
@@ -199,6 +203,8 @@ export const BundleForm = () => {
         productTitle: product.title,
         productPrice: product.price ?? 0,
         quantity: 1,
+        isDraft: (product as { status?: string }).status === 'draft',
+        missing: false,
       },
     ]);
     setSelectedProductId('');
@@ -363,7 +369,12 @@ export const BundleForm = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/bundles')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="חזרה לרשימת המארזים"
+          onClick={() => navigate('/admin/bundles')}
+        >
           <ArrowRight className="w-4 h-4" />
         </Button>
         <h1 className="text-2xl font-bold">{isEdit ? 'עריכת מארז' : 'מארז חדש'}</h1>
@@ -440,11 +451,18 @@ export const BundleForm = () => {
                     .map((p: any) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.title} - {formatCurrency(p.price ?? 0)}
+                        {p.status === 'draft' ? ' · טיוטה' : ''}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              <Button type="button" variant="outline" onClick={addBundleItem} disabled={!selectedProductId}>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label="הוספת המוצר שנבחר למארז"
+                onClick={addBundleItem}
+                disabled={!selectedProductId}
+              >
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -456,11 +474,16 @@ export const BundleForm = () => {
                     key={item.productId}
                     className="flex items-center justify-between p-3 border rounded-md"
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <span className="font-medium">{item.productTitle}</span>
+                    <div className="flex items-center gap-3 flex-1 flex-wrap">
+                      <span className={`font-medium ${item.missing ? 'text-destructive' : ''}`}>
+                        {item.productTitle}
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {formatCurrency(item.productPrice)}
                       </span>
+                      {item.isDraft && (
+                        <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground">טיוטה</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Label className="text-sm">כמות:</Label>
@@ -477,6 +500,7 @@ export const BundleForm = () => {
                         type="button"
                         variant="ghost"
                         size="icon"
+                        aria-label={`הסרת ${item.productTitle} מהמארז`}
                         onClick={() => removeBundleItem(item.productId)}
                       >
                         <X className="w-4 h-4 text-destructive" />
@@ -531,7 +555,8 @@ export const BundleForm = () => {
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label={`מחיקת תמונה ${i + 1}`}
+                    className="absolute top-1 right-1 h-6 w-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                     onClick={() => handleDeleteImage(img.id)}
                   >
                     <Trash2 className="w-3 h-3" />

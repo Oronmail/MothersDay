@@ -10,6 +10,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Loader2, Search } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(amount);
@@ -18,7 +19,7 @@ export const CustomerList = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
-  const { data: customers, isLoading } = useQuery({
+  const { data: customers, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'customers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -82,7 +83,14 @@ export const CustomerList = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את הלקוחות"
+              compact
+            />
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">אין לקוחות</p>
           ) : (
             <Table>

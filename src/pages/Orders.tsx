@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Package, Calendar, CreditCard } from "lucide-react";
+import { Loader2, Package, Calendar, CreditCard, Truck } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -36,6 +36,8 @@ interface Order {
   user_id: string | null;
   guest_email: string | null;
   line_items: OrderLineItem[];
+  /** true when the stored line_items didn't match the expected shape */
+  itemsUnavailable: boolean;
   shipping_address: OrderShippingAddress | null;
   total_price: number;
   currency_code: string;
@@ -46,6 +48,33 @@ interface Order {
   created_at: string;
   updated_at: string;
 }
+
+// Hebrew labels for every status the orders table can hold. An unknown value shows
+// "בעיבוד" rather than leaking the raw English word to the customer.
+const FINANCIAL_STATUS_LABELS: Record<string, string> = {
+  pending: 'ממתין לתשלום',
+  paid: 'שולם',
+  failed: 'התשלום נכשל',
+  cancelled: 'בוטלה',
+  refunded: 'הוחזר',
+};
+
+const FULFILLMENT_STATUS_LABELS: Record<string, string> = {
+  unfulfilled: 'בהכנה',
+  shipped: 'נשלחה',
+  delivered: 'נמסרה',
+};
+
+const financialStatusLabel = (status?: string | null) =>
+  (status && FINANCIAL_STATUS_LABELS[status]) || 'בעיבוד';
+
+const fulfillmentStatusLabel = (status?: string | null) =>
+  (status && FULFILLMENT_STATUS_LABELS[status]) || 'בעיבוד';
+
+const formatPrice = (value: number | string | null | undefined) => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return `₪${(Number.isFinite(num as number) ? (num as number) : 0).toFixed(2)}`;
+};
 
 const Orders = () => {
   const [loading, setLoading] = useState(true);
@@ -71,33 +100,32 @@ const Orders = () => {
 
       if (error) {
         toast({
-          title: "Error",
-          description: "Failed to load orders",
+          title: "שגיאה בטעינת ההזמנות",
+          description: "לא הצלחנו לטעון את היסטוריית ההזמנות. נסי לרענן את העמוד.",
           variant: "destructive",
         });
       } else {
-        // Safely parse and validate the JSON types
-        const typedOrders: Order[] = (data || [])
-          .map(order => {
-            // Parse line_items
-            let lineItems: OrderLineItem[] = [];
-            if (Array.isArray(order.line_items)) {
-              lineItems = (order.line_items as unknown[]).filter(isOrderLineItem);
-            }
+        // Safely parse and validate the JSON types. An order whose line_items fail
+        // validation is still shown — it exists, and hiding it just makes the
+        // customer think her order vanished.
+        const typedOrders: Order[] = (data || []).map(order => {
+          // Parse line_items
+          const rawItems = Array.isArray(order.line_items) ? (order.line_items as unknown[]) : [];
+          const lineItems = rawItems.filter(isOrderLineItem);
 
-            // Parse shipping_address
-            let shippingAddress: OrderShippingAddress | null = null;
-            if (order.shipping_address && isShippingAddress(order.shipping_address)) {
-              shippingAddress = order.shipping_address as OrderShippingAddress;
-            }
+          // Parse shipping_address
+          let shippingAddress: OrderShippingAddress | null = null;
+          if (order.shipping_address && isShippingAddress(order.shipping_address)) {
+            shippingAddress = order.shipping_address as OrderShippingAddress;
+          }
 
-            return {
-              ...order,
-              line_items: lineItems,
-              shipping_address: shippingAddress,
-            };
-          })
-          .filter(order => order.line_items.length > 0); // Only include orders with valid items
+          return {
+            ...order,
+            line_items: lineItems,
+            itemsUnavailable: lineItems.length === 0,
+            shipping_address: shippingAddress,
+          };
+        });
 
         setOrders(typedOrders);
       }
@@ -111,8 +139,8 @@ const Orders = () => {
   const getStatusColor = (status: string) => {
     const statusLower = status?.toLowerCase() || '';
     if (statusLower === 'pending' || statusLower === 'unfulfilled') return 'bg-yellow-500';
-    if (statusLower === 'paid' || statusLower === 'fulfilled') return 'bg-green-500';
-    if (statusLower === 'cancelled' || statusLower === 'refunded') return 'bg-red-500';
+    if (statusLower === 'paid' || statusLower === 'delivered') return 'bg-green-500';
+    if (statusLower === 'cancelled' || statusLower === 'refunded' || statusLower === 'failed') return 'bg-red-500';
     return 'bg-muted';
   };
 
@@ -166,11 +194,11 @@ const Orders = () => {
                       </div>
                       <div className="flex flex-col gap-2 items-end">
                         <Badge className={getStatusColor(order.financial_status)}>
-                          {order.financial_status === 'paid' ? 'שולם' : order.financial_status === 'pending' ? 'ממתין' : order.financial_status}
+                          {financialStatusLabel(order.financial_status)}
                         </Badge>
                         {order.fulfillment_status && (
                           <Badge variant="outline">
-                            {order.fulfillment_status}
+                            {fulfillmentStatusLabel(order.fulfillment_status)}
                           </Badge>
                         )}
                       </div>
@@ -180,6 +208,12 @@ const Orders = () => {
                   <CardContent className="space-y-4">
                     {/* Order Items */}
                     <div className="space-y-2">
+                      {order.itemsUnavailable && (
+                        <p className="text-sm text-muted-foreground" dir="rtl">
+                          לא הצלחנו להציג את פירוט הפריטים בהזמנה הזו. לפרטים אפשר לפנות אלינו
+                          עם מספר ההזמנה.
+                        </p>
+                      )}
                       {order.line_items?.map((item, index) => (
                         <div key={index} className="flex items-center gap-4 py-2">
                           <div className="w-16 h-16 bg-secondary/20 rounded-md overflow-hidden flex-shrink-0">
@@ -201,9 +235,7 @@ const Orders = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="">
-                              {order.currency_code} {parseFloat(item.price).toFixed(2)}
-                            </p>
+                            <p className="">{formatPrice(item.price)}</p>
                           </div>
                         </div>
                       ))}
@@ -219,14 +251,32 @@ const Orders = () => {
                           </span>
                         </div>
                         <Badge variant={order.financial_status === 'paid' ? 'default' : 'secondary'}>
-                          {order.financial_status === 'paid' ? 'שולם' : 'ממתין'}
+                          {financialStatusLabel(order.financial_status)}
                         </Badge>
                       </div>
-                      
+
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Truck className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">סטטוס משלוח</span>
+                        </div>
+                        <Badge variant="outline">
+                          {fulfillmentStatusLabel(order.fulfillment_status)}
+                        </Badge>
+                      </div>
+
+                      {order.tracking_number &&
+                        (order.fulfillment_status === 'shipped' || order.fulfillment_status === 'delivered') && (
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">מספר מעקב</span>
+                          <span className="text-sm font-medium" dir="ltr">{order.tracking_number}</span>
+                        </div>
+                      )}
+
                       <div className="flex justify-between items-center pt-2">
                         <span className="">סה"כ</span>
                         <span className="text-xl">
-                          ₪{order.total_price.toFixed(2)}
+                          {formatPrice(order.total_price)}
                         </span>
                       </div>
                     </div>

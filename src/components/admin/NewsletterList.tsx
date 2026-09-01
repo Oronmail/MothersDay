@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -7,28 +7,69 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Loader2, Search, Download } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
+
+interface Subscriber {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
+  is_active: boolean | null;
+  subscribed_at: string | null;
+}
+
+/**
+ * Quote every CSV field and double any internal quote, so a comma or a quote inside
+ * a name can't shift the columns. A leading =/+/-/@ gets an apostrophe so Excel
+ * treats the value as text instead of a formula.
+ */
+const csvField = (value: unknown): string => {
+  const raw = value === null || value === undefined ? '' : String(value);
+  const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replace(/"/g, '""')}"`;
+};
 
 export const NewsletterList = () => {
   const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
 
-  const { data: subscribers, isLoading } = useQuery({
+  const { data: subscribers, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'newsletter'],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<Subscriber[]> => {
+      const { data, error: queryError } = await supabase
         .from('newsletter_subscribers')
         .select('*')
         .order('subscribed_at', { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      if (queryError) throw queryError;
+      return (data ?? []) as Subscriber[];
     },
   });
 
-  const filtered = subscribers?.filter((s: any) =>
+  const toggleActive = useMutation({
+    mutationFn: async (subscriber: Subscriber) => {
+      const nextValue = !subscriber.is_active;
+      const { error: updateError } = await supabase
+        .from('newsletter_subscribers')
+        .update({ is_active: nextValue })
+        .eq('id', subscriber.id);
+      if (updateError) throw updateError;
+      return nextValue;
+    },
+    onSuccess: (nowActive) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'newsletter'] });
+      toast.success(nowActive ? 'הנרשמת הופעלה מחדש' : 'הנרשמת סומנה כלא פעילה');
+    },
+    onError: () => {
+      toast.error('לא הצלחנו לעדכן את הסטטוס, נסי שוב');
+    },
+  });
+
+  const filtered = subscribers?.filter((s) =>
     (s.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
     (s.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
     (s.phone ?? '').includes(search)
@@ -40,13 +81,17 @@ export const NewsletterList = () => {
       return;
     }
 
-    const csv = 'email,name,phone,active\n' +
-      subscribers
-        .map(
-          (s: any) =>
-            `${s.email},${s.name || ''},${s.phone || ''},${s.is_active}`
-        )
-        .join('\n');
+    const rows: string[][] = [
+      ['email', 'name', 'phone', 'active', 'subscribed_at'],
+      ...subscribers.map((s) => [
+        s.email ?? '',
+        s.name ?? '',
+        s.phone ?? '',
+        s.is_active ? 'כן' : 'לא',
+        s.subscribed_at ? format(new Date(s.subscribed_at), 'yyyy-MM-dd HH:mm') : '',
+      ]),
+    ];
+    const csv = rows.map((row) => row.map(csvField).join(',')).join('\r\n');
 
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -91,10 +136,19 @@ export const NewsletterList = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground mb-4">
-            סה"כ: {subscribers?.length ?? 0} נרשמים | פעילים: {subscribers?.filter((s: any) => s.is_active).length ?? 0}
-          </div>
-          {filtered.length === 0 ? (
+          {!isError && (
+            <div className="text-sm text-muted-foreground mb-4">
+              סה"כ: {subscribers?.length ?? 0} נרשמים | פעילים: {subscribers?.filter((s) => s.is_active).length ?? 0}
+            </div>
+          )}
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את רשימת הנרשמים"
+              compact
+            />
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">אין נרשמים</p>
           ) : (
             <Table>
@@ -108,7 +162,7 @@ export const NewsletterList = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((subscriber: any) => (
+                {filtered.map((subscriber) => (
                   <TableRow key={subscriber.id}>
                     <TableCell dir="ltr" className="text-right">
                       {subscriber.email}
@@ -118,9 +172,21 @@ export const NewsletterList = () => {
                       {subscriber.phone ?? '---'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={subscriber.is_active ? 'default' : 'secondary'}>
-                        {subscriber.is_active ? 'פעיל' : 'לא פעיל'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={!!subscriber.is_active}
+                          disabled={toggleActive.isPending}
+                          onCheckedChange={() => toggleActive.mutate(subscriber)}
+                          aria-label={
+                            subscriber.is_active
+                              ? `סימון ${subscriber.email} כלא פעילה`
+                              : `הפעלה מחדש של ${subscriber.email}`
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {subscriber.is_active ? 'פעיל' : 'לא פעיל'}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {subscriber.subscribed_at

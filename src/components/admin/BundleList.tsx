@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'פעיל', variant: 'default' },
@@ -27,7 +28,7 @@ export const BundleList = () => {
   const [search, setSearch] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: bundles, isLoading } = useQuery({
+  const { data: bundles, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'bundles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -98,7 +99,14 @@ export const BundleList = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {isError ? (
+            <AdminErrorState
+              error={error}
+              onRetry={() => refetch()}
+              title="לא הצלחנו לטעון את המארזים"
+              compact
+            />
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">אין מארזים</p>
           ) : (
             <Table>
@@ -136,6 +144,7 @@ export const BundleList = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label={`עריכת ${bundle.title}`}
                             onClick={() => navigate(`/admin/bundles/${bundle.id}`)}
                           >
                             <Pencil className="w-4 h-4" />
@@ -143,6 +152,7 @@ export const BundleList = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label={`מחיקת ${bundle.title}`}
                             onClick={() => setDeleteId(bundle.id)}
                           >
                             <Trash2 className="w-4 h-4 text-destructive" />

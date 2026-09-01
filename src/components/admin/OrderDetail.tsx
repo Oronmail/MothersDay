@@ -17,10 +17,27 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
+import {
+  FINANCIAL_STATUS_OPTIONS, FULFILLMENT_STATUS_OPTIONS,
+  financialStatusLabel, formatCurrency, getCustomerEmail, getCustomerName, getCustomerPhone,
+  getLineItems, toNumber, type AdminOrder,
+} from './adminOrders';
 
-const formatCurrency = (amount: number | string) => {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(num || 0);
+const formatDateTime = (value?: string | null) =>
+  value ? format(new Date(value), 'dd/MM/yyyy HH:mm', { locale: he }) : null;
+
+/** One "label: value" row inside the payment card — rendered only when there is a value. */
+const InfoRow = ({ label, value, ltr }: { label: string; value?: string | null; ltr?: boolean }) => {
+  if (!value) return null;
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className={`text-left break-all ${ltr ? 'font-mono text-xs' : ''}`} dir={ltr ? 'ltr' : undefined}>
+        {value}
+      </span>
+    </div>
+  );
 };
 
 export const OrderDetail = () => {
@@ -32,16 +49,16 @@ export const OrderDetail = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [notes, setNotes] = useState('');
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'order', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<AdminOrder> => {
+      const { data, error: queryError } = await supabase
         .from('orders')
         .select('*')
         .eq('id', id!)
         .single();
-      if (error) throw error;
-      return data;
+      if (queryError) throw queryError;
+      return data as AdminOrder;
     },
   });
 
@@ -49,23 +66,26 @@ export const OrderDetail = () => {
     if (order) {
       setFinancialStatus(order.financial_status ?? 'pending');
       setFulfillmentStatus(order.fulfillment_status ?? 'unfulfilled');
-      setTrackingNumber((order as any).tracking_number ?? '');
-      setNotes((order as any).notes ?? '');
+      setTrackingNumber(order.tracking_number ?? '');
+      setNotes(order.notes ?? '');
     }
   }, [order]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
+      // Exactly these four columns. Everything payment-related (provider ids,
+      // approval number, paid_at, payment_raw…) is written by the server, and an
+      // update from here must never overwrite it.
+      const { error: updateError } = await supabase
         .from('orders')
         .update({
           financial_status: financialStatus,
           fulfillment_status: fulfillmentStatus,
           tracking_number: trackingNumber || null,
           notes: notes || null,
-        } as any)
+        })
         .eq('id', id!);
-      if (error) throw error;
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
@@ -85,6 +105,18 @@ export const OrderDetail = () => {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="max-w-2xl">
+        <AdminErrorState
+          error={error}
+          onRetry={() => refetch()}
+          title="לא הצלחנו לטעון את ההזמנה"
+        />
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -93,14 +125,38 @@ export const OrderDetail = () => {
     );
   }
 
-  const shippingAddress = order.shipping_address as any;
-  const lineItems = Array.isArray(order.line_items) ? order.line_items : [];
-  const orderNumber = (order as any).order_number ?? order.id?.slice(0, 8);
+  const shippingAddress = order.shipping_address;
+  const lineItems = getLineItems(order);
+  const orderNumber = order.order_number ?? order.id?.slice(0, 8);
+
+  const customerName = getCustomerName(order);
+  const customerEmail = getCustomerEmail(order);
+  const customerPhone = getCustomerPhone(order);
+
+  const subtotal = toNumber(order.subtotal);
+  const shippingCost = toNumber(order.shipping_cost);
+  const discountAmount = toNumber(order.discount_amount);
+
+  const cardLabel = [order.card_brand, order.card_last4 ? `•••• ${order.card_last4}` : null]
+    .filter(Boolean)
+    .join(' ');
+  const paidLabel = order.paid_amount != null ? formatCurrency(order.paid_amount) : null;
+  const hasPaymentDetails = Boolean(
+    order.payment_provider || cardLabel || order.approval_number || order.provider_transaction_id ||
+    order.payment_page_request_uid || paidLabel || order.paid_at || order.payment_status_raw ||
+    order.payment_attempts || order.cancelled_at || order.refunded_at || order.confirmation_email_sent_at ||
+    order.payment_raw,
+  );
 
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/orders')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="חזרה לרשימת ההזמנות"
+          onClick={() => navigate('/admin/orders')}
+        >
           <ArrowRight className="w-4 h-4" />
         </Button>
         <div>
@@ -135,7 +191,7 @@ export const OrderDetail = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {lineItems.map((item: any, i: number) => (
+                    {lineItems.map((item, i) => (
                       <TableRow key={i}>
                         <TableCell>
                           {item.image ? (
@@ -144,7 +200,7 @@ export const OrderDetail = () => {
                             <div className="w-12 h-12 bg-muted rounded" />
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">{item.title ?? item.name ?? '---'}</TableCell>
+                        <TableCell className="font-medium">{item.title ?? '---'}</TableCell>
                         <TableCell>{item.quantity ?? 1}</TableCell>
                         <TableCell>{formatCurrency(item.price ?? 0)}</TableCell>
                       </TableRow>
@@ -152,9 +208,31 @@ export const OrderDetail = () => {
                   </TableBody>
                 </Table>
               )}
-              <div className="flex justify-between items-center pt-4 mt-4 border-t">
-                <span className="font-bold text-lg">סה"כ</span>
-                <span className="font-bold text-lg">{formatCurrency(order.total_price)}</span>
+              <div className="pt-4 mt-4 border-t space-y-1 text-sm">
+                {subtotal !== null && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">סכום ביניים</span>
+                    <span>{formatCurrency(subtotal)}</span>
+                  </div>
+                )}
+                {discountAmount !== null && discountAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      הנחה{order.discount_code ? ` (${order.discount_code})` : ''}
+                    </span>
+                    <span>-{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
+                {shippingCost !== null && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">משלוח</span>
+                    <span>{shippingCost > 0 ? formatCurrency(shippingCost) : 'חינם'}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-2">
+                  <span className="font-bold text-lg">סה"כ</span>
+                  <span className="font-bold text-lg">{formatCurrency(order.total_price)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -167,13 +245,23 @@ export const OrderDetail = () => {
             <CardContent>
               {shippingAddress ? (
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium">{shippingAddress.name ?? shippingAddress.full_name ?? '---'}</p>
-                  <p>{shippingAddress.street ?? shippingAddress.address1 ?? '---'}</p>
+                  <p className="font-medium">{shippingAddress.full_name ?? '---'}</p>
+                  <p>
+                    {[shippingAddress.street, shippingAddress.house_number].filter(Boolean).join(' ') || '---'}
+                    {shippingAddress.apartment ? `, דירה ${shippingAddress.apartment}` : ''}
+                  </p>
                   <p>
                     {shippingAddress.city ?? ''}
-                    {shippingAddress.postal_code ? `, ${shippingAddress.postal_code}` : ''}
+                    {shippingAddress.postal_code ? `, מיקוד ${shippingAddress.postal_code}` : ''}
                   </p>
-                  {shippingAddress.phone && <p>טלפון: {shippingAddress.phone}</p>}
+                  {customerPhone && (
+                    <p>
+                      <span className="text-muted-foreground">טלפון: </span>
+                      <a href={`tel:${customerPhone}`} dir="ltr" className="hover:underline">
+                        {customerPhone}
+                      </a>
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p className="text-muted-foreground">אין כתובת משלוח</p>
@@ -192,19 +280,80 @@ export const OrderDetail = () => {
             <CardContent className="space-y-2 text-sm">
               <p>
                 <span className="text-muted-foreground">שם: </span>
-                {shippingAddress?.name ?? shippingAddress?.full_name ?? '---'}
+                {customerName ?? '---'}
               </p>
-              {(order as any).customer_email && (
-                <p>
-                  <span className="text-muted-foreground">אימייל: </span>
-                  {(order as any).customer_email}
+              <p>
+                <span className="text-muted-foreground">אימייל: </span>
+                {customerEmail ? (
+                  <a href={`mailto:${customerEmail}`} dir="ltr" className="break-all hover:underline">
+                    {customerEmail}
+                  </a>
+                ) : (
+                  '---'
+                )}
+              </p>
+              <p>
+                <span className="text-muted-foreground">טלפון: </span>
+                {customerPhone ? (
+                  <a href={`tel:${customerPhone}`} dir="ltr" className="hover:underline">
+                    {customerPhone}
+                  </a>
+                ) : (
+                  '---'
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {order.user_id ? 'לקוחה רשומה' : 'הזמנת אורחת'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Payment — server-written fields, for reconciling against PayPlus */}
+          <Card>
+            <CardHeader>
+              <CardTitle>תשלום</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <InfoRow label="סטטוס" value={financialStatusLabel(order.financial_status)} />
+              <InfoRow label="סטטוס אצל הסולק" value={order.payment_status_raw} ltr />
+              <InfoRow label="ספק סליקה" value={order.payment_provider} />
+              <InfoRow label="אמצעי תשלום" value={cardLabel || null} ltr />
+              <InfoRow label="מספר אישור" value={order.approval_number} ltr />
+              <InfoRow label="מזהה עסקה" value={order.provider_transaction_id} ltr />
+              <InfoRow label="מזהה דף תשלום" value={order.payment_page_request_uid} ltr />
+              <InfoRow
+                label="סכום ששולם"
+                value={paidLabel && order.paid_currency && order.paid_currency !== 'ILS'
+                  ? `${paidLabel} (${order.paid_currency})`
+                  : paidLabel}
+              />
+              <InfoRow label="מועד תשלום" value={formatDateTime(order.paid_at)} />
+              <InfoRow label="מועד ביטול" value={formatDateTime(order.cancelled_at)} />
+              <InfoRow label="מועד זיכוי" value={formatDateTime(order.refunded_at)} />
+              <InfoRow label="מייל אישור נשלח" value={formatDateTime(order.confirmation_email_sent_at)} />
+              <InfoRow
+                label="ניסיונות תשלום"
+                value={order.payment_attempts != null ? String(order.payment_attempts) : null}
+              />
+
+              {!hasPaymentDetails && (
+                <p className="text-muted-foreground">
+                  אין עדיין פרטי תשלום להזמנה הזו.
                 </p>
               )}
-              {shippingAddress?.phone && (
-                <p>
-                  <span className="text-muted-foreground">טלפון: </span>
-                  {shippingAddress.phone}
-                </p>
+
+              {order.payment_raw != null && (
+                <details className="pt-2">
+                  <summary className="cursor-pointer text-xs text-muted-foreground">
+                    תשובת הסולק המלאה (לבדיקות)
+                  </summary>
+                  <pre
+                    dir="ltr"
+                    className="mt-2 max-h-64 overflow-auto bg-muted p-2 text-xs leading-relaxed"
+                  >
+                    {JSON.stringify(order.payment_raw, null, 2)}
+                  </pre>
+                </details>
               )}
             </CardContent>
           </Card>
@@ -222,9 +371,9 @@ export const OrderDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">ממתין</SelectItem>
-                    <SelectItem value="paid">שולם</SelectItem>
-                    <SelectItem value="refunded">הוחזר</SelectItem>
+                    {FINANCIAL_STATUS_OPTIONS.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -236,9 +385,9 @@ export const OrderDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unfulfilled">לא נשלח</SelectItem>
-                    <SelectItem value="shipped">נשלח</SelectItem>
-                    <SelectItem value="delivered">נמסר</SelectItem>
+                    {FULFILLMENT_STATUS_OPTIONS.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -256,13 +405,17 @@ export const OrderDetail = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="notes">הערות</Label>
+                <Label htmlFor="notes">הערת הלקוחה מההזמנה</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  placeholder="הלקוחה לא הוסיפה הערה"
                 />
+                <p className="text-xs text-muted-foreground">
+                  זה הטקסט שהלקוחה כתבה בקופה. עריכה כאן משנה אותו — זה לא שדה להערות פנימיות.
+                </p>
               </div>
 
               <Button
