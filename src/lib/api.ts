@@ -175,6 +175,7 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       .from('products')
       .select(PRODUCT_SELECT)
       .eq('handle', handle)
+      .eq('status', 'active')
       .single();
 
     if (error || !data) return null;

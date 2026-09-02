@@ -205,7 +205,9 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen bg-background">
         <div className="text-center py-20" dir="rtl">
-          <p className="text-destructive mb-4">שגיאה בטעינת המוצר</p>
+          <p className={`mb-4 ${error ? 'text-destructive' : 'text-foreground'}`}>
+            {error ? 'שגיאה בטעינת המוצר' : 'המוצר הזה לא זמין כרגע'}
+          </p>
           <Button variant="outline" onClick={() => navigate(ROUTES.home)}>
             <ArrowRight className="ml-2 h-4 w-4" />
             חזרה לעמוד הראשי
@@ -386,11 +388,14 @@ export default function ProductDetail() {
                 </div>
                 
                 <Button
-                  className="text-lg"
+                  // min-w keeps the button at the size it had when the label still
+                  // carried the price ("הוספה לעגלה · ₪160"), so dropping the price
+                  // doesn't shrink it.
+                  className="text-lg min-w-[175px]"
                   onClick={handleAddToCart}
                   disabled={!selectedVariant?.availableForSale}
                 >
-                  {selectedVariant?.availableForSale ? `הוספה לעגלה · ₪${price.toFixed(0)}` : 'אזל מהמלאי'}
+                  {selectedVariant?.availableForSale ? 'הוספה לעגלה' : 'אזל מהמלאי'}
                 </Button>
               </div>
 
