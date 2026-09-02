@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Package, Calendar, CreditCard, Truck } from "lucide-react";
+import { Loader2, Package, Calendar, CreditCard, Truck, Check, Home } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -47,6 +48,11 @@ interface Order {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  /** HFD shipping columns — written by api/hfd-shipment.ts when the admin ships the order. */
+  hfd_shipment_number?: string | null;
+  hfd_rand_number?: string | null;
+  hfd_shipment_created_at?: string | null;
+  hfd_shipment_cancelled_at?: string | null;
 }
 
 // Hebrew labels for every status the orders table can hold. An unknown value shows
@@ -74,6 +80,75 @@ const fulfillmentStatusLabel = (status?: string | null) =>
 const formatPrice = (value: number | string | null | undefined) => {
   const num = typeof value === 'string' ? parseFloat(value) : value;
   return `₪${(Number.isFinite(num as number) ? (num as number) : 0).toFixed(2)}`;
+};
+
+/**
+ * Package-tracking stepper for a paid order, driven only by our own columns:
+ * created_at → hfd_shipment_created_at / fulfillment_status → 'delivered'.
+ * The live courier view ("השליח בדרך") is HFD's public tracking page, linked below.
+ */
+const ShippingTimeline = ({ order }: { order: Order }) => {
+  const hfdActive = Boolean(order.hfd_shipment_created_at && !order.hfd_shipment_cancelled_at);
+  const shipped =
+    hfdActive || order.fulfillment_status === 'shipped' || order.fulfillment_status === 'delivered';
+  const delivered = order.fulfillment_status === 'delivered';
+  const trackingUrl =
+    hfdActive && order.hfd_rand_number
+      ? `https://run.hfd.co.il/info/${order.hfd_rand_number}`
+      : null;
+
+  const steps = [
+    { label: 'ההזמנה התקבלה', date: order.created_at, done: true, Icon: Package },
+    { label: 'נמסרה לשליח', date: hfdActive ? order.hfd_shipment_created_at : null, done: shipped, Icon: Truck },
+    { label: 'הגיעה אלייך', date: null, done: delivered, Icon: Home },
+  ];
+
+  return (
+    <div className="border-t pt-4" dir="rtl">
+      <div className="flex items-start">
+        {steps.map((step, i) => {
+          const StepIcon = step.done ? Check : step.Icon;
+          return (
+            <Fragment key={step.label}>
+              {i > 0 && (
+                <div
+                  className={`flex-1 h-0.5 mt-4 ${step.done ? 'bg-primary' : 'bg-border'}`}
+                />
+              )}
+              <div className="flex flex-col items-center gap-1 w-24 text-center shrink-0">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                    step.done
+                      ? 'bg-primary border-primary text-primary-foreground'
+                      : 'bg-background border-border text-muted-foreground'
+                  }`}
+                >
+                  <StepIcon className="w-4 h-4" />
+                </div>
+                <span className={`text-xs ${step.done ? 'font-medium' : 'text-muted-foreground'}`}>
+                  {step.label}
+                </span>
+                {step.date && (
+                  <span className="text-[11px] text-muted-foreground">
+                    {format(new Date(step.date), 'dd/MM')}
+                  </span>
+                )}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+
+      {trackingUrl && !delivered && (
+        <Button asChild variant="outline" className="w-full mt-4">
+          <a href={trackingUrl} target="_blank" rel="noreferrer">
+            <Truck className="w-4 h-4 ml-2" />
+            מעקב אחר החבילה אצל השליח
+          </a>
+        </Button>
+      )}
+    </div>
+  );
 };
 
 const Orders = () => {
@@ -240,6 +315,9 @@ const Orders = () => {
                         </div>
                       ))}
                     </div>
+
+                    {/* Package tracking — paid orders only */}
+                    {order.financial_status === 'paid' && <ShippingTimeline order={order} />}
 
                     {/* Order Summary */}
                     <div className="border-t pt-4" dir="rtl">

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { sendOrderShippedEmail } from "./_lib/orderShippedEmail.js";
 
 /**
  * Admin-only HFD shipping actions, one endpoint (keeps the Vercel function count low):
@@ -281,10 +282,36 @@ async function createShipment(
     });
   }
 
+  // "ההזמנה בדרך" email with the tracking link — for guests this is the only
+  // way tracking reaches them. Never fails the shipment creation.
+  const trackingUrl = randNumber ? `https://run.hfd.co.il/info/${randNumber}` : null;
+  let shippedEmailSent = false;
+  if (customerEmail) {
+    const emailResult = await sendOrderShippedEmail({
+      to: customerEmail,
+      orderNumber: order.order_number ?? 0,
+      shipmentNumber,
+      trackingUrl,
+      shippingAddress: {
+        full_name: address.full_name,
+        street: [address.street, address.house_number].filter(Boolean).join(" "),
+        city: address.city,
+      },
+    });
+    shippedEmailSent = emailResult.sent;
+    if (emailResult.sent) {
+      await supabase
+        .from("orders")
+        .update({ shipped_email_sent_at: new Date().toISOString() })
+        .eq("id", order.id);
+    }
+  }
+
   return res.status(200).json({
     shipmentNumber,
     randNumber,
-    trackingUrl: randNumber ? `https://run.hfd.co.il/info/${randNumber}` : null,
+    trackingUrl,
+    shippedEmailSent,
   });
 }
 

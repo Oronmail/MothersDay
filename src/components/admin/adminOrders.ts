@@ -75,6 +75,7 @@ export interface AdminOrder {
   hfd_rand_number?: string | null;
   hfd_shipment_created_at?: string | null;
   hfd_shipment_cancelled_at?: string | null;
+  shipped_email_sent_at?: string | null;
 }
 
 const UNKNOWN_LABEL = 'לא ידוע';

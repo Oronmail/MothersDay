@@ -457,6 +457,7 @@ export const OrderDetail = () => {
                 <>
                   <InfoRow label="מספר משלוח" value={order.hfd_shipment_number} ltr />
                   <InfoRow label="שודר בתאריך" value={formatDateTime(order.hfd_shipment_created_at)} />
+                  <InfoRow label="מייל 'בדרך אלייך' נשלח" value={formatDateTime(order.shipped_email_sent_at)} />
                   {order.hfd_rand_number && (
                     <a
                       href={`https://run.hfd.co.il/info/${order.hfd_rand_number}`}
