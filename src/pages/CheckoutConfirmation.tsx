@@ -31,6 +31,8 @@ type FinancialStatus = "pending" | "paid" | "failed" | "cancelled" | "refunded";
 /** `/api/get-order` returns payment details on top of the stored order row. */
 type ConfirmationOrder = Omit<Order, "financial_status"> & {
   financial_status: FinancialStatus;
+  discount_code?: string | null;
+  discount_amount?: number;
   paid_at?: string | null;
   payment_method?: string | null;
   payment_card_last4?: string | null;
@@ -176,6 +178,7 @@ export default function CheckoutConfirmation() {
       value: order.total_price,
       currency: order.currency_code,
       shipping: order.shipping_cost,
+      coupon: order.discount_code ?? null,
       items: order.line_items.map((item) => ({
         item_id: item.variant_id,
         item_name: item.title,
@@ -262,6 +265,7 @@ export default function CheckoutConfirmation() {
     0
   );
   const shippingCost = order.shipping_cost ?? 0;
+  const discountAmount = Number(order.discount_amount ?? 0);
   const isPaid = order.financial_status === "paid";
   const isPending = order.financial_status === "pending";
   const didNotGoThrough =
@@ -402,6 +406,14 @@ export default function CheckoutConfirmation() {
               <span className="text-muted-foreground">סכום ביניים</span>
               <span>&#8362;{itemsSubtotal.toFixed(2)}</span>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  הנחה{order.discount_code ? ` (${order.discount_code})` : ""}
+                </span>
+                <span>&#8722;&#8362;{discountAmount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">משלוח</span>
               <span>{shippingCost === 0 ? "חינם" : `₪${shippingCost.toFixed(2)}`}</span>

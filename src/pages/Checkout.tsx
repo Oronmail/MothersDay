@@ -25,7 +25,7 @@ import {
   PAYMENT_SIMULATION_MESSAGE,
   getOrderAccessStorageKey,
 } from "@/lib/checkoutConfig";
-import { CheckoutApiError, createPayment } from "@/lib/api";
+import { CheckoutApiError, createPayment, validateCoupon } from "@/lib/api";
 import { cartItemToTracked, trackAddPaymentInfo, trackBeginCheckout } from "@/lib/tracking";
 
 /** Israeli phone numbers are written many ways ("050-123-4567", "050 1234567"). */
@@ -143,6 +143,9 @@ export default function Checkout() {
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState<PaymentNoticeKind | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; amount: number } | null>(null);
+  const appliedCouponRef = useRef(appliedCoupon);
+  appliedCouponRef.current = appliedCoupon;
 
   const paymentParam = searchParams.get("payment");
   // Keeps the empty-cart redirect from bouncing a customer who just came back
@@ -153,9 +156,72 @@ export default function Checkout() {
     (sum, item) => sum + parseFloat(item.price.amount) * item.quantity,
     0
   );
+  // Free-shipping threshold stays on the pre-discount subtotal (the banner's
+  // "ברכישה מעל 350" promise) — the server computes it the same way.
   const shippingCost = settings?.shipping_enabled
     ? (subtotal >= (settings?.free_shipping_threshold ?? 350) ? 0 : (settings?.shipping_cost ?? 35))
     : 0;
+  const discount = appliedCoupon?.amount ?? 0;
+
+  const itemsForCouponApi = () =>
+    items.map((item) => ({
+      product_id: item.product.node.id,
+      variant_id: item.variantId,
+      quantity: item.quantity,
+    }));
+
+  const applyCoupon = async (code: string): Promise<string | null> => {
+    try {
+      const result = await validateCoupon(
+        code,
+        itemsForCouponApi(),
+        form.getValues("email") || undefined
+      );
+      setAppliedCoupon({ code: result.code, amount: result.discountAmount });
+      return null;
+    } catch (error) {
+      setAppliedCoupon(null);
+      return error instanceof CheckoutApiError
+        ? error.message
+        : "לא הצלחנו לבדוק את הקוד, נסי שוב";
+    }
+  };
+
+  const removeCoupon = () => setAppliedCoupon(null);
+
+  // The discount depends on the cart contents (bundles are excluded), so a
+  // cart change re-validates the applied code and refreshes the amount.
+  useEffect(() => {
+    const coupon = appliedCouponRef.current;
+    if (!coupon) return;
+    if (items.length === 0) {
+      setAppliedCoupon(null);
+      return;
+    }
+    let cancelled = false;
+    validateCoupon(
+      coupon.code,
+      items.map((item) => ({
+        product_id: item.product.node.id,
+        variant_id: item.variantId,
+        quantity: item.quantity,
+      }))
+    )
+      .then((result) => {
+        if (!cancelled) setAppliedCoupon({ code: result.code, amount: result.discountAmount });
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setAppliedCoupon(null);
+        toast.error("קוד הקופון הוסר", {
+          description:
+            error instanceof CheckoutApiError ? error.message : "אפשר להזין אותו שוב",
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -283,10 +349,23 @@ export default function Checkout() {
 
     let createdOrder: { orderId: string; orderNumber: number; orderAccessToken: string };
     try {
-      createdOrder = await createOrder(email, shippingAddress, shippingCost, data.notes);
+      createdOrder = await createOrder(
+        email,
+        shippingAddress,
+        shippingCost,
+        data.notes,
+        appliedCoupon?.code
+      );
     } catch (error) {
       orderInProgress.current = false;
       setIsSubmittingOrder(false);
+      if (error instanceof CheckoutApiError && error.code === "invalid_coupon") {
+        setAppliedCoupon(null);
+        toast.error("קוד הקופון לא התקבל", {
+          description: `${error.message}. לא נוצרה הזמנה - אפשר לנסות שוב.`,
+        });
+        return;
+      }
       toast.error("יצירת ההזמנה נכשלה", { description: describeOrderError(error) });
       return;
     }
@@ -476,6 +555,10 @@ export default function Checkout() {
                   items={items}
                   subtotal={subtotal}
                   shippingCost={shippingCost}
+                  appliedCouponCode={appliedCoupon?.code ?? null}
+                  discount={discount}
+                  onApplyCoupon={applyCoupon}
+                  onRemoveCoupon={removeCoupon}
                   isSubmitting={isLoading || isSubmittingOrder}
                   isRedirectingToPayment={isRedirectingToPayment}
                   checkoutEnabled={CHECKOUT_ENABLED}

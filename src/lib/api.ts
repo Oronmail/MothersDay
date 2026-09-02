@@ -415,6 +415,7 @@ export async function createOrder(
   },
   shippingCost: number,
   notes?: string,
+  couponCode?: string,
 ): Promise<{ orderId: string; orderNumber: number; orderAccessToken: string }> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
@@ -427,7 +428,7 @@ export async function createOrder(
   const response = await fetch('/api/create-order', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ items, email, shippingAddress, shippingCost, notes }),
+    body: JSON.stringify({ items, email, shippingAddress, shippingCost, notes, couponCode }),
   });
 
   if (!response.ok) {
@@ -440,6 +441,99 @@ export async function createOrder(
   }
 
   return response.json();
+}
+
+export interface CouponValidationResult {
+  code: string;
+  discountAmount: number;
+  eligibleSubtotal: number;
+  description: string | null;
+}
+
+/**
+ * Live coupon check for the checkout page. The server recomputes prices and
+ * bundle flags from the database; /api/create-order revalidates on submit.
+ * Throws a CheckoutApiError whose message is customer-facing Hebrew.
+ */
+export async function validateCoupon(
+  couponCode: string,
+  items: Array<{ product_id: string; variant_id: string; quantity: number }>,
+  email?: string,
+): Promise<CouponValidationResult> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
+
+  const response = await fetch('/api/validate-coupon', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ couponCode, items, email: email || undefined }),
+  });
+
+  const payload = await response.json().catch(() => null) as
+    | (Partial<CouponValidationResult> & { valid?: boolean; reason?: string; message?: string })
+    | null;
+
+  if (!response.ok || !payload?.valid) {
+    throw new CheckoutApiError(
+      payload?.message || 'לא הצלחנו לבדוק את הקוד, נסי שוב',
+      payload?.reason || 'coupon_check_failed',
+      response.status,
+    );
+  }
+
+  return {
+    code: payload.code || couponCode.trim().toUpperCase(),
+    discountAmount: payload.discountAmount ?? 0,
+    eligibleSubtotal: payload.eligibleSubtotal ?? 0,
+    description: payload.description ?? null,
+  };
+}
+
+/**
+ * Newsletter signup through the server (sends the welcome email with the
+ * WELCOME10 code). Falls back to the direct RLS-allowed insert when the API
+ * is unreachable (e.g. local dev without the serverless functions) — the
+ * subscription always succeeds if the email is insertable, only the welcome
+ * email is best-effort.
+ */
+export async function subscribeToNewsletter(params: {
+  email: string;
+  name?: string;
+  phone?: string;
+  source?: string;
+}): Promise<{ already: boolean; emailSent: boolean }> {
+  try {
+    const response = await fetch('/api/newsletter-signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (response.ok) {
+      const payload = await response.json() as { already?: boolean; emailSent?: boolean };
+      return { already: Boolean(payload.already), emailSent: Boolean(payload.emailSent) };
+    }
+    // 4xx = the server really rejected it (bad email) — don't retry directly.
+    if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+      throw new Error('subscribe_rejected');
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === 'subscribe_rejected') throw error;
+    // Network/404 — fall through to the direct insert below.
+  }
+
+  const { error } = await supabase.from('newsletter_subscribers').insert({
+    email: params.email,
+    name: params.name || null,
+    phone: params.phone || null,
+  });
+  if (error) {
+    if (error.code === '23505') return { already: true, emailSent: false };
+    throw error;
+  }
+  return { already: false, emailSent: false };
 }
 
 /** Error carrying the server's machine-readable `error` code so the UI can explain it. */

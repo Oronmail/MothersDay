@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { canSubmitCheckout } from "./_lib/checkout.js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
+import { evaluateCoupon, normalizeCouponCode } from "./_lib/discounts.js";
 
 /**
  * POST /api/create-order
@@ -47,13 +48,14 @@ const orderSchema = z.object({
     phone: phoneSchema.optional(),
   }),
   notes: z.string().trim().max(1000).optional(),
+  couponCode: z.string().trim().max(40).optional(),
   // Ignored (kept so older clients don't fail validation): the server recomputes
   // shipping and derives the user from the JWT.
   shippingCost: z.unknown().optional(),
   userId: z.unknown().optional(),
 });
 
-type ProductTitleRef = { title: string | null };
+type ProductRef = { title: string | null; is_bundle: boolean | null };
 type VariantRow = {
   id: string;
   product_id: string;
@@ -61,13 +63,14 @@ type VariantRow = {
   available_for_sale: boolean;
   title: string | null;
   // supabase-js types to-one embeds as arrays; runtime is an object.
-  products: ProductTitleRef | ProductTitleRef[] | null;
+  products: ProductRef | ProductRef[] | null;
 };
 
-const productTitleOf = (variant: VariantRow): string | null => {
-  const ref = Array.isArray(variant.products) ? variant.products[0] : variant.products;
-  return ref?.title ?? null;
-};
+const productRefOf = (variant: VariantRow): ProductRef | null =>
+  Array.isArray(variant.products) ? (variant.products[0] ?? null) : variant.products;
+
+const productTitleOf = (variant: VariantRow): string | null =>
+  productRefOf(variant)?.title ?? null;
 
 const ORDER_EXPIRY_HOURS = 2;
 
@@ -87,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: first ? `${first.path.join(".")}: ${first.message}` : "invalid order",
     });
   }
-  const { items, email, shippingAddress, notes } = parsed.data;
+  const { items, email, shippingAddress, notes, couponCode } = parsed.data;
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_Secret_KEY;
@@ -112,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const variantIds = [...new Set(items.map((item) => item.variant_id))];
   const { data: variantRows, error: variantError } = await supabase
     .from("product_variants")
-    .select("id, product_id, price, available_for_sale, title, products(title)")
+    .select("id, product_id, price, available_for_sale, title, products(title, is_bundle)")
     .in("id", variantIds);
 
   if (variantError) {
@@ -166,6 +169,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     0
   );
 
+  // Coupon: validated against the database, computed from the verified prices.
+  // The free-shipping threshold stays on the pre-discount subtotal — the banner
+  // promises free shipping "ברכישה מעל 350", and the purchase amount is the
+  // pre-discount one.
+  let discountAgorot = 0;
+  let appliedCouponCode: string | null = null;
+  if (couponCode) {
+    const couponItems = items.map((item) => {
+      const variant = variantMap.get(item.variant_id)!;
+      return {
+        priceAgorot: Math.round(Number(variant.price) * 100),
+        quantity: item.quantity,
+        isBundle: Boolean(productRefOf(variant)?.is_bundle),
+      };
+    });
+    let evaluation;
+    try {
+      evaluation = await evaluateCoupon(supabase, couponCode, couponItems, {
+        userId,
+        email: userEmail ?? email,
+      });
+    } catch (error) {
+      console.error("create-order: coupon evaluation failed", error);
+      return res.status(500).json({ error: "Failed to validate coupon" });
+    }
+    if (!evaluation.ok) {
+      return res.status(400).json({
+        error: "invalid_coupon",
+        reason: evaluation.reason,
+        message: evaluation.message,
+      });
+    }
+    discountAgorot = evaluation.discountAgorot;
+    appliedCouponCode = normalizeCouponCode(couponCode);
+  }
+
   let shippingAgorot = 0;
   const { data: settingsRows } = await supabase.from("store_settings").select("key, value");
   const settings = new Map((settingsRows ?? []).map((row: { key: string; value: unknown }) => [row.key, row.value]));
@@ -178,7 +217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const subtotal = subtotalAgorot / 100;
   const shippingCost = shippingAgorot / 100;
-  const totalPrice = (subtotalAgorot + shippingAgorot) / 100;
+  const totalPrice = (subtotalAgorot - discountAgorot + shippingAgorot) / 100;
 
   const normalizedEmail = email.toLowerCase();
   const customerEmail = userId ? (userEmail ?? normalizedEmail) : normalizedEmail;
@@ -203,6 +242,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ...baseRow,
     customer_email: customerEmail,
     subtotal,
+    discount_code: appliedCouponCode,
+    discount_amount: discountAgorot / 100,
     expires_at: new Date(Date.now() + ORDER_EXPIRY_HOURS * 3600_000).toISOString(),
     // The Zod-validated checkout form requires the terms checkbox; the order
     // records when that consent was given.
@@ -214,6 +255,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // haven't been applied yet (PostgREST PGRST204 / Postgres 42703 = unknown column).
     let insert = await supabase.from("orders").insert(extendedRow).select("id, order_number").single();
     if (insert.error?.code === "PGRST204" || insert.error?.code === "42703") {
+      if (appliedCouponCode) {
+        // The discount columns come from the same migration — refuse rather
+        // than charge a discounted total the order row can't explain.
+        console.error("create-order: coupon given but discount columns are missing");
+        return res.status(500).json({ error: "Failed to create order" });
+      }
       insert = await supabase.from("orders").insert(baseRow).select("id, order_number").single();
     }
     if (insert.error || !insert.data) throw insert.error ?? new Error("insert returned no row");

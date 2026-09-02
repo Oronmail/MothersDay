@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { subscribeToNewsletter } from "@/lib/api";
 import titleUnderline from "@/assets/title-underline.png";
 import heartIcon from "@/assets/heart-icon.png";
 import smileyIcon from "@/assets/smiley-icon.png";
@@ -33,25 +33,17 @@ export const Newsletter = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert({ email: trimmedEmail });
+      const result = await subscribeToNewsletter({ email: trimmedEmail, source: 'newsletter_footer' });
 
-      if (error) {
-        // Check if it's a duplicate email error
-        if (error.code === '23505') {
-          toast.info("האימייל הזה כבר רשום אצלנו", {
-            description: "תודה על ההתעניינות!"
-          });
-        } else {
-          console.error('Newsletter subscription error:', error);
-          toast.error("משהו השתבש", {
-            description: "נסי שוב מאוחר יותר"
-          });
-        }
+      if (result.already) {
+        toast.info("האימייל הזה כבר רשום אצלנו", {
+          description: "תודה על ההתעניינות!"
+        });
       } else {
         toast.success("תודה על ההרשמה!", {
-          description: "נעדכן אותך במבצעים ומוצרים חדשים"
+          description: result.emailSent
+            ? "שלחנו לך למייל קוד הנחה להזמנה הראשונה 💛"
+            : "נעדכן אותך במבצעים ומוצרים חדשים"
         });
         if (typeof window.gtag === 'function') {
           window.gtag('event', 'generate_lead', { method: 'newsletter_footer' });

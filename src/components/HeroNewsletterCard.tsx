@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { Copy, X } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { MarketingConsentText } from "@/components/MarketingConsentText";
+import { subscribeToNewsletter } from "@/lib/api";
+import { WELCOME_COUPON } from "@/lib/siteConfig";
 import heartIcon from "@/assets/heart-icon.png";
 import titleUnderline from "@/assets/title-underline.png";
 
@@ -40,6 +41,8 @@ export const HeroNewsletterCard = () => {
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // After a successful signup the card flips to showing the welcome code.
+  const [welcomeEmailSent, setWelcomeEmailSent] = useState<boolean | null>(null);
   const isMobile = useIsMobile();
 
   // Mobile: rise ~2s in, right after the drawer opens. Desktop: unchanged.
@@ -74,25 +77,36 @@ export const HeroNewsletterCard = () => {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("newsletter_subscribers")
-        .insert({ email: trimmedEmail, phone: phone.trim() || null });
+      const result = await subscribeToNewsletter({
+        email: trimmedEmail,
+        phone: phone.trim() || undefined,
+        source: "hero_popup",
+      });
 
-      if (error && error.code !== "23505") throw error;
-
-      if (error?.code === "23505") {
+      if (result.already) {
         toast.success("כבר נרשמת! תודה 💛");
-      } else {
-        toast.success("נרשמת! נשמח לעדכן אותך 💛");
-        if (typeof window.gtag === "function") {
-          window.gtag("event", "generate_lead", { method: "hero_newsletter" });
-        }
+      } else if (typeof window.gtag === "function") {
+        window.gtag("event", "generate_lead", { method: "hero_newsletter" });
       }
-      handleDismiss();
+
+      // Flip to the code view (don't close) — but stop nagging on future visits.
+      setWelcomeEmailSent(result.emailSent);
+      const now = String(Date.now());
+      localStorage.setItem(HERO_NEWSLETTER_KEY, now);
+      localStorage.setItem(POPUP_DISMISS_KEY, now);
     } catch {
       toast.error("משהו השתבש, נסי שוב");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(WELCOME_COUPON.code);
+      toast.success("הקוד הועתק 💛");
+    } catch {
+      // Clipboard unavailable — the code is on screen anyway.
     }
   };
 
@@ -120,13 +134,53 @@ export const HeroNewsletterCard = () => {
           <X className="h-5 w-5" />
         </button>
 
+        {welcomeEmailSent !== null ? (
+          /* Success: the promise is kept on the spot — the code is right here. */
+          <div className="text-center">
+            <img src={heartIcon} alt="" className="w-9 h-9 mx-auto mb-2" />
+            <p className="text-sm text-foreground/70 mb-1">נרשמת בהצלחה!</p>
+            <p className="font-display text-4xl font-bold text-foreground leading-none">הקוד שלך כאן</p>
+            <img src={titleUnderline} alt="" className="w-36 mx-auto mt-1" />
+
+            <button
+              type="button"
+              onClick={copyCode}
+              className="mt-5 w-full border-[1.5px] border-dashed border-primary bg-secondary/40 py-4 px-3 flex items-center justify-center gap-2 hover:bg-secondary/70 transition-colors"
+              aria-label={`העתיקי את הקוד ${WELCOME_COUPON.code}`}
+            >
+              <span className="font-mono text-2xl font-bold tracking-[0.25em] text-primary" dir="ltr">
+                {WELCOME_COUPON.code}
+              </span>
+              <Copy className="h-4 w-4 text-foreground/50 shrink-0" />
+            </button>
+
+            <p className="text-sm text-foreground/70 mt-3">
+              {WELCOME_COUPON.percent}% הנחה על ההזמנה הראשונה
+            </p>
+            <p className="text-[11px] text-foreground/50 mt-1">
+              *לא כולל מארזים · מזינים את הקוד בעמוד התשלום
+            </p>
+            {welcomeEmailSent && (
+              <p className="text-xs text-foreground/60 mt-2">שלחנו לך את הקוד גם למייל 💛</p>
+            )}
+
+            <Button
+              type="button"
+              onClick={handleDismiss}
+              className="w-full mt-5 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              לקנייה
+            </Button>
+          </div>
+        ) : (
+          <>
         <div className="text-center mb-6">
           <img src={heartIcon} alt="" className="w-9 h-9 mx-auto mb-2" />
-          <p className="text-sm text-foreground/70 mb-1">הצטרפי לרשימת התפוצה</p>
-          <p className="font-display text-4xl font-bold text-foreground leading-none">קודם כל את</p>
+          <p className="text-sm text-foreground/70 mb-1">הירשמי עכשיו ותקבלי</p>
+          <p className="font-display text-4xl font-bold text-foreground leading-none">10% הנחה</p>
           <img src={titleUnderline} alt="" className="w-36 mx-auto mt-1" />
-          <p className="text-sm text-foreground/70 mt-2">שומעת על השקות, מבצעים וטיפים לתכנון</p>
-          <p className="text-[11px] text-foreground/50 mt-1">*אפשר להסיר את עצמך בכל רגע</p>
+          <p className="text-sm text-foreground/70 mt-2">על ההזמנה הראשונה מהאתר!</p>
+          <p className="text-[11px] text-foreground/50 mt-1">*לא כולל מארזים</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -166,9 +220,11 @@ export const HeroNewsletterCard = () => {
             disabled={isSubmitting || !consent}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isSubmitting ? "שולח..." : "להצטרפות"}
+            {isSubmitting ? "שולח..." : "לקבלת ההטבה"}
           </Button>
         </form>
+          </>
+        )}
       </div>
     </div>
   );

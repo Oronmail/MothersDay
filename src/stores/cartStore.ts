@@ -19,7 +19,8 @@ interface CartStore {
     userEmail: string,
     shippingAddress: ShippingAddress,
     shippingCost: number,
-    notes?: string
+    notes?: string,
+    couponCode?: string
   ) => Promise<{ orderId: string; orderNumber: number; orderAccessToken: string }>;
 }
 
@@ -83,7 +84,8 @@ export const useCartStore = create<CartStore>()(
         userEmail: string,
         shippingAddress: ShippingAddress,
         shippingCost: number,
-        notes?: string
+        notes?: string,
+        couponCode?: string
       ) => {
         return startSpan(
           {
@@ -125,7 +127,8 @@ export const useCartStore = create<CartStore>()(
                 userEmail,
                 shippingAddress,
                 shippingCost,
-                notes
+                notes,
+                couponCode
               );
 
               logger.info('Order created successfully', { orderId: result.orderId, orderNumber: result.orderNumber });
