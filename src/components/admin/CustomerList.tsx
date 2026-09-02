@@ -22,9 +22,11 @@ export const CustomerList = () => {
   const { data: customers, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'customers'],
     queryFn: async () => {
+      // select('*') so the screen keeps working until the profiles.email
+      // migration (20260902120000) is applied — the column just shows '---'.
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, phone, created_at')
+        .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -55,6 +57,7 @@ export const CustomerList = () => {
 
   const filtered = customers?.filter((c: any) =>
     (c.full_name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
     (c.phone ?? '').includes(search)
   ) ?? [];
 
@@ -75,7 +78,7 @@ export const CustomerList = () => {
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="חיפוש לפי שם או טלפון..."
+              placeholder="חיפוש לפי שם, מייל או טלפון..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pr-10"
@@ -97,6 +100,7 @@ export const CustomerList = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">שם</TableHead>
+                  <TableHead className="text-right">דואר אלקטרוני</TableHead>
                   <TableHead className="text-right">טלפון</TableHead>
                   <TableHead className="text-right">הזמנות</TableHead>
                   <TableHead className="text-right">סה"כ קניות</TableHead>
@@ -114,6 +118,9 @@ export const CustomerList = () => {
                     >
                       <TableCell className="font-medium">
                         {customer.full_name ?? '---'}
+                      </TableCell>
+                      <TableCell dir="ltr" className="text-right">
+                        {customer.email ?? '---'}
                       </TableCell>
                       <TableCell dir="ltr" className="text-right">
                         {customer.phone ?? '---'}
