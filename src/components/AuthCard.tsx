@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { MarketingConsentText } from "@/components/MarketingConsentText";
 import { supabase } from "@/lib/supabase";
+import { subscribeToNewsletter as apiSubscribeToNewsletter } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -85,7 +86,7 @@ export const AuthCard = ({
   const [joinNewsletter, setJoinNewsletter] = useState(false);
   // Set when a Google sign-in returns and an opt-in was pending. Never subscribe
   // from inside onAuthStateChange — querying Supabase there freezes auth.
-  const [pendingOptInEmail, setPendingOptInEmail] = useState<string | null>(null);
+  const [pendingOptIn, setPendingOptIn] = useState<{ email: string; name?: string } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   // /auth?next=/checkout → back to checkout after login. null unless safe.
@@ -107,7 +108,12 @@ export const AuthCard = ({
       const sessionEmail = session.user.email;
       if (sessionEmail && sessionStorage.getItem(NEWSLETTER_OPT_IN_KEY) === "1") {
         sessionStorage.removeItem(NEWSLETTER_OPT_IN_KEY);
-        setPendingOptInEmail(sessionEmail);
+        // Google gives us her name — the welcome email greets her personally.
+        const fullName =
+          typeof session.user.user_metadata?.full_name === "string"
+            ? session.user.user_metadata.full_name
+            : undefined;
+        setPendingOptIn({ email: sessionEmail, name: fullName });
       }
 
       // GA "login" only for a real sign-in transition, never for a session
@@ -175,30 +181,32 @@ export const AuthCard = ({
 
   // Runs outside onAuthStateChange, so the Supabase call here is safe.
   useEffect(() => {
-    if (!pendingOptInEmail) return;
-    subscribeToNewsletter(pendingOptInEmail);
-    setPendingOptInEmail(null);
-  }, [pendingOptInEmail]);
+    if (!pendingOptIn) return;
+    subscribeToNewsletter(pendingOptIn.email, pendingOptIn.name);
+    setPendingOptIn(null);
+  }, [pendingOptIn]);
 
   /**
-   * Records the marketing opt-in. A duplicate address (23505) just means she is
-   * already subscribed, which is not an error worth surfacing during login.
+   * Records the marketing opt-in through the shared server flow, so she gets
+   * the same welcome email (WELCOME10) as popup/footer signups. An address
+   * that is already subscribed is absorbed there — not an error worth
+   * surfacing during login.
    */
-  const subscribeToNewsletter = async (address: string) => {
+  const subscribeToNewsletter = async (address: string, name?: string) => {
     const trimmed = address.trim().toLowerCase();
     if (!trimmed) return;
 
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .insert({ email: trimmed });
-
-    if (error && error.code !== "23505") {
+    try {
+      const result = await apiSubscribeToNewsletter({
+        email: trimmed,
+        name,
+        source: "auth_card",
+      });
+      if (!result.already && typeof window.gtag === "function") {
+        window.gtag("event", "generate_lead", { method: "newsletter_auth" });
+      }
+    } catch (error) {
       console.error("Newsletter subscription error:", error);
-      return;
-    }
-
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "generate_lead", { method: "newsletter_auth" });
     }
   };
 

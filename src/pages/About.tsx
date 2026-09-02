@@ -138,9 +138,9 @@ const About = () => {
           <section>
             <h2 className="text-[24px] font-medium text-foreground mb-4">איזה מוצרי תכנון יש לנו?</h2>
             <p className="text-foreground/80 text-[17px] leading-[1.7]">
-              בין המוצרים תמצאי את המוצרים הייחודיים ליום האם-
+              בין המוצרים תמצאי את המוצר הייחודי ליום האם-
               <br /><br />
-              <Link to={buildProductPath("מחברת-יום-האם")} className={PRODUCT_LINK_CLASS}>מחברת לניהול משימות קבועות</Link> ו<Link to={buildProductPath("לוח-משפחתי-שבועי")} className={PRODUCT_LINK_CLASS}>לוח משפחתי שבועי</Link>,
+              <Link to={buildProductPath("מחברת-יום-האם")} className={PRODUCT_LINK_CLASS}>מחברת לניהול משימות קבועות</Link>,
               <br /><br />
               לצד מוצרי תכנון נוספים שמקלים על השבוע שלך כמו: <Link to={buildProductPath("לוח-שבועי")} className={PRODUCT_LINK_CLASS}>לוח שבועי</Link>, <Link to={buildProductPath("תכנון-ארוחות-שבועי")} className={PRODUCT_LINK_CLASS}>תכנון ארוחות</Link> ו<Link to={buildProductPath("רשימת-קניות")} className={PRODUCT_LINK_CLASS}>רשימת קניות וסידורים</Link>.
             </p>

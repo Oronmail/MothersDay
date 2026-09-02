@@ -17,6 +17,8 @@ type OrderEmailPayload = {
   lineItems: OrderEmailLineItem[];
   totalPrice: number;
   shippingCost: number;
+  discountAmount?: number;
+  discountCode?: string | null;
   currencyCode?: string;
   shippingAddress?: OrderEmailAddress | null;
   confirmationUrl: string;
@@ -115,6 +117,8 @@ export const buildHtml = ({
   lineItems,
   totalPrice,
   shippingCost,
+  discountAmount = 0,
+  discountCode = null,
   currencyCode = "ILS",
   shippingAddress,
   confirmationUrl,
@@ -216,6 +220,17 @@ export const buildHtml = ({
                   <td align="left" style="padding-bottom:10px;font-size:12px;letter-spacing:1px;font-weight:bold;color:${PLUM};border-bottom:1px solid ${PLUM};">סכום</td>
                 </tr>
                 ${buildLineItemsHtml(lineItems, currencyCode)}
+                ${
+                  discountAmount > 0
+                    ? `
+                <tr>
+                  <td colspan="2" align="right" style="padding:12px 0 0;font-size:14px;color:${INK_SOFT};">הנחה${discountCode ? ` (${escapeHtml(discountCode)})` : ""}</td>
+                  <td align="left" style="padding:12px 0 0;font-size:14px;color:${INK};">
+                    &#8722;${escapeHtml(formatCurrency(discountAmount, currencyCode))}
+                  </td>
+                </tr>`
+                    : ""
+                }
                 <tr>
                   <td colspan="2" align="right" style="padding:12px 0 4px;font-size:14px;color:${INK_SOFT};">משלוח</td>
                   <td align="left" style="padding:12px 0 4px;font-size:14px;color:${INK};">
@@ -301,6 +316,8 @@ const buildText = ({
   lineItems,
   totalPrice,
   shippingCost,
+  discountAmount = 0,
+  discountCode = null,
   currencyCode = "ILS",
   shippingAddress,
   confirmationUrl,
@@ -329,6 +346,9 @@ const buildText = ({
           currencyCode
         )}`
     ),
+    discountAmount > 0
+      ? `הנחה${discountCode ? ` (${discountCode})` : ""}: -${formatCurrency(discountAmount, currencyCode)}`
+      : "",
     `משלוח: ${shippingCost === 0 ? "חינם" : formatCurrency(shippingCost, currencyCode)}`,
     `סה"כ: ${formatCurrency(totalPrice, currencyCode)}`,
     addressLines.length ? "" : "",

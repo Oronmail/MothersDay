@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./orderAccess.js";
+import { recordDiscountUsage } from "./discounts.js";
 import { sendOrderConfirmationEmail } from "./orderConfirmationEmail.js";
 import { createInvoiceDocument, getInvoiceMode, getPayPlusConfig } from "./payplus.js";
 
@@ -63,6 +64,9 @@ export async function markOrderPaid(
   }
 
   const row = Array.isArray(data) ? data[0] : data;
+  // Refresh the coupon's admin usage counter on the first paid transition
+  // (all mark-paid paths funnel through here). Best-effort, never throws.
+  if (row?.updated) await recordDiscountUsage(supabase, orderId);
   return {
     updated: Boolean(row?.updated),
     orderNumber: row?.order_number ?? null,
@@ -104,6 +108,15 @@ export async function createAndStoreInvoice(supabase: SupabaseClient, orderId: s
     }));
     const shippingCost = Number(order.shipping_cost ?? 0);
     if (shippingCost > 0) items.push({ name: "משלוח", quantity: 1, price: shippingCost });
+    // Negative discount row keeps the items sum equal to the charged amount.
+    const discountAmount = Number(order.discount_amount ?? 0);
+    if (discountAmount > 0) {
+      items.push({
+        name: order.discount_code ? `הנחה (${order.discount_code})` : "הנחה",
+        quantity: 1,
+        price: -discountAmount,
+      });
+    }
 
     const shippingAddress = (order.shipping_address ?? {}) as { full_name?: string };
     const invoice = await createInvoiceDocument(getPayPlusConfig(), {
@@ -205,6 +218,8 @@ export async function sendPaidOrderEmail(
       lineItems: order.line_items,
       totalPrice: order.total_price,
       shippingCost: order.shipping_cost || 0,
+      discountCode: order.discount_code ?? null,
+      discountAmount: Number(order.discount_amount ?? 0),
       currencyCode: order.currency_code || "ILS",
       shippingAddress: order.shipping_address,
       confirmationUrl,

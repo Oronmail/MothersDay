@@ -17,9 +17,12 @@ interface VideoFile {
 // `title` is only a fallback for the brief loading moment — the real title and price
 // are pulled live from Supabase by handle (see getProductCardsByHandles), so the label
 // can never drift from the actual product again.
-const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; cropBorder?: boolean }> = {
+const VIDEO_PRODUCT_MAP: Record<string, { title: string; handle: string; cropBorder?: boolean; viewOnly?: boolean }> = {
   "HP_VCarousel_1": { title: "מחברת יום האם לניהול משימות קבועות", handle: "מחברת-יום-האם" },
-  "HP_VCarousel_2": { title: "לוח משפחתי שבועי", handle: "לוח-משפחתי-שבועי" },
+  // viewOnly: the לוח משפחתי is hidden from the catalog (status=draft) but Eden wants
+  // the clip to keep playing — the caption stays, with no price and no product link.
+  // Remove the flag when the product returns to sale.
+  "HP_VCarousel_2": { title: "לוח משפחתי שבועי", handle: "לוח-משפחתי-שבועי", viewOnly: true },
   "HP_VCarousel_3": { title: "תכנון ארוחות משפחתי שבועי", handle: "תכנון-ארוחות-שבועי" },
   "HP_VCarousel_4": { title: "לוח שבועי", handle: "לוח-שבועי", cropBorder: true },
   "HP_VCarousel_5": { title: "רשימת קניות / סידורים", handle: "רשימת-קניות" },
@@ -70,10 +73,13 @@ const VideoItem = ({
   // Extract filename without extension to match with map
   const videoKey = video.name.replace(/\.[^/.]+$/, "");
   const productInfo = VIDEO_PRODUCT_MAP[videoKey];
-  const handle = productInfo?.handle;
+  // viewOnly videos keep the caption (same footprint as the others) but drop the
+  // price and the product link.
+  const isViewOnly = Boolean(productInfo?.viewOnly);
+  const handle = isViewOnly ? undefined : productInfo?.handle;
   // Live product data (from Supabase) wins; the map title is only a loading fallback.
   const title = card?.title || productInfo?.title;
-  const price = card?.price;
+  const price = isViewOnly ? undefined : card?.price;
 
   const goToProduct = () => {
     if (handle) navigate(buildProductPath(handle));
@@ -148,39 +154,54 @@ const VideoItem = ({
         </button>
       )}
 
-      {/* Always-visible shoppable caption: product name + price, links to the product */}
+      {/* Always-visible shoppable caption: product name + price, links to the product.
+          viewOnly keeps the exact same footprint, with the price and link invisible. */}
       {(title || price) && (
         <div
           className="absolute inset-x-0 bottom-0 z-20 pointer-events-none bg-gradient-to-t from-black/75 via-black/30 to-transparent pt-10 pb-2 px-2.5"
           dir="rtl"
         >
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToProduct();
-            }}
-            className="pointer-events-auto block w-full text-right text-white focus:outline-none"
-            aria-label={title ? `עברי לעמוד המוצר ${title}` : "עברי לעמוד המוצר"}
-          >
-            {title && (
-              <span className="block text-[13px] md:text-sm font-medium leading-tight line-clamp-2">
-                {title}
-              </span>
-            )}
-            <span className="mt-0.5 flex items-center justify-between gap-2">
-              {price ? (
-                <span className="text-xs md:text-sm font-semibold">
-                  ₪{parseFloat(price).toFixed(0)}
+          {isViewOnly ? (
+            <div className="block w-full text-right text-white">
+              {title && (
+                <span className="block text-[13px] md:text-sm font-medium leading-tight line-clamp-2">
+                  {title}
                 </span>
-              ) : (
-                <span />
               )}
-              <span className="text-[11px] text-white/90 transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                לעמוד המוצר ←
+              <span className="mt-0.5 flex items-center justify-between gap-2">
+                <span className="invisible text-xs md:text-sm font-semibold">₪0</span>
+                <span className="invisible text-[11px]">לעמוד המוצר ←</span>
               </span>
-            </span>
-          </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToProduct();
+              }}
+              className="pointer-events-auto block w-full text-right text-white focus:outline-none"
+              aria-label={title ? `עברי לעמוד המוצר ${title}` : "עברי לעמוד המוצר"}
+            >
+              {title && (
+                <span className="block text-[13px] md:text-sm font-medium leading-tight line-clamp-2">
+                  {title}
+                </span>
+              )}
+              <span className="mt-0.5 flex items-center justify-between gap-2">
+                {price ? (
+                  <span className="text-xs md:text-sm font-semibold">
+                    ₪{parseFloat(price).toFixed(0)}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <span className="text-[11px] text-white/90 transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                  לעמוד המוצר ←
+                </span>
+              </span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -192,8 +213,9 @@ export const VideoCarousel = ({ className }: { className?: string }) => {
 
   // Pull the real title + price for every mapped product in one query, keyed by handle.
   const handles = videos
-    .map((v) => VIDEO_PRODUCT_MAP[v.name.replace(/\.[^/.]+$/, "")]?.handle)
-    .filter((h): h is string => Boolean(h));
+    .map((v) => VIDEO_PRODUCT_MAP[v.name.replace(/\.[^/.]+$/, "")])
+    .filter((info) => info && !info.viewOnly)
+    .map((info) => info!.handle);
 
   const { data: cards } = useQuery({
     queryKey: ["carousel-product-cards", handles],
@@ -245,7 +267,10 @@ export const VideoCarousel = ({ className }: { className?: string }) => {
             {videos.map((video) => {
               const handle = VIDEO_PRODUCT_MAP[video.name.replace(/\.[^/.]+$/, "")]?.handle;
               return (
-                <CarouselItem key={video.name} className="pl-3 md:pl-4 basis-[65%] md:basis-1/5">
+                <CarouselItem
+                  key={video.name}
+                  className={`pl-3 md:pl-4 basis-[65%] ${videos.length >= 5 ? "md:basis-1/5" : "md:basis-1/4"}`}
+                >
                   <VideoItem video={video} card={handle ? cards?.[handle] : undefined} />
                 </CarouselItem>
               );

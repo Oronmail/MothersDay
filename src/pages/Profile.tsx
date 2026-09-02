@@ -137,9 +137,9 @@ const Profile = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
                   <div className="space-y-6 mb-6">
                   <div className="space-y-2">
-                    <label htmlFor="profile-email" className="text-sm">אימייל</label>
+                    <label htmlFor="profile-email" className="text-sm">דואר אלקטרוני</label>
                     <Input id="profile-email" value={user?.email || ""} disabled className="bg-muted" dir="ltr" />
-                    <p className="text-xs text-muted-foreground">לא ניתן לשנות את האימייל</p>
+                    <p className="text-xs text-muted-foreground">לא ניתן לשנות את הכתובת</p>
                   </div>
 
                   <FormField
@@ -149,7 +149,7 @@ const Profile = () => {
                       <FormItem>
                         <FormLabel>שם מלא</FormLabel>
                         <FormControl>
-                          <Input placeholder="הזן את שמך המלא" {...field} />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,9 +161,9 @@ const Profile = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>מספר טלפון</FormLabel>
+                        <FormLabel>טלפון נייד</FormLabel>
                         <FormControl>
-                          <Input placeholder="הזן את מספר הטלפון שלך" {...field} />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

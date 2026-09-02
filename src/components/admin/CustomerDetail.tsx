@@ -114,6 +114,10 @@ export const CustomerDetail = () => {
               <span className="font-medium">{customer.full_name ?? '---'}</span>
             </div>
             <div>
+              <span className="text-muted-foreground">דואר אלקטרוני: </span>
+              <span className="font-medium" dir="ltr">{customer.email ?? '---'}</span>
+            </div>
+            <div>
               <span className="text-muted-foreground">טלפון: </span>
               <span className="font-medium" dir="ltr">{customer.phone ?? '---'}</span>
             </div>

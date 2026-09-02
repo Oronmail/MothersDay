@@ -3,7 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp, Lock, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Lock, Loader2, Minus, Plus, Trash2, X } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
 import { CartItem } from "@/lib/types";
@@ -16,6 +16,13 @@ interface CheckoutSummaryProps {
   items: CartItem[];
   subtotal: number;
   shippingCost: number;
+  /** The applied coupon's code, or null when none is applied. */
+  appliedCouponCode?: string | null;
+  /** Discount amount in ₪ (0 when no coupon is applied). */
+  discount?: number;
+  /** Validates + applies a code; resolves to an error message, or null on success. */
+  onApplyCoupon?: (code: string) => Promise<string | null>;
+  onRemoveCoupon?: () => void;
   isSubmitting: boolean;
   /** True while the browser is being handed over to the PayPlus payment page */
   isRedirectingToPayment?: boolean;
@@ -28,6 +35,10 @@ export function CheckoutSummary({
   items,
   subtotal,
   shippingCost,
+  appliedCouponCode = null,
+  discount = 0,
+  onApplyCoupon,
+  onRemoveCoupon,
   isSubmitting,
   isRedirectingToPayment = false,
   checkoutEnabled,
@@ -35,12 +46,29 @@ export function CheckoutSummary({
   onSubmit,
 }: CheckoutSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
   const { control, formState } = useFormContext();
   const termsError = formState.errors.terms_accepted?.message as string | undefined;
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
 
-  const totalPrice = subtotal + shippingCost;
+  const totalPrice = Math.max(0, subtotal - discount) + shippingCost;
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code || !onApplyCoupon || isCheckingCoupon) return;
+    setIsCheckingCoupon(true);
+    setCouponError(null);
+    const error = await onApplyCoupon(code);
+    setIsCheckingCoupon(false);
+    if (error) {
+      setCouponError(error);
+    } else {
+      setCouponInput("");
+    }
+  };
 
   const canSubmit = checkoutEnabled || paymentSimulationEnabled;
 
@@ -137,11 +165,77 @@ export function CheckoutSummary({
           </div>
         ))}
 
+        {/* Coupon code */}
+        {onApplyCoupon && (
+          <div className="border-t border-border pt-3 space-y-2">
+            {appliedCouponCode ? (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  קופון <span className="font-medium text-foreground">{appliedCouponCode}</span> הופעל
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onRemoveCoupon?.();
+                    setCouponError(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="הסירי את הקופון"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => {
+                      setCouponInput(e.target.value);
+                      setCouponError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void handleApplyCoupon();
+                      }
+                    }}
+                    placeholder="קוד קופון"
+                    aria-label="קוד קופון"
+                    dir="ltr"
+                    className="flex-1 min-w-0 border border-border bg-background px-3 h-9 text-sm text-left uppercase placeholder:normal-case placeholder:text-right placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 transition-colors"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-4"
+                    onClick={() => void handleApplyCoupon()}
+                    disabled={!couponInput.trim() || isCheckingCoupon}
+                  >
+                    {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "החלה"}
+                  </Button>
+                </div>
+                {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+              </>
+            )}
+          </div>
+        )}
+
         <div className="border-t border-border pt-3 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">סכום ביניים</span>
             <span>&#8362;{subtotal.toFixed(2)}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                הנחה{appliedCouponCode ? ` (${appliedCouponCode})` : ""}
+              </span>
+              <span>&#8722;&#8362;{discount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">משלוח</span>
             <span>{shippingCost === 0 ? 'חינם' : <>{'\u20AA'}{shippingCost.toFixed(2)}</>}</span>

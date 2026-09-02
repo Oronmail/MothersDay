@@ -165,6 +165,7 @@ export const trackPurchase = (order: {
   value: number;
   currency?: string | null;
   shipping?: number | null;
+  coupon?: string | null;
   items: TrackedItem[];
 }) => {
   gtagEvent("purchase", {
@@ -172,6 +173,7 @@ export const trackPurchase = (order: {
     value: order.value,
     currency: order.currency || CURRENCY,
     shipping: order.shipping ?? 0,
+    ...(order.coupon ? { coupon: order.coupon } : {}),
     items: order.items,
   });
   // eventID = order id: a server-side Conversions API Purchase for the same

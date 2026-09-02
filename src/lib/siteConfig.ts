@@ -7,6 +7,13 @@ export const SUPPORT_PHONE_E164 = "+972548024059";
 export const WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE_E164.replace("+", "")}`;
 export const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL?.trim() || "";
 
+/**
+ * The newsletter welcome coupon shown in the signup popup and sent by the
+ * welcome email. Duplicated in api/_lib/welcomeEmail.ts (separate builds);
+ * checkout always validates the code against the discounts table.
+ */
+export const WELCOME_COUPON = { code: "WELCOME10", percent: 10 };
+
 export const getSiteUrl = () => {
   const envSiteUrl = import.meta.env.VITE_SITE_URL?.trim();
   if (envSiteUrl) {

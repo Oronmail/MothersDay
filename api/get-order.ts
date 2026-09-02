@@ -50,6 +50,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     shipping_address: data.shipping_address,
     total_price: data.total_price,
     shipping_cost: data.shipping_cost,
+    discount_code: data.discount_code ?? null,
+    discount_amount: Number(data.discount_amount ?? 0),
     currency_code: data.currency_code,
     financial_status: data.financial_status,
     fulfillment_status: data.fulfillment_status,

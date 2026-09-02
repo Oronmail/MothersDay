@@ -190,7 +190,7 @@ const QuickViewModalContent = ({
                 disabled={!selectedVariant?.availableForSale}
               >
                 <ShoppingBag className="h-5 w-5 ml-2" />
-                {selectedVariant?.availableForSale ? `הוספה לעגלה · ₪${price.toFixed(0)}` : 'אזל מהמלאי'}
+                {selectedVariant?.availableForSale ? 'הוספה לעגלה' : 'אזל מהמלאי'}
               </Button>
             </div>
           </div>

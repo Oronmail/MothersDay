@@ -12,6 +12,10 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       <DialogContent
         className="max-w-sm border-0 bg-transparent p-0 shadow-none sm:rounded-none"
         dir="rtl"
+        // Radix auto-focuses the first control (the Google button) on open, which
+        // paints its focus ring as if pre-selected. Open quietly instead; keyboard
+        // users still reach everything with Tab.
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>התחברות לאיזור האישי</DialogTitle>

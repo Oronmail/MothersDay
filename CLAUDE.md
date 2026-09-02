@@ -5,7 +5,8 @@
 >
 > 👉 **עבודת עיצוב בתהליך:** אחרי הקובץ הזה, קרא את **`SESSION-NOTES.md`** — יומן ההמשך של
 > עבודת העיצוב עם עדן (פונטים, heroes, header, כרטיסי מוצר, סידור מוצרים בניהול ועוד).
-> כל השינויים שם הם **מקומיים בלבד, לא הועלו**. השיחה הבאה היא המשך ישיר.
+> נכון ל-2026-09-02 כל מה שביומן **הועלה לפרודקשן** (כולל מסלול הקופון WELCOME10);
+> קבצי העבודה בשורש (mockup-*, PDFים, xlsx) נשארים מחוץ ל-git בכוונה.
 
 ## What this is
 
@@ -79,6 +80,12 @@ Outside the layout: `/auth`, `/admin/login`, `/admin/*` (AdminDashboard), `*` (N
 - `payplus-return.ts` — the customer returns here from the hosted page; never trusts the redirect params,
   confirms via `POST /PaymentPages/ipn`, then redirects to confirmation or back to `/checkout?payment=failed|cancelled`.
 - `simulate-payment.ts` — dev/test only: marks paid + sends email. Gated by `VITE_PAYMENT_SIMULATION_ENABLED`.
+- `validate-coupon.ts` — live coupon check for the checkout page (recomputes the cart from the DB,
+  returns the discount amount). Advisory only; `create-order` re-runs the same evaluation
+  (`api/_lib/discounts.ts`) and is authoritative.
+- `newsletter-signup.ts` — newsletter subscribe (service role) + the branded welcome email carrying
+  the `WELCOME10` code (`api/_lib/welcomeEmail.ts`). The site's forms call it and fall back to the
+  direct RLS-allowed insert when it's unreachable (e.g. local dev, where `api/` doesn't run).
 - `get-order.ts` — fetches an order for the confirmation page (validates access token, service role).
 - `hfd-shipment.ts` — admin-only shipping actions against HFD (the delivery company; no published
   API docs — the REST contract was reverse-engineered from their WordPress plugin, see the
@@ -130,6 +137,18 @@ from the Supabase JWT in the `Authorization` header; the cart is NOT cleared yet
   event only once the order is actually `paid`. Declined/cancelled → `/checkout?payment=failed|cancelled`.
 - `VITE_PAYMENT_SIMULATION_ENABLED=true` → `/api/simulate-payment` (dev only; server refuses when
   `VERCEL_ENV=production`) → confirmation.
+
+**Coupons (added 2026-09-01):** the welcome popup + welcome email promise `WELCOME10` (10% off the
+first order, bundles excluded — `products.is_bundle`). Checkout has a coupon field
+(`CheckoutSummary`); `/api/validate-coupon` powers the live check and `/api/create-order` applies it
+authoritatively via `api/_lib/discounts.ts` (active/expiry/min-amount/max-uses/first-order checks;
+max-uses and usage counting are backed by counting paid orders with that `discount_code`, and
+`discounts.used_count` is refreshed best-effort after payment for the admin screen). The discount is
+stored on the order (`discount_code`/`discount_amount`, columns from the payments migration), shown
+on the confirmation page, in the order email, in GA (`coupon` on `purchase`), and as a negative line
+on the PayPlus invoice. Free-shipping threshold stays on the PRE-discount subtotal (the banner's
+"מעל 350" promise). first-order enforcement for guests is by email match — accepted risk.
+Codes are managed at `/admin` → הטבות (the `discounts` table).
 
 **Feature flags (currently OFF for production until payments are verified):**
 `VITE_CHECKOUT_ENABLED` (client) and `CHECKOUT_ENABLED` (server) — BOTH must be `true`; the server no
