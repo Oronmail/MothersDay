@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!parsed.success) {
     return res.status(400).json({ ok: false, error: "invalid_request" });
   }
-  const { email, name, phone } = parsed.data;
+  const { email, name, phone, source } = parsed.data;
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_Secret_KEY;
@@ -40,9 +40,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const supabase = createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } });
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from("newsletter_subscribers")
-    .insert({ email, name: name || null, phone: phone || null });
+    .insert({ email, name: name || null, phone: phone || null, source: source || null });
+
+  if (error?.code === "42703") {
+    // source column migration not applied yet — signup must not break over attribution.
+    ({ error } = await supabase
+      .from("newsletter_subscribers")
+      .insert({ email, name: name || null, phone: phone || null }));
+  }
 
   if (error) {
     if (error.code === "23505") {

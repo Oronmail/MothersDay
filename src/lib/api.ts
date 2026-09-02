@@ -524,11 +524,20 @@ export async function subscribeToNewsletter(params: {
     // Network/404 — fall through to the direct insert below.
   }
 
-  const { error } = await supabase.from('newsletter_subscribers').insert({
+  let { error } = await supabase.from('newsletter_subscribers').insert({
     email: params.email,
     name: params.name || null,
     phone: params.phone || null,
+    source: params.source || null,
   });
+  if (error?.code === '42703') {
+    // source column migration not applied yet — subscribe anyway, without attribution.
+    ({ error } = await supabase.from('newsletter_subscribers').insert({
+      email: params.email,
+      name: params.name || null,
+      phone: params.phone || null,
+    }));
+  }
   if (error) {
     if (error.code === '23505') return { already: true, emailSent: false };
     throw error;
