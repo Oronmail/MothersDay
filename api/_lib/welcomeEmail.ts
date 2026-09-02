@@ -40,7 +40,7 @@ const escapeHtml = (value: string) =>
 
 export const buildHtml = (name?: string | null) => {
   const supportEmail = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
-  const greeting = name?.trim() ? `היי ${escapeHtml(name.trim())},` : "היי,";
+  const greeting = name?.trim() ? `הי ${escapeHtml(name.trim())},` : "הי,";
 
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
@@ -104,8 +104,10 @@ export const buildHtml = (name?: string | null) => {
           <tr>
             <td align="center" class="inner-pad" style="padding:14px 32px 24px;font-size:15px;line-height:1.8;color:${INK_SOFT};">
               ${greeting}<br />
-              תודה שהצטרפת לרשימת התפוצה של יום האם.<br />
-              מעכשיו את שומעת ראשונה על השקות, מבצעים וטיפים לתכנון.<br />
+              תודה שהצטרפת ל״רוצה מתכננת עושה״ - המועדון של יום האם.<br />
+              מעכשיו תהיי הראשונה לשמוע על מה שחדש,<br />
+              לקבל את התכנים מהבלוג שלנו על תכנון וניהול השבוע,<br />
+              וליהנות מהטבות ששמורות לאימהות שכאן איתנו.<br />
               והנה מתנת ההצטרפות שלך:
             </td>
           </tr>
@@ -175,9 +177,11 @@ export const buildHtml = (name?: string | null) => {
 
 const buildText = (name?: string | null) =>
   [
-    name?.trim() ? `היי ${name.trim()},` : "היי,",
-    "תודה שהצטרפת לרשימת התפוצה של יום האם.",
-    "מעכשיו את שומעת ראשונה על השקות, מבצעים וטיפים לתכנון.",
+    name?.trim() ? `הי ${name.trim()},` : "הי,",
+    "תודה שהצטרפת ל״רוצה מתכננת עושה״ - המועדון של יום האם.",
+    "מעכשיו תהיי הראשונה לשמוע על מה שחדש,",
+    "לקבל את התכנים מהבלוג שלנו על תכנון וניהול השבוע,",
+    "וליהנות מהטבות ששמורות לאימהות שכאן איתנו.",
     "",
     "מתנת ההצטרפות שלך:",
     `${WELCOME_COUPON_PERCENT}% הנחה על ההזמנה הראשונה עם הקוד ${WELCOME_COUPON_CODE}`,

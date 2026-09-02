@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -9,9 +9,36 @@ import smileyIcon from "@/assets/smiley-icon.png";
 import clockIcon from "@/assets/clock-icon.png";
 import newsletterBorder from "@/assets/newsletter-border.png";
 
+const showAlreadyToast = () =>
+  toast.info("האימייל הזה כבר רשום אצלנו", {
+    description: "תודה על ההתעניינות!",
+  });
+
+const showSubscribedToast = (emailSent: boolean) =>
+  toast.success("תודה על ההרשמה!", {
+    description: emailSent ? (
+      <span className="flex items-center gap-1">
+        שלחנו לך למייל קוד הנחה להזמנה הראשונה
+        <img src={smileyIcon} alt="" className="h-4 w-4" />
+      </span>
+    ) : (
+      "נעדכן אותך במבצעים ומוצרים חדשים"
+    ),
+  });
+
 export const Newsletter = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // DEV: open any page with ?toast_already or ?toast_success to review the
+  // signup toasts without subscribing.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("toast_already")) showAlreadyToast();
+    if (params.has("toast_success")) showSubscribedToast(true);
+  }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,21 +60,20 @@ export const Newsletter = () => {
     setIsLoading(true);
     
     try {
-      const result = await subscribeToNewsletter({ email: trimmedEmail, source: 'newsletter_footer' });
+      const result = await subscribeToNewsletter({
+        email: trimmedEmail,
+        name: name.trim() || undefined,
+        source: 'newsletter_footer',
+      });
 
       if (result.already) {
-        toast.info("האימייל הזה כבר רשום אצלנו", {
-          description: "תודה על ההתעניינות!"
-        });
+        showAlreadyToast();
       } else {
-        toast.success("תודה על ההרשמה!", {
-          description: result.emailSent
-            ? "שלחנו לך למייל קוד הנחה להזמנה הראשונה 💛"
-            : "נעדכן אותך במבצעים ומוצרים חדשים"
-        });
+        showSubscribedToast(result.emailSent);
         if (typeof window.gtag === 'function') {
           window.gtag('event', 'generate_lead', { method: 'newsletter_footer' });
         }
+        setName("");
         setEmail("");
       }
     } catch (err) {
@@ -62,7 +88,7 @@ export const Newsletter = () => {
 
   return (
     <div className="py-12 md:py-16 px-4 md:px-8 mb-0 md:mb-3" dir="rtl">
-      <div className="max-w-3xl mx-auto p-6 pb-10 md:p-10 lg:p-12 relative bg-transparent">
+      <div className="max-w-3xl mx-auto p-6 pb-14 md:p-10 md:pb-16 lg:p-12 lg:pb-20 relative bg-transparent">
         {/* Sketch border as background image */}
         <img 
           src={newsletterBorder} 
@@ -94,22 +120,39 @@ export const Newsletter = () => {
             הצטרפי למועדון "רוצה מתכננת עושה"
           </p>
           <p className="text-sm md:text-base text-foreground">
-            ותהני מהבלוג שלנו על תכנון וניהול זמן לאימהות
+            תהני מהבלוג שלנו על תכנון וניהול זמן לאימהות,
           </p>
           <p className="text-sm md:text-base text-foreground">
-            ותהיי הראשונה לשמוע על השקות ומבצעים.
+            תהיי הראשונה לשמוע על השקות ומבצעים,
           </p>
+          <p className="text-sm md:text-base text-foreground pt-1">
+            ומתנת הצטרפות:
+          </p>
+          <p className="font-display text-2xl md:text-3xl font-bold text-foreground leading-none">
+            10% הנחה על ההזמנה הראשונה
+          </p>
+          <p className="text-[11px] text-foreground/50">*לא כולל מארזים</p>
         </div>
 
         {/* Email form */}
-        <form onSubmit={handleSubscribe} className="flex flex-row gap-3 max-w-md mx-auto justify-center relative z-10">
+        <form onSubmit={handleSubscribe} className="flex flex-row flex-wrap gap-3 max-w-lg mx-auto justify-center relative z-10">
+          <Input
+            type="text"
+            placeholder="שם"
+            aria-label="שם"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-28 md:w-36 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
+            dir="rtl"
+            maxLength={120}
+          />
           <Input
             type="email"
-            placeholder="הכניסי את האימייל שלך"
-            aria-label="כתובת אימייל להרשמה לרשימת התפוצה"
+            placeholder="דואר אלקטרוני"
+            aria-label="דואר אלקטרוני"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-48 md:w-64 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
+            className="w-48 md:w-56 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
             dir="rtl"
             maxLength={255}
           />

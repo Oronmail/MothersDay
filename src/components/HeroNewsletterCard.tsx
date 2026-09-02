@@ -8,27 +8,20 @@ import { MarketingConsentText } from "@/components/MarketingConsentText";
 import { subscribeToNewsletter } from "@/lib/api";
 import { WELCOME_COUPON } from "@/lib/siteConfig";
 import heartIcon from "@/assets/heart-icon.png";
+import smileyIcon from "@/assets/smiley-icon.png";
 import titleUnderline from "@/assets/title-underline.png";
 
 // This card owns its own visibility so it can't be affected by edits to Hero.tsx.
-// It has its own dismiss key (independent of the global popup); dismissing it also
-// writes the global popup's key, so closing here suppresses the popup elsewhere too.
-const HERO_NEWSLETTER_KEY = "hero_newsletter_dismissed_at";
-const POPUP_DISMISS_KEY = "newsletter_popup_dismissed_at";
-const NEWSLETTER_DISMISS_MS = 1000 * 60 * 60 * 24 * 14;
+// Subscribed → never shown again (localStorage). Dismissed with X → hidden for the
+// rest of THIS visit only (sessionStorage); the next visit shows it again.
+const SUBSCRIBED_KEY = "hero_newsletter_subscribed";
+const SESSION_DISMISS_KEY = "hero_newsletter_dismissed";
 // PROD desktop: rise over the hero a few seconds in, tuned to the loop.
-const NEWSLETTER_DELAY_MS = 17000;
+const NEWSLETTER_DELAY_MS = 11000;
 // Mobile: rise right after the drawer opens (~4s into the clip).
 const MOBILE_DELAY_MS = 4000;
 // DEV desktop: appear right after load, on every reload.
 const DEV_DELAY_MS = 500;
-
-const heroNewsletterDismissed = () => {
-  const stored = localStorage.getItem(HERO_NEWSLETTER_KEY);
-  if (!stored) return false;
-  const at = Number(stored);
-  return Number.isFinite(at) && Date.now() - at < NEWSLETTER_DISMISS_MS;
-};
 
 /**
  * Newsletter signup card that rises over the hero (rendered from Index.tsx).
@@ -37,21 +30,30 @@ const heroNewsletterDismissed = () => {
  */
 export const HeroNewsletterCard = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // After a successful signup the card flips to showing the welcome code.
-  const [welcomeEmailSent, setWelcomeEmailSent] = useState<boolean | null>(null);
+  // DEV: open /?welcome_preview to review the post-signup code view without subscribing.
+  const [welcomeEmailSent, setWelcomeEmailSent] = useState<boolean | null>(
+    import.meta.env.DEV && new URLSearchParams(window.location.search).has("welcome_preview")
+      ? true
+      : null,
+  );
   const isMobile = useIsMobile();
 
-  // Mobile: rise ~2s in, right after the drawer opens. Desktop: unchanged.
-  // DEV desktop: show on every page load (ignoring the 14-day dismissal) so it can be
-  // reviewed on each reload; closing with X keeps it hidden until the next reload.
-  // PROD: show once, timed as above, respecting the 14-day dismissal.
+  // PROD: shows every visit (desktop after 11s, mobile after ~4s) unless she already
+  // subscribed; an X-dismiss only holds for the current visit (sessionStorage).
+  // DEV desktop: show right after load on every reload so it can be reviewed;
+  // closing with X keeps it hidden until the next reload.
   useEffect(() => {
     const isDev = import.meta.env.DEV;
-    if (!isDev && heroNewsletterDismissed()) return;
+    if (!isDev) {
+      if (localStorage.getItem(SUBSCRIBED_KEY) === "true") return;
+      if (sessionStorage.getItem(SESSION_DISMISS_KEY) === "true") return;
+    }
     const delay = isMobile ? MOBILE_DELAY_MS : isDev ? DEV_DELAY_MS : NEWSLETTER_DELAY_MS;
     const timer = window.setTimeout(() => setIsOpen(true), delay);
     return () => clearTimeout(timer);
@@ -59,9 +61,7 @@ export const HeroNewsletterCard = () => {
 
   const handleDismiss = () => {
     setIsOpen(false);
-    const now = String(Date.now());
-    localStorage.setItem(HERO_NEWSLETTER_KEY, now);
-    localStorage.setItem(POPUP_DISMISS_KEY, now);
+    sessionStorage.setItem(SESSION_DISMISS_KEY, "true");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,21 +79,25 @@ export const HeroNewsletterCard = () => {
     try {
       const result = await subscribeToNewsletter({
         email: trimmedEmail,
+        name: name.trim() || undefined,
         phone: phone.trim() || undefined,
         source: "hero_popup",
       });
 
       if (result.already) {
-        toast.success("כבר נרשמת! תודה 💛");
+        toast.success(
+          <span className="flex items-center gap-1">
+            כבר נרשמת! תודה
+            <img src={smileyIcon} alt="" className="h-4 w-4" />
+          </span>
+        );
       } else if (typeof window.gtag === "function") {
         window.gtag("event", "generate_lead", { method: "hero_newsletter" });
       }
 
-      // Flip to the code view (don't close) — but stop nagging on future visits.
+      // Flip to the code view (don't close) — and never show the card again.
       setWelcomeEmailSent(result.emailSent);
-      const now = String(Date.now());
-      localStorage.setItem(HERO_NEWSLETTER_KEY, now);
-      localStorage.setItem(POPUP_DISMISS_KEY, now);
+      localStorage.setItem(SUBSCRIBED_KEY, "true");
     } catch {
       toast.error("משהו השתבש, נסי שוב");
     } finally {
@@ -161,7 +165,10 @@ export const HeroNewsletterCard = () => {
               *לא כולל מארזים · מזינים את הקוד בעמוד התשלום
             </p>
             {welcomeEmailSent && (
-              <p className="text-xs text-foreground/60 mt-2">שלחנו לך את הקוד גם למייל 💛</p>
+              <p className="text-xs text-foreground/60 mt-2 flex items-center justify-center gap-1.5">
+                שלחנו לך את הקוד גם למייל
+                <img src={smileyIcon} alt="" className="h-4 w-4" />
+              </p>
             )}
 
             <Button
@@ -184,6 +191,15 @@ export const HeroNewsletterCard = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="שם"
+            aria-label="שם"
+            className="text-right bg-background"
+            dir="rtl"
+          />
           <Input
             type="email"
             required
