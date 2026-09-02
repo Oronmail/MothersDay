@@ -17,7 +17,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
 
       {isLoggedIn && userEmail ? (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">אימייל:</span>
+          <span className="text-muted-foreground">דואר אלקטרוני:</span>
           <span>{userEmail}</span>
         </div>
       ) : (
@@ -27,7 +27,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>אימייל *</FormLabel>
+                <FormLabel>דואר אלקטרוני *</FormLabel>
                 <FormControl>
                   <Input type="email" dir="ltr" {...field} />
                 </FormControl>
@@ -49,7 +49,7 @@ export function CheckoutContactForm({ form, isLoggedIn, userEmail }: CheckoutCon
         name="phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>טלפון *</FormLabel>
+            <FormLabel>טלפון נייד *</FormLabel>
             <FormControl>
               <Input type="tel" dir="ltr" {...field} />
             </FormControl>
