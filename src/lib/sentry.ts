@@ -90,6 +90,12 @@ export const initSentry = () => {
       "EBCallBackMessageReceived",
       // Safari specific
       "Non-Error promise rejection captured",
+      // Transient stale-chunk error: the vite:preloadError self-heal in main.tsx
+      // preventDefault()s a failed chunk load, so the lazy import resolves to
+      // undefined for the instant before location.reload() fetches fresh HTML.
+      // React then throws reading `module.default`. The reload fixes it; skip it.
+      "Cannot read properties of undefined (reading 'default')",
+      "_result.default", // Safari wording of the same error, minifier-proof substring
     ],
 
     // Sanitize URLs before sending to Sentry

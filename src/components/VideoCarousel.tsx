@@ -87,7 +87,8 @@ const VideoItem = ({
 
   const handleMouseEnter = () => {
     if (isMobile || !videoRef.current) return;
-    videoRef.current.play();
+    // A quick hover-out pauses before play() resolves; the rejection is expected.
+    videoRef.current.play().catch(() => {});
     setIsPlaying(true);
   };
 
@@ -105,7 +106,7 @@ const VideoItem = ({
       videoRef.current.currentTime = 0;
       setIsPlaying(false);
     } else {
-      videoRef.current.play();
+      videoRef.current.play().catch(() => {});
       setIsPlaying(true);
     }
   };

@@ -191,7 +191,8 @@ const Collection = () => {
       if (isVideoPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        // A pause() before play() resolves rejects the promise; that's expected.
+        videoRef.current.play().catch(() => {});
       }
       setIsVideoPlaying(!isVideoPlaying);
     }
