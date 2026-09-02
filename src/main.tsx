@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { Loader2 } from "lucide-react";
 import { HelmetProvider } from "react-helmet-async";
 import * as Sentry from "@sentry/react";
 import { initAnalytics } from "./lib/analytics";
@@ -52,6 +54,35 @@ if (isRecoveryLanding) {
 
 // Simple error fallback component
 function ErrorFallback() {
+  // A chunk-reload stamped moments ago (see the vite:preloadError handler
+  // above) means location.reload() is already on its way and this render is
+  // the split second before it lands — show the regular page loader instead
+  // of the error card. If the reload never arrives (persistent failure), the
+  // timeout falls through to the real error card.
+  const [showError, setShowError] = useState(() => {
+    try {
+      const stampedAt = Number(sessionStorage.getItem(CHUNK_RELOAD_AT) ?? "0");
+      return Date.now() - stampedAt > 5_000;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    if (showError) return;
+    const timer = setTimeout(() => setShowError(true), 5_000);
+    return () => clearTimeout(timer);
+  }, [showError]);
+
+  if (!showError) {
+    // Mirrors App.tsx's <PageLoader /> so the moment reads as a normal page load.
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
       <div className="max-w-md text-center space-y-4">
