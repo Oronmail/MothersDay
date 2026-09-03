@@ -3,6 +3,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { subscribeToNewsletter } from "@/lib/api";
+import { WELCOME_COUPON } from "@/lib/siteConfig";
 import titleUnderline from "@/assets/title-underline.png";
 import heartIcon from "@/assets/heart-icon.png";
 import smileyIcon from "@/assets/smiley-icon.png";
@@ -11,7 +12,7 @@ import newsletterBorder from "@/assets/newsletter-border.png";
 
 const showAlreadyToast = () =>
   toast.info("האימייל הזה כבר רשום אצלנו", {
-    description: "תודה על ההתעניינות!",
+    description: `מתנת ההצטרפות שלך: קוד ${WELCOME_COUPON.code} - ${WELCOME_COUPON.percent}% על ההזמנה הראשונה`,
   });
 
 const showSubscribedToast = (emailSent: boolean) =>

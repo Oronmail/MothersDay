@@ -19,9 +19,20 @@ interface Subscriber {
   email: string;
   name: string | null;
   phone: string | null;
+  source: string | null;
   is_active: boolean | null;
   subscribed_at: string | null;
 }
+
+/** Which door she came through (column exists after the source migration). */
+const SOURCE_LABELS: Record<string, string> = {
+  hero_popup: 'פופ-אפ',
+  newsletter_footer: 'פוטר',
+  auth_card: 'איזור אישי',
+};
+
+const sourceLabel = (source: string | null | undefined) =>
+  source ? SOURCE_LABELS[source] ?? source : '---';
 
 /**
  * Quote every CSV field and double any internal quote, so a comma or a quote inside
@@ -82,11 +93,12 @@ export const NewsletterList = () => {
     }
 
     const rows: string[][] = [
-      ['email', 'name', 'phone', 'active', 'subscribed_at'],
+      ['email', 'name', 'phone', 'source', 'active', 'subscribed_at'],
       ...subscribers.map((s) => [
         s.email ?? '',
         s.name ?? '',
         s.phone ?? '',
+        sourceLabel(s.source),
         s.is_active ? 'כן' : 'לא',
         s.subscribed_at ? format(new Date(s.subscribed_at), 'yyyy-MM-dd HH:mm') : '',
       ]),
@@ -157,6 +169,7 @@ export const NewsletterList = () => {
                   <TableHead className="text-right">אימייל</TableHead>
                   <TableHead className="text-right">שם</TableHead>
                   <TableHead className="text-right">טלפון</TableHead>
+                  <TableHead className="text-right">מקור</TableHead>
                   <TableHead className="text-right">סטטוס</TableHead>
                   <TableHead className="text-right">תאריך הרשמה</TableHead>
                 </TableRow>
@@ -171,6 +184,7 @@ export const NewsletterList = () => {
                     <TableCell dir="ltr" className="text-right">
                       {subscriber.phone ?? '---'}
                     </TableCell>
+                    <TableCell>{sourceLabel(subscriber.source)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch
