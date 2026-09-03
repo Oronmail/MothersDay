@@ -88,7 +88,7 @@ export const Newsletter = () => {
 
   return (
     <div className="py-12 md:py-16 px-4 md:px-8 mb-0 md:mb-3" dir="rtl">
-      <div className="max-w-3xl mx-auto p-6 pb-14 md:p-10 md:pb-16 lg:p-12 lg:pb-20 relative bg-transparent">
+      <div className="max-w-3xl mx-auto px-8 pt-12 pb-16 md:p-10 md:pb-16 lg:p-12 lg:pb-20 relative bg-transparent">
         {/* Sketch border as background image */}
         <img 
           src={newsletterBorder} 
@@ -99,50 +99,50 @@ export const Newsletter = () => {
         {/* Title with icons and underline */}
         <div className="flex flex-col items-center mb-4 md:mb-6 relative z-10">
           <div className="flex items-center gap-1.5 md:gap-3 mb-1">
-            <img src={heartIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">רוצה</span>
-            <img src={smileyIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">מתכננת</span>
-            <img src={clockIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
-            <span className="font-display text-2xl md:text-3xl lg:text-4xl font-normal text-foreground">עושה</span>
-            <img src={heartIcon} alt="" className="w-5 h-5 md:w-7 md:h-7" />
+            <img src={heartIcon} alt="" className="w-4 h-4 md:w-7 md:h-7" />
+            <span className="font-display text-xl md:text-3xl lg:text-4xl font-normal text-foreground">רוצה</span>
+            <img src={smileyIcon} alt="" className="w-4 h-4 md:w-7 md:h-7" />
+            <span className="font-display text-xl md:text-3xl lg:text-4xl font-normal text-foreground">מתכננת</span>
+            <img src={clockIcon} alt="" className="w-4 h-4 md:w-7 md:h-7" />
+            <span className="font-display text-xl md:text-3xl lg:text-4xl font-normal text-foreground">עושה</span>
+            <img src={heartIcon} alt="" className="w-4 h-4 md:w-7 md:h-7" />
           </div>
-          <img 
-            src={titleUnderline} 
-            alt="" 
-            className="w-32 md:w-56"
+          <img
+            src={titleUnderline}
+            alt=""
+            className="w-24 md:w-56"
           />
         </div>
 
         {/* Description text */}
-        <div className="text-center space-y-0.5 md:space-y-1 mb-5 md:mb-6 relative z-10">
-          <p className="text-sm md:text-base text-foreground">
+        <div className="text-center space-y-0.5 md:space-y-1 mb-6 relative z-10">
+          <p className="text-[13px] md:text-base text-foreground">
             הצטרפי למועדון "רוצה מתכננת עושה"
           </p>
-          <p className="text-sm md:text-base text-foreground">
+          <p className="text-[13px] md:text-base text-foreground">
             תהני מהבלוג שלנו על תכנון וניהול זמן לאימהות,
           </p>
-          <p className="text-sm md:text-base text-foreground">
+          <p className="text-[13px] md:text-base text-foreground">
             תהיי הראשונה לשמוע על השקות ומבצעים,
           </p>
-          <p className="text-sm md:text-base text-foreground pt-1">
+          <p className="text-[13px] md:text-base text-foreground pt-1">
             ומתנת הצטרפות:
           </p>
-          <p className="font-display text-2xl md:text-3xl font-bold text-foreground leading-none">
+          <p className="font-display text-xl md:text-3xl font-bold text-foreground leading-none">
             10% הנחה על ההזמנה הראשונה
           </p>
           <p className="text-[11px] text-foreground/50">*לא כולל מארזים</p>
         </div>
 
         {/* Email form */}
-        <form onSubmit={handleSubscribe} className="flex flex-row flex-wrap gap-3 max-w-lg mx-auto justify-center relative z-10">
+        <form onSubmit={handleSubscribe} className="flex flex-col max-w-[210px] gap-2.5 md:gap-3 md:flex-row md:flex-wrap md:max-w-lg mx-auto justify-center relative z-10">
           <Input
             type="text"
             placeholder="שם"
             aria-label="שם"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-28 md:w-36 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
+            className="w-full md:w-36 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
             dir="rtl"
             maxLength={120}
           />
@@ -152,14 +152,14 @@ export const Newsletter = () => {
             aria-label="דואר אלקטרוני"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-48 md:w-56 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
+            className="w-full md:w-56 text-right bg-[#a998a2] text-white placeholder:text-white/75 border-0 rounded-none h-9 md:h-10 text-base md:text-sm"
             dir="rtl"
             maxLength={255}
           />
           <Button
             type="submit"
             disabled={isLoading}
-            className="whitespace-nowrap bg-primary hover:bg-primary/90 text-primary-foreground rounded-none text-base md:text-sm px-5 md:px-7 h-9 md:h-10 border-0"
+            className="w-full md:w-auto whitespace-nowrap bg-primary hover:bg-primary/90 text-primary-foreground rounded-none text-base md:text-sm px-5 md:px-7 h-9 md:h-10 border-0"
           >
             {isLoading ? "שולח..." : "הצטרפות"}
           </Button>
