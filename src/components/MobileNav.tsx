@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, ChevronDown, Heart, LogOut } from "lucide-react";
+import { Menu, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +20,7 @@ import {
 } from "./ui/collapsible";
 import logo from "@/assets/logo-new.png";
 import userIcon from "@/assets/user-icon.png";
+import heartIcon from "@/assets/heart-icon.png";
 import { ROUTES, COLLECTION_HANDLES, PRODUCT_HANDLES, buildCollectionPath, buildProductPath } from "@/lib/routes";
 
 export const MobileNav = () => {
@@ -193,7 +194,7 @@ export const MobileNav = () => {
                 onClick={() => handleNavigate(ROUTES.wishlist)}
                 className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
               >
-                <Heart className="h-4 w-4" />
+                <img src={heartIcon} alt="" className="h-5 w-5" />
                 <span>ווישליסט</span>
               </button>
               <button
@@ -210,7 +211,7 @@ export const MobileNav = () => {
                 onClick={() => handleNavigate(ROUTES.wishlist)}
                 className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
               >
-                <Heart className="h-4 w-4" />
+                <img src={heartIcon} alt="" className="h-5 w-5" />
                 <span>ווישליסט</span>
               </button>
               <button
