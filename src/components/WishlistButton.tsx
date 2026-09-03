@@ -24,9 +24,9 @@ export function WishlistButton({ productId, className, size = 20 }: WishlistButt
     await toggle();
 
     if (!isInWishlist) {
-      toast.success('נוסף לרשימת המשאלות');
+      toast.success('נוסף לווישליסט');
     } else {
-      toast.info('הוסר מרשימת המשאלות');
+      toast.info('הוסר מהווישליסט');
     }
   };
 
@@ -35,7 +35,7 @@ export function WishlistButton({ productId, className, size = 20 }: WishlistButt
       type="button"
       onClick={handleClick}
       disabled={isLoading}
-      aria-label={isInWishlist ? 'הסר מרשימת המשאלות' : 'הוסף לרשימת המשאלות'}
+      aria-label={isInWishlist ? 'הסר מהווישליסט' : 'הוסף לווישליסט'}
       className={cn(
         'p-1.5 rounded-full transition-all duration-200',
         'hover:scale-110 active:scale-95',

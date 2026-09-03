@@ -194,7 +194,7 @@ export const MobileNav = () => {
                 className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
               >
                 <Heart className="h-4 w-4" />
-                <span>רשימת משאלות</span>
+                <span>ווישליסט</span>
               </button>
               <button
                 onClick={handleLogout}
@@ -205,16 +205,25 @@ export const MobileNav = () => {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setIsAuthDialogOpen(true);
-              }}
-              className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
-            >
-              <img src={userIcon} alt="" className="h-5 w-5" />
-              <span>האיזור האישי</span>
-            </button>
+            <>
+              <button
+                onClick={() => handleNavigate(ROUTES.wishlist)}
+                className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
+              >
+                <Heart className="h-4 w-4" />
+                <span>ווישליסט</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsAuthDialogOpen(true);
+                }}
+                className="flex items-center gap-2 py-3 text-right font-medium hover:text-primary transition-colors"
+              >
+                <img src={userIcon} alt="" className="h-5 w-5" />
+                <span>האיזור האישי</span>
+              </button>
+            </>
           )}
         </nav>
       </SheetContent>

@@ -54,7 +54,7 @@ export const Header = () => {
   const wishlistButton = (
     <button
       onClick={() => navigate(ROUTES.wishlist)}
-      aria-label="רשימת המשאלות"
+      aria-label="ווישליסט"
       className="flex items-center px-1 hover:opacity-80 transition-opacity"
     >
       <span
@@ -92,7 +92,7 @@ export const Header = () => {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate(ROUTES.wishlist)}>
           <Heart className="ml-2 h-4 w-4" />
-          רשימת משאלות
+          ווישליסט
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="ml-2 h-4 w-4" />
@@ -137,7 +137,7 @@ export const Header = () => {
             </button>
           </div>
 
-          {/* רק חיפוש וסל נשארים בחוץ. האיזור האישי ורשימת המשאלות
+          {/* רק חיפוש וסל נשארים בחוץ. האיזור האישי והווישליסט
               יושבים בתוך תפריט ההמבורגר, כדי לא לעמיס את ההדר במובייל. */}
           <div className="flex items-center gap-0">
             <SearchModal />
