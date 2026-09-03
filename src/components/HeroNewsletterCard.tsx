@@ -24,7 +24,8 @@ const MOBILE_DELAY_MS = 4000;
 const DEV_DELAY_MS = 500;
 
 /**
- * Newsletter signup card that rises over the hero (rendered from Index.tsx).
+ * The 10% newsletter signup card, mounted in the store layout (SiteAccess) so
+ * it rises on any page a visitor lands on — except checkout.
  * Self-managing: decides on its own when to appear and hide.
  * Brand character: a hand-drawn heart emblem on top + the sketch underline.
  */
@@ -55,7 +56,12 @@ export const HeroNewsletterCard = () => {
       if (sessionStorage.getItem(SESSION_DISMISS_KEY) === "true") return;
     }
     const delay = isMobile ? MOBILE_DELAY_MS : isDev ? DEV_DELAY_MS : NEWSLETTER_DELAY_MS;
-    const timer = window.setTimeout(() => setIsOpen(true), delay);
+    const timer = window.setTimeout(() => {
+      // Never interrupt a purchase — if she reached checkout this fast,
+      // skip quietly (next visit shows the card again).
+      if (window.location.pathname.startsWith("/checkout")) return;
+      setIsOpen(true);
+    }, delay);
     return () => clearTimeout(timer);
   }, [isMobile]);
 

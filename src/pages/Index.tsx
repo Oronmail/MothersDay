@@ -1,7 +1,6 @@
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { HeroNewsletterCard } from "@/components/HeroNewsletterCard";
 import { BrandMission } from "@/components/BrandMission";
 import { ProductTabs } from "@/components/ProductTabs";
 import { CollectionsBanner } from "@/components/CollectionsBanner";
@@ -37,7 +36,6 @@ const Index = () => {
         {/* H1 סמוי לקוראי מסך ולמנועי חיפוש - לעמוד אין כותרת טקסטואלית גלויה */}
         <h1 className="sr-only">יום האם - מוצרי תכנון לאימהות</h1>
         <Hero />
-        <HeroNewsletterCard />
         <BrandMission />
         <ProductTabs />
         <div className="w-full pt-12 md:hidden">
