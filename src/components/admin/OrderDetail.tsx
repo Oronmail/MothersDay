@@ -512,6 +512,43 @@ export const OrderDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Notes + manual tracking — saved with the שמור שינויים button in the action bar */}
+          <Card>
+            <CardHeader>
+              <CardTitle>הערת הלקוחה</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(fulfillmentStatus === 'shipped' || fulfillmentStatus === 'delivered') && (
+                <div className="space-y-2">
+                  <Label htmlFor="tracking">מספר מעקב</Label>
+                  <Input
+                    id="tracking"
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    dir="ltr"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    מתמלא אוטומטית בשידור ל-HFD; לעריכה ידנית רק במשלוח שלא דרך HFD.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="הלקוחה לא הוסיפה הערה"
+                />
+                <p className="text-xs text-muted-foreground">
+                  זה הטקסט שהלקוחה כתבה בקופה. עריכה כאן משנה אותו — זה לא שדה להערות פנימיות.
+                  נשמר עם כפתור "שמור שינויים" שלמעלה.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Payment — server-written fields, for reconciling against PayPlus */}
           <Card>
             <CardHeader>
@@ -570,43 +607,6 @@ export const OrderDetail = () => {
                   </pre>
                 </details>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Notes + manual tracking — saved with the שמור שינויים button in the action bar */}
-          <Card>
-            <CardHeader>
-              <CardTitle>הערת הלקוחה</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(fulfillmentStatus === 'shipped' || fulfillmentStatus === 'delivered') && (
-                <div className="space-y-2">
-                  <Label htmlFor="tracking">מספר מעקב</Label>
-                  <Input
-                    id="tracking"
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    dir="ltr"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    מתמלא אוטומטית בשידור ל-HFD; לעריכה ידנית רק במשלוח שלא דרך HFD.
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  placeholder="הלקוחה לא הוסיפה הערה"
-                />
-                <p className="text-xs text-muted-foreground">
-                  זה הטקסט שהלקוחה כתבה בקופה. עריכה כאן משנה אותו — זה לא שדה להערות פנימיות.
-                  נשמר עם כפתור "שמור שינויים" שלמעלה.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
