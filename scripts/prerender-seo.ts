@@ -444,7 +444,7 @@ const buildStaticRoutes = (products: ProductRow[]): StaticRoute[] => {
     { route: "/checkout", title: `תשלום | ${siteName}`, description: "השלמת הזמנה באתר יום האם.", noindex: true },
     { route: "/profile", title: `האזור האישי | ${siteName}`, description: "ניהול החשבון שלך באתר יום האם.", noindex: true },
     { route: "/orders", title: `ההזמנות שלי | ${siteName}`, description: "היסטוריית ההזמנות שלך באתר יום האם.", noindex: true },
-    { route: "/wishlist", title: `המועדפים שלי | ${siteName}`, description: "המוצרים ששמרת באתר יום האם.", noindex: true },
+    { route: "/wishlist", title: `ווישליסט | ${siteName}`, description: "המוצרים ששמרת באתר יום האם.", noindex: true },
     { route: "/auth", title: `התחברות | ${siteName}`, description: "התחברות והרשמה לאתר יום האם.", noindex: true },
     { route: "/reset-password", title: `איפוס סיסמה | ${siteName}`, description: "איפוס סיסמה לחשבון יום האם.", noindex: true },
     { route: "/admin/login", title: `כניסת ניהול | ${siteName}`, description: "כניסה לממשק הניהול של יום האם.", noindex: true },

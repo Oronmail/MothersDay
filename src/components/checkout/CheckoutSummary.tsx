@@ -72,8 +72,68 @@ export function CheckoutSummary({
 
   const canSubmit = checkoutEnabled || paymentSimulationEnabled;
 
+  // Coupon row — rendered twice: standalone above the collapsed summary bar
+  // (phones must see where the code goes) and in the desktop summary flow.
+  const couponSection = onApplyCoupon ? (
+    appliedCouponCode ? (
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">
+          קופון <span className="font-medium text-foreground">{appliedCouponCode}</span> הופעל
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            onRemoveCoupon?.();
+            setCouponError(null);
+          }}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="הסירי את הקופון"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    ) : (
+      <>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={couponInput}
+            onChange={(e) => {
+              setCouponInput(e.target.value);
+              setCouponError(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleApplyCoupon();
+              }
+            }}
+            placeholder="קוד קופון"
+            aria-label="קוד קופון"
+            dir="ltr"
+            className="flex-1 min-w-0 border border-border bg-background px-3 h-9 text-sm text-left uppercase placeholder:normal-case placeholder:text-right placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 transition-colors"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 px-4"
+            onClick={() => void handleApplyCoupon()}
+            disabled={!couponInput.trim() || isCheckingCoupon}
+          >
+            {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "החלה"}
+          </Button>
+        </div>
+        {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+      </>
+    )
+  ) : null;
+
   return (
     <div className="space-y-4">
+      {/* Coupon — kept outside the collapsible summary so phones always see it */}
+      {couponSection && <div className="md:hidden space-y-2">{couponSection}</div>}
+
       {/* Mobile: collapsible summary bar */}
       <button
         type="button"
@@ -165,62 +225,9 @@ export function CheckoutSummary({
           </div>
         ))}
 
-        {/* Coupon code */}
-        {onApplyCoupon && (
-          <div className="border-t border-border pt-3 space-y-2">
-            {appliedCouponCode ? (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  קופון <span className="font-medium text-foreground">{appliedCouponCode}</span> הופעל
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onRemoveCoupon?.();
-                    setCouponError(null);
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="הסירי את הקופון"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponInput}
-                    onChange={(e) => {
-                      setCouponInput(e.target.value);
-                      setCouponError(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        void handleApplyCoupon();
-                      }
-                    }}
-                    placeholder="קוד קופון"
-                    aria-label="קוד קופון"
-                    dir="ltr"
-                    className="flex-1 min-w-0 border border-border bg-background px-3 h-9 text-sm text-left uppercase placeholder:normal-case placeholder:text-right placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 transition-colors"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-4"
-                    onClick={() => void handleApplyCoupon()}
-                    disabled={!couponInput.trim() || isCheckingCoupon}
-                  >
-                    {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "החלה"}
-                  </Button>
-                </div>
-                {couponError && <p className="text-xs text-destructive">{couponError}</p>}
-              </>
-            )}
-          </div>
+        {/* Coupon code (desktop keeps it here, between the items and the totals) */}
+        {couponSection && (
+          <div className="hidden md:block border-t border-border pt-3 space-y-2">{couponSection}</div>
         )}
 
         <div className="border-t border-border pt-3 space-y-2">

@@ -221,7 +221,7 @@ const Profile = () => {
                 <Link to={ROUTES.wishlist}>
                   <div className="flex items-center gap-2">
                     <img src={heartIcon} alt="" className="h-4 w-4" />
-                    <span>רשימת משאלות</span>
+                    <span>ווישליסט</span>
                   </div>
                   <ArrowRight className="h-4 w-4" />
                 </Link>

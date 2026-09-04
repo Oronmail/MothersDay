@@ -13,7 +13,7 @@ import titleUnderline from '@/assets/title-underline.png';
 
 export default function Wishlist() {
   const navigate = useNavigate();
-  const { user, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
   const { items, isLoading, remove } = useWishlistItems();
 
   if (authLoading || isLoading) {
@@ -32,7 +32,7 @@ export default function Wishlist() {
         <div className="text-center mb-14">
           <img src={heartIcon} alt="" className="w-10 h-10 mx-auto mb-3" />
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-            רשימת המשאלות
+            ווישליסט
           </h1>
           <img
             src={titleUnderline}
@@ -42,22 +42,13 @@ export default function Wishlist() {
           <p className="text-foreground/70 max-w-md mx-auto leading-relaxed">
             כל המוצרים שאהבת, שמורים במקום אחד.
           </p>
-          {!user && items.length > 0 && (
-            <p className="text-sm text-foreground/60 max-w-md mx-auto mt-3">
-              הרשימה נשמרת כרגע בדפדפן הזה.{' '}
-              <Link to={ROUTES.auth} className="underline underline-offset-4 hover:text-primary transition-colors">
-                התחברי לחשבון
-              </Link>
-              {' '}כדי שתחכה לך מכל מכשיר.
-            </p>
-          )}
         </div>
 
         {items.length === 0 ? (
           <div className="text-center py-12 space-y-5">
             <img src={heartIcon} alt="" className="w-16 h-16 mx-auto opacity-50" />
             <p className="text-foreground/70 text-lg">
-              רשימת המשאלות שלך ריקה
+              הווישליסט שלך ריק
             </p>
             <Button
               variant="outline"
@@ -100,7 +91,7 @@ export default function Wishlist() {
                       type="button"
                       onClick={() => remove(item.id)}
                       className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all hover:scale-110"
-                      aria-label="הסר מרשימת המשאלות"
+                      aria-label="הסר מהווישליסט"
                     >
                       <Trash2 className="w-4 h-4 text-foreground/70" />
                     </button>

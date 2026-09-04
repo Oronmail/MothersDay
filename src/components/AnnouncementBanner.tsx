@@ -6,7 +6,7 @@ export const AnnouncementBanner = () => {
   const { data: settings } = useStoreSettings();
   const threshold = settings?.free_shipping_threshold ?? 350;
 
-  return <div className="bg-primary text-primary-foreground py-1.5 md:py-2 px-3 md:px-4 text-lg md:text-base relative">
+  return <div className="bg-primary text-primary-foreground py-1.5 md:py-2 px-3 md:px-4 text-sm md:text-base relative">
       <div className="text-center" dir="rtl">
         <span>משלוח חינם ברכישה מעל {threshold} ש״ח</span>
       </div>
