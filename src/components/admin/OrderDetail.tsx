@@ -20,7 +20,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Loader2, ArrowRight, Printer, Truck } from 'lucide-react';
+import { Loader2, ArrowRight, Printer, Truck, ExternalLink } from 'lucide-react';
 import { AdminErrorState } from './AdminErrorState';
 import {
   FINANCIAL_STATUS_OPTIONS, FULFILLMENT_STATUS_OPTIONS,
@@ -225,6 +225,7 @@ export const OrderDetail = () => {
     order.payment_attempts || order.cancelled_at || order.refunded_at || order.confirmation_email_sent_at ||
     order.payment_raw,
   );
+  const hasActiveShipment = Boolean(order.hfd_shipment_number && !order.hfd_shipment_cancelled_at);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -246,6 +247,131 @@ export const OrderDetail = () => {
           </p>
         </div>
       </div>
+
+      {/* Action bar — shipping + status controls, always visible above the details */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+            {hasActiveShipment ? (
+              <>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">משלוח HFD</p>
+                  <p className="font-mono text-sm leading-9" dir="ltr">{order.hfd_shipment_number}</p>
+                </div>
+                <Button variant="outline" onClick={printLabel} disabled={isPrintingLabel}>
+                  {isPrintingLabel
+                    ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    : <Printer className="w-4 h-4 ml-2" />}
+                  הדפסת תווית
+                </Button>
+                {order.hfd_rand_number && (
+                  <Button asChild variant="outline">
+                    <a
+                      href={`https://run.hfd.co.il/info/${order.hfd_rand_number}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                      מעקב
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="destructive"
+                  onClick={() => setCancelShipmentOpen(true)}
+                  disabled={cancelShipmentMutation.isPending}
+                >
+                  {cancelShipmentMutation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
+                  ביטול משלוח
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => createShipmentMutation.mutate()}
+                disabled={createShipmentMutation.isPending || order.financial_status !== 'paid'}
+              >
+                {createShipmentMutation.isPending
+                  ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                  : <Truck className="w-4 h-4 ml-2" />}
+                שדר משלוח ל-HFD
+              </Button>
+            )}
+
+            <div className="hidden sm:block h-9 w-px bg-border" />
+
+            <div className="space-y-1">
+              <Label className="text-xs">סטטוס תשלום</Label>
+              <Select value={financialStatus} onValueChange={setFinancialStatus}>
+                <SelectTrigger className="h-10 w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FINANCIAL_STATUS_OPTIONS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">סטטוס משלוח</Label>
+              <Select value={fulfillmentStatus} onValueChange={setFulfillmentStatus}>
+                <SelectTrigger className="h-10 w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FULFILLMENT_STATUS_OPTIONS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
+              {updateMutation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
+              שמור שינויים
+            </Button>
+          </div>
+
+          {hasActiveShipment && (order.hfd_shipment_created_at || order.shipped_email_sent_at) && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {order.hfd_shipment_created_at ? `שודר ${formatDateTime(order.hfd_shipment_created_at)}` : ''}
+              {order.shipped_email_sent_at
+                ? ` · מייל "בדרך אלייך" נשלח ${formatDateTime(order.shipped_email_sent_at)}`
+                : ''}
+            </p>
+          )}
+          {!hasActiveShipment && order.hfd_shipment_cancelled_at && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              משלוח {order.hfd_shipment_number} בוטל ב-
+              {formatDateTime(order.hfd_shipment_cancelled_at)}. אפשר לשדר משלוח חדש.
+            </p>
+          )}
+          {!hasActiveShipment && order.financial_status !== 'paid' && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              אפשר לשדר משלוח רק להזמנה ששולמה.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={cancelShipmentOpen} onOpenChange={setCancelShipmentOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>לבטל את המשלוח ב-HFD?</AlertDialogTitle>
+            <AlertDialogDescription>
+              משלוח {order.hfd_shipment_number} יבוטל אצל HFD ומספר המעקב יימחק מההזמנה.
+              אם השליח כבר אסף את החבילה, יש לפנות לשירות הלקוחות של HFD במקום.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>חזרה</AlertDialogCancel>
+            <AlertDialogAction onClick={() => cancelShipmentMutation.mutate()}>
+              ביטול המשלוח
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Details - left side */}
@@ -447,132 +573,12 @@ export const OrderDetail = () => {
             </CardContent>
           </Card>
 
-          {/* HFD shipping — created/cancelled server-side via /api/hfd-shipment */}
+          {/* Notes + manual tracking — saved with the שמור שינויים button in the action bar */}
           <Card>
             <CardHeader>
-              <CardTitle>משלוח HFD</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {order.hfd_shipment_number && !order.hfd_shipment_cancelled_at ? (
-                <>
-                  <InfoRow label="מספר משלוח" value={order.hfd_shipment_number} ltr />
-                  <InfoRow label="שודר בתאריך" value={formatDateTime(order.hfd_shipment_created_at)} />
-                  <InfoRow label="מייל 'בדרך אלייך' נשלח" value={formatDateTime(order.shipped_email_sent_at)} />
-                  {order.hfd_rand_number && (
-                    <a
-                      href={`https://run.hfd.co.il/info/${order.hfd_rand_number}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block text-sm underline text-primary"
-                    >
-                      מעקב אחר המשלוח באתר HFD
-                    </a>
-                  )}
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={printLabel}
-                      disabled={isPrintingLabel}
-                    >
-                      {isPrintingLabel
-                        ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                        : <Printer className="w-4 h-4 ml-2" />}
-                      הדפסת תווית
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setCancelShipmentOpen(true)}
-                      disabled={cancelShipmentMutation.isPending}
-                    >
-                      {cancelShipmentMutation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
-                      ביטול משלוח
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {order.hfd_shipment_cancelled_at && (
-                    <p className="text-muted-foreground">
-                      משלוח {order.hfd_shipment_number} בוטל ב-
-                      {formatDateTime(order.hfd_shipment_cancelled_at)}. אפשר לשדר משלוח חדש.
-                    </p>
-                  )}
-                  {order.financial_status !== 'paid' && (
-                    <p className="text-xs text-muted-foreground">
-                      אפשר לשדר משלוח רק להזמנה ששולמה.
-                    </p>
-                  )}
-                  <Button
-                    className="w-full"
-                    onClick={() => createShipmentMutation.mutate()}
-                    disabled={createShipmentMutation.isPending || order.financial_status !== 'paid'}
-                  >
-                    {createShipmentMutation.isPending
-                      ? <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                      : <Truck className="w-4 h-4 ml-2" />}
-                    שדר משלוח ל-HFD
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <AlertDialog open={cancelShipmentOpen} onOpenChange={setCancelShipmentOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>לבטל את המשלוח ב-HFD?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  משלוח {order.hfd_shipment_number} יבוטל אצל HFD ומספר המעקב יימחק מההזמנה.
-                  אם השליח כבר אסף את החבילה, יש לפנות לשירות הלקוחות של HFD במקום.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>חזרה</AlertDialogCancel>
-                <AlertDialogAction onClick={() => cancelShipmentMutation.mutate()}>
-                  ביטול המשלוח
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          {/* Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>ניהול סטטוס</CardTitle>
+              <CardTitle>הערת הלקוחה</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>סטטוס תשלום</Label>
-                <Select value={financialStatus} onValueChange={setFinancialStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FINANCIAL_STATUS_OPTIONS.map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>סטטוס משלוח</Label>
-                <Select value={fulfillmentStatus} onValueChange={setFulfillmentStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FULFILLMENT_STATUS_OPTIONS.map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {(fulfillmentStatus === 'shipped' || fulfillmentStatus === 'delivered') && (
                 <div className="space-y-2">
                   <Label htmlFor="tracking">מספר מעקב</Label>
@@ -582,11 +588,13 @@ export const OrderDetail = () => {
                     onChange={(e) => setTrackingNumber(e.target.value)}
                     dir="ltr"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    מתמלא אוטומטית בשידור ל-HFD; לעריכה ידנית רק במשלוח שלא דרך HFD.
+                  </p>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="notes">הערת הלקוחה מההזמנה</Label>
                 <Textarea
                   id="notes"
                   value={notes}
@@ -596,17 +604,9 @@ export const OrderDetail = () => {
                 />
                 <p className="text-xs text-muted-foreground">
                   זה הטקסט שהלקוחה כתבה בקופה. עריכה כאן משנה אותו — זה לא שדה להערות פנימיות.
+                  נשמר עם כפתור "שמור שינויים" שלמעלה.
                 </p>
               </div>
-
-              <Button
-                onClick={() => updateMutation.mutate()}
-                disabled={updateMutation.isPending}
-                className="w-full"
-              >
-                {updateMutation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
-                שמור שינויים
-              </Button>
             </CardContent>
           </Card>
         </div>
