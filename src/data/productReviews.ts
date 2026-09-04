@@ -48,7 +48,9 @@ const PLACEHOLDER_REVIEWS: Record<string, Review[]> = {
 };
 
 // מפתח = handle של המוצר (כמו ב-URL /product/<handle>)
-export const PRODUCT_REVIEWS: Record<string, Review[]> = import.meta.env.DEV
+// import.meta.env קיים רק תחת Vite; scripts/prerender-seo.ts (tsx) מייבא את הקובץ
+// הזה כדי להכניס את חוות הדעת ל-JSON-LD, ושם הוא undefined → REAL_REVIEWS בלבד.
+export const PRODUCT_REVIEWS: Record<string, Review[]> = import.meta.env?.DEV
   ? { ...PLACEHOLDER_REVIEWS, ...REAL_REVIEWS }
   : REAL_REVIEWS;
 

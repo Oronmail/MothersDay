@@ -187,6 +187,13 @@ AI bots; React replaces it on hydration), writes **noindex shells** for app rout
 (/checkout, /profile, /orders, /wishlist, /auth, /reset-password, /admin/login), and adds
 FAQPage (/support, from `src/content/faq.ts`), Article (content-1..3), ItemList (/products, /sets)
 and enriched Organization/WebSite JSON-LD (site name "יום האם" for Google's site-name display).
+Product JSON-LD (2026-09-05, for the GSC "Merchant listings"/"Product snippets" warnings) also carries
+`offers.shippingDetails` (rate from `store_settings`, Sun–Thu business days — mirrors /shipping),
+`offers.hasMerchantReturnPolicy` (14 days, full refund — mirrors /returns), and `aggregateRating`/`review`
+built ONLY from real reviews (curated `REAL_REVIEWS` in `src/data/productReviews.ts` + approved `reviews`
+rows, fetched at build). With no reviews yet those two fields are absent and GSC keeps flagging them —
+that is intentional; never fabricate ratings. The "no global identifier" warning stays until products
+get real GTINs/barcodes.
 Canonical domain is **https://www.mothersday.co.il** (fallback if `VITE_SITE_URL` is unset — set it
 in Vercel!). `public/robots.txt` was deleted on purpose: it used to shadow the `/api/robots`
 rewrite with a stale vercel.app sitemap URL; robots is served by `api/robots.ts` (which also

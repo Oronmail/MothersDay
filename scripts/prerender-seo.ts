@@ -18,6 +18,8 @@ type StaticRoute = {
   bodyHtml?: string;
 };
 
+import { getProductReviews } from "../src/data/productReviews";
+
 type ProductRow = {
   handle: string;
   title: string;
@@ -38,6 +40,29 @@ type ProductRow = {
     available_for_sale: boolean | null;
     sort_order: number | null;
   }>;
+};
+
+/** store_settings rows the checkout uses; the same numbers the /shipping page shows. */
+type ShippingSettings = {
+  shippingCost: number;
+  freeShippingThreshold: number;
+};
+
+/** An approved row from the `reviews` table (what useApprovedReviews renders). */
+type SiteReviewRow = {
+  product_handle: string;
+  rating: number;
+  body: string;
+  name: string;
+  created_at: string;
+};
+
+/** One review in the shape both sources (curated + site) reduce to for JSON-LD. */
+type SchemaReview = {
+  name: string;
+  rating: number;
+  body: string;
+  datePublished?: string;
 };
 
 type CollectionRow = {
@@ -657,7 +682,153 @@ const fetchProducts = async (): Promise<ProductRow[]> => {
   return (data || []) as ProductRow[];
 };
 
-const getProductRoutes = (products: ProductRow[]): StaticRoute[] =>
+const DEFAULT_SHIPPING: ShippingSettings = { shippingCost: 35, freeShippingThreshold: 350 };
+
+const fetchShippingSettings = async (): Promise<ShippingSettings> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return DEFAULT_SHIPPING;
+
+  const { data, error } = await supabase
+    .from("store_settings")
+    .select("key,value")
+    .in("key", ["shipping_cost", "free_shipping_threshold"]);
+
+  if (error || !data) {
+    console.warn("[prerender-seo] Failed to fetch store_settings, using defaults:", error?.message);
+    return DEFAULT_SHIPPING;
+  }
+
+  const numberFor = (key: string, fallback: number) => {
+    const raw = data.find((row) => row.key === key)?.value;
+    const value = typeof raw === "string" ? Number(raw) : raw;
+    return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  };
+
+  return {
+    shippingCost: numberFor("shipping_cost", DEFAULT_SHIPPING.shippingCost),
+    freeShippingThreshold: numberFor("free_shipping_threshold", DEFAULT_SHIPPING.freeShippingThreshold),
+  };
+};
+
+// Approved reviews only - the same rows the product page shows. If the reviews
+// migration hasn't been applied the query fails and we simply emit no reviews.
+const fetchApprovedReviews = async (): Promise<Map<string, SchemaReview[]>> => {
+  const byHandle = new Map<string, SchemaReview[]>();
+  const supabase = getSupabaseClient();
+  if (!supabase) return byHandle;
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("product_handle,rating,body,name,created_at")
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.warn("[prerender-seo] Skipping site reviews:", error.message);
+    return byHandle;
+  }
+
+  for (const row of (data || []) as SiteReviewRow[]) {
+    const list = byHandle.get(row.product_handle) || [];
+    list.push({
+      name: row.name,
+      rating: row.rating,
+      body: row.body,
+      datePublished: row.created_at.slice(0, 10),
+    });
+    byHandle.set(row.product_handle, list);
+  }
+  return byHandle;
+};
+
+/**
+ * Review markup for a product: curated focus-group reviews first (as on the
+ * page), then approved site reviews. Google requires marked-up reviews to be
+ * visible on the page and ratings to come from real users - with neither
+ * source populated this emits nothing, and GSC keeps flagging the missing
+ * (optional) fields until real reviews exist. Never invent ratings here.
+ */
+const reviewStructuredData = (handle: string, siteReviews: SchemaReview[]) => {
+  const curated: SchemaReview[] = getProductReviews(handle).map((review) => ({
+    name: review.name,
+    rating: review.rating,
+    body: review.quote,
+  }));
+  const reviews = [...curated, ...siteReviews].filter(
+    (review) => review.rating >= 1 && review.rating <= 5 && review.body.trim()
+  );
+  if (!reviews.length) return {};
+
+  const average = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  return {
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: Math.round(average * 10) / 10,
+      reviewCount: reviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    review: reviews.slice(0, 10).map((review) => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: review.name },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      reviewBody: review.body,
+      ...(review.datePublished ? { datePublished: review.datePublished } : {}),
+    })),
+  };
+};
+
+// Mirrors /shipping: packed within 1-3 business days, delivered within 7 business
+// days of order confirmation (Israeli business days, Sun-Thu), 35 ₪ under the
+// free-shipping threshold. The rate is per single-item order of this product.
+const shippingDetailsStructuredData = (price: number, shipping: ShippingSettings) => ({
+  "@type": "OfferShippingDetails",
+  shippingRate: {
+    "@type": "MonetaryAmount",
+    value: price >= shipping.freeShippingThreshold ? 0 : shipping.shippingCost,
+    currency: "ILS",
+  },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "IL" },
+  deliveryTime: {
+    "@type": "ShippingDeliveryTime",
+    handlingTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 3, unitCode: "DAY" },
+    transitTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 4, unitCode: "DAY" },
+    businessDays: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "https://schema.org/Sunday",
+        "https://schema.org/Monday",
+        "https://schema.org/Tuesday",
+        "https://schema.org/Wednesday",
+        "https://schema.org/Thursday",
+      ],
+    },
+  },
+});
+
+// Mirrors /returns: 14 days from delivery, full refund, no cancellation fee; on a
+// change-of-mind return the customer ships it back at her own cost.
+const returnPolicyStructuredData = () => ({
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "IL",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 14,
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+  refundType: "https://schema.org/FullRefund",
+  merchantReturnLink: absoluteUrl("/returns"),
+});
+
+const getProductRoutes = (
+  products: ProductRow[],
+  shipping: ShippingSettings,
+  siteReviews: Map<string, SchemaReview[]>
+): StaticRoute[] =>
   products.map((product) => {
     const fullDescription =
       product.seo_description ||
@@ -695,6 +866,7 @@ const getProductRoutes = (products: ProductRow[]): StaticRoute[] =>
               : image,
             brand: { "@type": "Brand", name: siteName },
             url: pageUrl,
+            ...reviewStructuredData(product.handle, siteReviews.get(product.handle) || []),
             offers: {
               "@type": "Offer",
               price,
@@ -703,6 +875,8 @@ const getProductRoutes = (products: ProductRow[]): StaticRoute[] =>
                 ? "https://schema.org/InStock"
                 : "https://schema.org/OutOfStock",
               url: pageUrl,
+              shippingDetails: shippingDetailsStructuredData(price, shipping),
+              hasMerchantReturnPolicy: returnPolicyStructuredData(),
             },
           },
           {
@@ -900,9 +1074,11 @@ async function main() {
   const template = await fs.readFile(distIndexPath, "utf8");
   const products = await fetchProducts();
   const collections = await fetchCollections();
+  const shipping = await fetchShippingSettings();
+  const siteReviews = await fetchApprovedReviews();
   const allRoutes = [
     ...buildStaticRoutes(products),
-    ...getProductRoutes(products),
+    ...getProductRoutes(products, shipping, siteReviews),
     ...getCollectionRoutes(collections),
   ];
 
