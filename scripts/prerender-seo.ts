@@ -30,12 +30,15 @@ type ProductRow = {
   price: number | null;
   vendor: string | null;
   is_bundle: boolean | null;
+  /** Computed once per product from storefront_availability (or available_for_sale as a fallback). */
+  sellable?: boolean;
   product_images?: Array<{
     url: string;
     alt_text: string | null;
     position: number | null;
   }>;
   product_variants?: Array<{
+    id: string;
     price: number | null;
     available_for_sale: boolean | null;
     sort_order: number | null;
@@ -670,7 +673,7 @@ const fetchProducts = async (): Promise<ProductRow[]> => {
 
   const { data, error } = await supabase
     .from("products")
-    .select("handle,title,description_html,seo_title,seo_description,updated_at,price,vendor,is_bundle,product_images(url,alt_text,position),product_variants(price,available_for_sale,sort_order)")
+    .select("handle,title,description_html,seo_title,seo_description,updated_at,price,vendor,is_bundle,product_images(url,alt_text,position),product_variants(id,price,available_for_sale,sort_order)")
     .eq("status", "active")
     .order("title");
 
@@ -681,6 +684,30 @@ const fetchProducts = async (): Promise<ProductRow[]> => {
 
   return (data || []) as ProductRow[];
 };
+
+/**
+ * Variants the store will actually sell right now (stock-aware, kits from parts).
+ * null = view unavailable → fall back to the manual available_for_sale switch.
+ */
+const fetchSellableVariantIds = async (): Promise<Set<string> | null> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("storefront_availability").select("variant_id, sellable");
+  if (error) {
+    console.warn("[prerender-seo] storefront_availability unavailable, using available_for_sale:", error.message);
+    return null;
+  }
+  return new Set((data ?? []).filter((r) => r.sellable).map((r) => r.variant_id as string));
+};
+
+const markSellable = (products: ProductRow[], sellableIds: Set<string> | null): ProductRow[] =>
+  products.map((product) => {
+    const variants = product.product_variants ?? [];
+    const sellable = sellableIds
+      ? variants.length === 0 || variants.some((v) => sellableIds.has(v.id))
+      : variants.length === 0 || variants.some((v) => v.available_for_sale !== false);
+    return { ...product, sellable };
+  });
 
 const DEFAULT_SHIPPING: ShippingSettings = { shippingCost: 35, freeShippingThreshold: 350 };
 
@@ -845,7 +872,7 @@ const getProductRoutes = (
     );
     const firstVariant = variants[0];
     const price = firstVariant?.price ?? product.price ?? 0;
-    const available = firstVariant?.available_for_sale !== false;
+    const available = product.sellable !== false;
     const pageUrl = absoluteUrl(`/product/${product.handle}`);
 
     return {
@@ -998,9 +1025,7 @@ const writeLlmsFullTxt = async (
 
   const productEntry = (product: ProductRow): string => {
     const price = salePrice(product);
-    const variants = product.product_variants || [];
-    const available =
-      variants.length === 0 || variants.some((v) => v.available_for_sale);
+    const available = product.sellable !== false;
     const description = truncate(
       product.seo_description || stripHtml(product.description_html),
       300
@@ -1072,7 +1097,8 @@ async function main() {
   instagramUrl = process.env.VITE_INSTAGRAM_URL?.trim() || "";
 
   const template = await fs.readFile(distIndexPath, "utf8");
-  const products = await fetchProducts();
+  const [rawProducts, sellableIds] = await Promise.all([fetchProducts(), fetchSellableVariantIds()]);
+  const products = markSellable(rawProducts, sellableIds);
   const collections = await fetchCollections();
   const shipping = await fetchShippingSettings();
   const siteReviews = await fetchApprovedReviews();
