@@ -59,8 +59,9 @@ export const InventoryAdjustDialog = ({ open, onOpenChange, target, mode, onDone
     setNote('');
   }, [open, mode, target]);
 
+  const hasInput = quantity.trim() !== '';
   const qty = Number(quantity);
-  const qtyValid = Number.isInteger(qty) && (mode === 'count' ? qty >= 0 : qty > 0);
+  const qtyValid = hasInput && Number.isInteger(qty) && (mode === 'count' ? qty >= 0 : qty > 0);
   const noteRequired = mode === 'adjust' && reason === 'adjust';
   const canSubmit = target && qtyValid && (!noteRequired || note.trim().length > 0) && !saving;
 
