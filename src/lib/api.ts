@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import type { Product, ProductEdge, Collection, CollectionEdge, BundleItem } from './types';
 import { startSpan } from './sentry';
+import { applyAvailability, fetchAvailability } from './availability';
 
 export const MAIN_COLLECTION_HANDLE = 'הכל';
 
@@ -97,11 +98,15 @@ async function getBundleContentsMap(
   return map;
 }
 
-/** Wraps a product-row list into ProductEdges, attaching bundle contents to bundle rows. */
+/** Wraps product rows into ProductEdges: kit contents for kit rows, live availability for every variant. */
 async function toProductEdgesWithBundles(rows: any[]): Promise<ProductEdge[]> {
   const bundleIds = rows.filter((r) => r.is_bundle).map((r) => r.id);
-  const contentsMap = await getBundleContentsMap(bundleIds);
-  return rows.map((row) => ({ node: transformProduct(row, contentsMap[row.id]) }));
+  const [contentsMap, availability] = await Promise.all([
+    getBundleContentsMap(bundleIds),
+    fetchAvailability(rows.map((r) => r.id)),
+  ]);
+  const edges = rows.map((row) => ({ node: transformProduct(row, contentsMap[row.id]) }));
+  return applyAvailability(edges, availability);
 }
 
 function buildOptions(variants: any[]): Array<{ name: string; values: string[] }> {
@@ -179,7 +184,8 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       .single();
 
     if (error || !data) return null;
-    const product = transformProduct(data);
+    const availability = await fetchAvailability([data.id]);
+    const product = applyAvailability([{ node: transformProduct(data) }], availability)[0].node;
 
     // Published collections for the breadcrumb (skip "הכל" — it's the
     // master-ordering collection, not a browse destination).

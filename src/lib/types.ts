@@ -20,6 +20,8 @@ export interface ProductVariant {
   title: string;
   price: { amount: string; currencyCode: string };
   availableForSale: boolean;
+  /** From storefront_availability: how many a customer may order right now. null = no limit. */
+  maxOrderable?: number | null;
   selectedOptions: VariantOption[];
 }
 
