@@ -1,7 +1,8 @@
 // Submits every URL in the live sitemap to IndexNow (api.indexnow.org), which
 // feeds Bing and the other IndexNow-enabled engines instantly instead of
 // waiting for a crawl. ChatGPT search retrieves from Bing's index, so this is
-// also the fast path into LLM answers. Run after a production deploy:
+// also the fast path into LLM answers. Runs automatically after every
+// production deploy via .github/workflows/indexnow.yml; by hand:
 //   npm run seo:indexnow
 // The key is public by design - the matching key file in public/ proves
 // domain ownership.

@@ -199,6 +199,9 @@ in Vercel!). `public/robots.txt` was deleted on purpose: it used to shadow the `
 rewrite with a stale vercel.app sitemap URL; robots is served by `api/robots.ts` (which also
 explicitly allows AI crawlers). `public/llms.txt` describes the brand for LLM crawlers.
 `vercel.json` also sets the CSP and rewrites for SPA routing, robots, and sitemap.
+IndexNow (Bing): key file `public/f19e1d2ed79c4f8cbb981c8042a5c2b3.txt`; `.github/workflows/indexnow.yml`
+submits the live sitemap to IndexNow automatically after every successful production deploy
+(`npm run seo:indexnow` does the same by hand).
 
 ## Conventions & gotchas
 

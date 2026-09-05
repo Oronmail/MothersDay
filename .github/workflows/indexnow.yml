@@ -1,0 +1,26 @@
+# Pings IndexNow (Bing + partner engines) with every URL in the live sitemap
+# after each successful PRODUCTION deploy, so nobody has to remember
+# `npm run seo:indexnow`. Vercel's GitHub integration reports every deploy as a
+# GitHub Deployment (environment "Production" / "Preview") and updates its
+# status; this workflow reacts to the success status of the production one.
+# The IndexNow key is public by design (the key file in public/ proves domain
+# ownership), so no secrets are involved.
+name: IndexNow after production deploy
+
+on:
+  deployment_status:
+
+jobs:
+  submit:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Give the production alias a moment to point at the new deployment.
+      - run: sleep 30
+      # Node 24 runs the .ts script directly (type stripping) - no npm install.
+      - run: node scripts/indexnow-submit.ts
