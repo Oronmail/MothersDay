@@ -171,12 +171,97 @@ BEGIN
     ASSERT (SELECT created_by FROM inventory_movements WHERE id = v_mov_id) = v_admin, 'movement created_by mismatch';
     ASSERT (SELECT delta FROM inventory_movements WHERE id = v_mov_id) = 2, 'movement delta mismatch';
 
-    PERFORM set_config('request.jwt.claims', '', true);
+    EXECUTE 'RESET request.jwt.claims';
   ELSE
     RAISE NOTICE 'no admin profile — RPC admin path not exercised';
   END IF;
 
   RAISE NOTICE 'inventory_scenarios: all assertions passed';
+END $$;
+
+DO $$
+DECLARE
+  p_a UUID; p_c UUID; p_k UUID; v_a UUID; v_b UUID; v_c UUID; v_k UUID; o UUID; n INTEGER; r RECORD;
+BEGIN
+  EXECUTE 'RESET request.jwt.claims';
+
+  SELECT v.id, p.id INTO v_a, p_a FROM product_variants v JOIN products p ON p.id = v.product_id WHERE p.handle = 'zz-test-part-a';
+  SELECT v.id INTO v_b FROM product_variants v JOIN products p ON p.id = v.product_id WHERE p.handle = 'zz-test-part-b';
+  SELECT v.id, p.id INTO v_c, p_c FROM product_variants v JOIN products p ON p.id = v.product_id WHERE p.handle = 'zz-test-part-c';
+  SELECT v.id, p.id INTO v_k, p_k FROM product_variants v JOIN products p ON p.id = v.product_id WHERE p.handle = 'zz-test-kit';
+
+  -- clean numbers: A=10, B=3 → kit (2A+1B) can build min(5,3)=3, limited by B
+  PERFORM inv_apply(v_a, NULL, NULL, 10, 'count', NULL, 'reset', NULL, NULL);
+  PERFORM inv_apply(v_b, NULL, NULL, 3,  'count', NULL, 'reset', NULL, NULL);
+  ASSERT (SELECT can_build FROM kit_availability WHERE bundle_id = p_k) = 3, 'kit can_build 3';
+  ASSERT (SELECT limiting_variant_id FROM kit_availability WHERE bundle_id = p_k) = v_b, 'kit limited by B';
+
+  -- a pending, unexpired order for 6×A reserves 6 → A available 4 → kit floor(4/2)=2, limited by A
+  INSERT INTO orders (line_items, shipping_address, total_price, currency_code, financial_status, fulfillment_status, expires_at, customer_email)
+  VALUES (jsonb_build_array(jsonb_build_object('product_id', p_a, 'variant_id', v_a, 'quantity', 6, 'title', 'חלק א', 'price', '10')),
+          '{}'::jsonb, 60, 'ILS', 'pending', 'unfulfilled', now() + interval '2 hours', 'test@example.com') RETURNING id INTO o;
+  ASSERT (SELECT reserved FROM inventory_reserved WHERE variant_id = v_a) = 6, 'reserved A';
+  ASSERT (SELECT max_orderable FROM variant_availability WHERE variant_id = v_a) = 4, 'max_orderable A';
+  ASSERT (SELECT sellable FROM variant_availability WHERE variant_id = v_a), 'A sellable';
+  ASSERT (SELECT can_build FROM kit_availability WHERE bundle_id = p_k) = 2, 'kit can_build 2 with reservation';
+  ASSERT (SELECT limiting_variant_id FROM kit_availability WHERE bundle_id = p_k) = v_a, 'kit limited by A';
+  ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_k) = 2, 'kit max_orderable';
+  ASSERT (SELECT sellable FROM storefront_availability WHERE variant_id = v_k), 'kit sellable';
+  ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_c) IS NULL, 'untracked unlimited';
+
+  -- an expired pending order reserves nothing
+  INSERT INTO orders (line_items, shipping_address, total_price, currency_code, financial_status, fulfillment_status, expires_at, customer_email)
+  VALUES (jsonb_build_array(jsonb_build_object('product_id', p_a, 'variant_id', v_a, 'quantity', 100, 'title', 'חלק א', 'price', '10')),
+          '{}'::jsonb, 1000, 'ILS', 'pending', 'unfulfilled', now() - interval '1 minute', 'test@example.com');
+  ASSERT (SELECT reserved FROM inventory_reserved WHERE variant_id = v_a) = 6, 'expired order reserved stock';
+
+  -- check_order_stock: shortages only, kits exploded, untracked ignored
+  SELECT count(*) INTO n FROM check_order_stock(jsonb_build_array(jsonb_build_object('product_id', p_a, 'variant_id', v_a, 'quantity', 5)));
+  ASSERT n = 1, '5×A should be short (available 4)';
+  SELECT * INTO r FROM check_order_stock(jsonb_build_array(jsonb_build_object('product_id', p_a, 'variant_id', v_a, 'quantity', 5)));
+  ASSERT r.requested = 5 AND r.available = 4 AND r.title = 'חלק א', format('shortage row: %s', r);
+  SELECT count(*) INTO n FROM check_order_stock(jsonb_build_array(jsonb_build_object('product_id', p_k, 'variant_id', v_k, 'quantity', 3)));
+  ASSERT n = 1, '3 kits need 6×A, only 4 available';
+  SELECT count(*) INTO n FROM check_order_stock(jsonb_build_array(jsonb_build_object('product_id', p_k, 'variant_id', v_k, 'quantity', 2)));
+  ASSERT n = 0, '2 kits fit';
+  SELECT count(*) INTO n FROM check_order_stock(jsonb_build_array(jsonb_build_object('product_id', p_c, 'variant_id', v_c, 'quantity', 99)));
+  ASSERT n = 0, 'untracked never short';
+
+  -- reservation switch off → nothing reserved
+  UPDATE store_settings SET value = 'false'::jsonb WHERE key = 'inventory_reserve_pending';
+  ASSERT NOT EXISTS (SELECT 1 FROM inventory_reserved WHERE variant_id = v_a), 'switch off still reserves';
+  UPDATE store_settings SET value = 'true'::jsonb WHERE key = 'inventory_reserve_pending';
+
+  -- out of stock → not sellable; policy continue → sellable, unlimited
+  PERFORM inv_apply(v_a, NULL, NULL, 0, 'count', NULL, 'reset', NULL, NULL);
+  ASSERT NOT (SELECT sellable FROM variant_availability WHERE variant_id = v_a), 'A at 0 still sellable';
+  ASSERT NOT (SELECT sellable FROM storefront_availability WHERE variant_id = v_k), 'kit with 0 part still sellable';
+  UPDATE inventory_levels SET policy = 'continue' WHERE variant_id = v_a;
+  ASSERT (SELECT sellable FROM variant_availability WHERE variant_id = v_a), 'continue policy not sellable';
+  ASSERT (SELECT max_orderable FROM variant_availability WHERE variant_id = v_a) IS NULL, 'continue policy capped';
+  UPDATE inventory_levels SET policy = 'deny' WHERE variant_id = v_a;
+
+  -- staff views: empty for postgres/anon, populated for service_role
+  ASSERT NOT EXISTS (SELECT 1 FROM variant_stock), 'variant_stock visible without staff role';
+  EXECUTE 'SET LOCAL ROLE service_role';
+  ASSERT (SELECT status FROM variant_stock WHERE variant_id = v_a) = 'out', 'variant_stock status';
+  ASSERT (SELECT status FROM variant_stock WHERE variant_id = v_c) = 'untracked', 'untracked status';
+  ASSERT (SELECT can_build FROM kit_stock WHERE bundle_id = p_k) = 0, 'kit_stock';
+  ASSERT (SELECT count(*) FROM inventory_movement_log WHERE variant_id = v_a) > 0, 'movement log';
+  ASSERT (SELECT status FROM supply_stock WHERE sku = 'ZZ-BOX') = 'ok', 'supply_stock';
+  EXECUTE 'RESET ROLE';
+  EXECUTE 'SET LOCAL ROLE anon';
+  -- anon has no GRANT at all on the staff views (REVOKE ALL ... FROM PUBLIC, anon in
+  -- the migration), so this is a hard ACL denial, not an empty result set.
+  BEGIN
+    PERFORM 1 FROM variant_stock LIMIT 1;
+    RAISE EXCEPTION 'anon queried variant_stock without error';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  ASSERT EXISTS (SELECT 1 FROM storefront_availability WHERE variant_id = v_a), 'anon cannot read storefront_availability';
+  EXECUTE 'RESET ROLE';
+
+  RAISE NOTICE 'availability_scenarios: all assertions passed';
 END $$;
 
 ROLLBACK;
