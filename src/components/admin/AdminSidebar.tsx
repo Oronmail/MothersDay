@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
-import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, Ticket, LogOut, Settings, Heart } from 'lucide-react';
+import { LayoutDashboard, Package, Gift, FolderOpen, ShoppingCart, Users, Mail, Ticket, LogOut, Settings, Heart, Boxes } from 'lucide-react';
 import logoNew from '@/assets/logo-new.png';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: LayoutDashboard, label: 'דשבורד', end: true },
   { to: '/admin/products', icon: Package, label: 'מוצרים' },
   { to: '/admin/bundles', icon: Gift, label: 'מארזים' },
+  { to: '/admin/inventory', icon: Boxes, label: 'מלאי' },
   { to: '/admin/collections', icon: FolderOpen, label: 'קולקציות' },
   { to: '/admin/orders', icon: ShoppingCart, label: 'הזמנות' },
   { to: '/admin/customers', icon: Users, label: 'לקוחות' },

@@ -6,6 +6,7 @@ import { ProductList } from '@/components/admin/ProductList';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { BundleList } from '@/components/admin/BundleList';
 import { BundleForm } from '@/components/admin/BundleForm';
+import { InventoryOverview } from '@/components/admin/InventoryOverview';
 import { CollectionList } from '@/components/admin/CollectionList';
 import { CollectionForm } from '@/components/admin/CollectionForm';
 import { OrderList } from '@/components/admin/OrderList';
@@ -28,6 +29,7 @@ const AdminDashboardPage = () => (
         <Route path="bundles" element={<BundleList />} />
         <Route path="bundles/new" element={<BundleForm />} />
         <Route path="bundles/:id" element={<BundleForm />} />
+        <Route path="inventory" element={<InventoryOverview />} />
         <Route path="collections" element={<CollectionList />} />
         <Route path="collections/new" element={<CollectionForm />} />
         <Route path="collections/:id" element={<CollectionForm />} />
