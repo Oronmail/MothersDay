@@ -128,10 +128,11 @@ export async function collectLowStockForOrder(supabase: SupabaseClient, orderId:
   const hits = ((rows ?? []) as VariantStockRow[]).filter((r) => isLowStatus(r.status) && !r.low_stock_alerted_at);
   if (hits.length === 0) return [];
 
-  const { data: kits } = await supabase
+  const { data: kits, error: kitsError } = await supabase
     .from("kit_stock")
     .select("bundle_title, can_build, limiting_variant_id")
     .in("limiting_variant_id", hits.map((h) => h.variant_id));
+  if (kitsError) console.error("kit_stock read failed", orderId, kitsError);
   const blocked = new Map<string, string[]>();
   for (const k of (kits ?? []) as KitStockRow[]) {
     if (k.limiting_variant_id && (k.can_build ?? 1) <= 0) {
@@ -158,6 +159,7 @@ export async function collectLowStockSupplies(supabase: SupabaseClient, orderId:
     .select("supply_id")
     .eq("order_id", orderId)
     .eq("reason", "consume");
+  if (movesError) console.error("inventory_movements read failed", orderId, movesError);
   if (movesError || !moves?.length) return [];
   const supplyIds = moves.map((m: { supply_id: string }) => m.supply_id);
 
