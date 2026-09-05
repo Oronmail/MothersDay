@@ -17,6 +17,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Loader2, ArrowRight, Trash2, Upload, Plus } from 'lucide-react';
+import { InventoryAdjustDialog, type AdjustTarget } from './InventoryAdjustDialog';
+import { INVENTORY_QUERY_KEY, stockStatusBadge, variantDisplayTitle, type VariantStockRow } from './adminInventory';
 
 const productSchema = z.object({
   title: z.string().min(1, 'שדה חובה'),
@@ -27,7 +29,6 @@ const productSchema = z.object({
   status: z.enum(['active', 'draft']),
   // מכירות
   sku: z.string().optional().nullable(),
-  inventory_quantity: z.string().optional().nullable(),
   // מאפיינים
   page_quantity: z.string().optional().nullable(),
   page_size: z.string().optional().nullable(),
@@ -57,6 +58,9 @@ interface VariantRow {
   compare_at_price: string;
   sku: string;
   available_for_sale: boolean;
+  /** Inventory (spec §7.6). Empty threshold = store default. Only saved for tracked variants. */
+  low_stock_threshold: string;
+  policy: 'deny' | 'continue';
 }
 
 interface ProductImageRow {
@@ -177,7 +181,6 @@ export const ProductForm = () => {
       compare_at_price: null,
       status: 'draft',
       sku: null,
-      inventory_quantity: null,
       page_quantity: null,
       page_size: null,
       page_weight: null,
@@ -208,6 +211,22 @@ export const ProductForm = () => {
       return data;
     },
   });
+
+  // Per-variant stock (view is admin-only; edit mode only, since new products have no variants yet).
+  const { data: stockRows } = useQuery({
+    queryKey: [...INVENTORY_QUERY_KEY, 'product', id],
+    enabled: isEdit,
+    queryFn: async (): Promise<VariantStockRow[]> => {
+      const { data, error } = await supabase.from('variant_stock').select('*').eq('product_id', id!);
+      if (error) {
+        if (error.code === '42P01') return []; // inventory migration not applied yet
+        throw error;
+      }
+      return (data ?? []) as VariantStockRow[];
+    },
+  });
+  const stockByVariant = new Map((stockRows ?? []).map((r) => [r.variant_id, r]));
+  const [stockDialog, setStockDialog] = useState<AdjustTarget | null>(null);
 
   // All collections, for the assignment checklist.
   const { data: allCollections } = useQuery({
@@ -247,7 +266,6 @@ export const ProductForm = () => {
         compare_at_price: ep.compare_at_price ?? null,
         status: ep.status ?? 'draft',
         sku: ep.sku ?? null,
-        inventory_quantity: ep.inventory_quantity != null ? String(ep.inventory_quantity) : null,
         page_quantity: ep.page_quantity ?? null,
         page_size: ep.page_size ?? null,
         page_weight: ep.page_weight ?? null,
@@ -283,10 +301,15 @@ export const ProductForm = () => {
             compare_at_price: v.compare_at_price != null ? String(v.compare_at_price) : '',
             sku: v.sku ?? '',
             available_for_sale: v.available_for_sale ?? true,
+            low_stock_threshold: stockByVariant.get(v.id)?.own_threshold != null
+              ? String(stockByVariant.get(v.id)!.own_threshold)
+              : '',
+            policy: stockByVariant.get(v.id)?.policy ?? 'deny',
           }))
       );
     }
-  }, [existingProduct, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingProduct, form, stockRows]);
 
   useEffect(() => {
     if (productCollectionIds) setCollectionIds(productCollectionIds);
@@ -305,7 +328,7 @@ export const ProductForm = () => {
     newVariantCounter.current += 1;
     setVariants((prev) => [
       ...prev,
-      { id: `new-${newVariantCounter.current}`, title: '', price: '', compare_at_price: '', sku: '', available_for_sale: true },
+      { id: `new-${newVariantCounter.current}`, title: '', price: '', compare_at_price: '', sku: '', available_for_sale: true, low_stock_threshold: '', policy: 'deny' },
     ]);
   };
   const updateVariant = (rowId: string, patch: Partial<VariantRow>) =>
@@ -346,7 +369,6 @@ export const ProductForm = () => {
       // form keeps working even before that migration is applied to the DB.
       const newPayload = {
         sku: values.sku || null,
-        inventory_quantity: numOrNull(values.inventory_quantity),
         weight_grams: numOrNull(values.weight_grams),
         package_length_cm: numOrNull(values.package_length_cm),
         package_width_cm: numOrNull(values.package_width_cm),
@@ -439,6 +461,18 @@ export const ProductForm = () => {
         } else {
           const { error } = await supabase.from('product_variants').update(row).eq('id', v.id);
           if (error) throw error;
+
+          // Threshold/policy live on inventory_levels and exist only once the variant is tracked.
+          if (stockByVariant.get(v.id)?.is_tracked) {
+            const { error: levelError } = await supabase
+              .from('inventory_levels')
+              .update({
+                low_stock_threshold: v.low_stock_threshold.trim() === '' ? null : Number(v.low_stock_threshold),
+                policy: v.policy,
+              })
+              .eq('variant_id', v.id);
+            if (levelError) throw levelError;
+          }
         }
       }
 
@@ -467,6 +501,7 @@ export const ProductForm = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'product', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'product-collections', id] });
+      queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       toast.success(isEdit ? 'המוצר עודכן בהצלחה' : 'המוצר נוצר בהצלחה');
       navigate('/admin/products');
     },
@@ -686,9 +721,10 @@ export const ProductForm = () => {
                 <Label htmlFor="sku">מק"ט</Label>
                 <Input id="sku" {...form.register('sku')} dir="ltr" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="inventory_quantity">מלאי (כמות במלאי)</Label>
-                <Input id="inventory_quantity" type="number" step="1" {...form.register('inventory_quantity')} placeholder="ריק = לא נמדד" />
+              <div className="space-y-2 col-span-2">
+                <p className="text-xs text-muted-foreground">
+                  המלאי מנוהל לכל וריאנט בכרטיס "וריאנטים" למטה ובמסך <a href="/admin/inventory" className="underline">מלאי</a>.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -742,6 +778,59 @@ export const ProductForm = () => {
                     <span className="text-sm">{v.available_for_sale ? 'זמין למכירה' : 'לא זמין'}</span>
                   </div>
                 </div>
+                {!v.id.startsWith('new-') && (() => {
+                  const stock = stockByVariant.get(v.id);
+                  const badge = stockStatusBadge(stock?.status ?? 'untracked');
+                  return (
+                    <div className="border-t border-border pt-3 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium">מלאי</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.className}`}>{badge.label}</span>
+                          {stock?.is_tracked && (
+                            <span className="text-muted-foreground font-mono tabular-nums" dir="ltr">
+                              {stock.on_hand} במלאי · {stock.reserved} שמור · {stock.available} זמין
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={stock?.is_tracked ? 'outline' : 'default'}
+                          onClick={() => setStockDialog({
+                            kind: 'variant',
+                            id: v.id,
+                            title: stock ? variantDisplayTitle(stock) : (v.title || form.getValues('title')),
+                            onHand: stock?.on_hand ?? null,
+                          })}
+                        >
+                          {stock?.is_tracked ? 'עדכון מלאי (ספירה)' : 'התחלת מעקב'}
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">סף התראה (ריק = ברירת המחדל)</Label>
+                          <Input type="number" step="1" min="0" dir="ltr" value={v.low_stock_threshold}
+                            disabled={!stock?.is_tracked}
+                            onChange={(e) => updateVariant(v.id, { low_stock_threshold: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">כשהמלאי נגמר</Label>
+                          <Select value={v.policy} onValueChange={(val) => updateVariant(v.id, { policy: val as 'deny' | 'continue' })} disabled={!stock?.is_tracked}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="deny">עצור מכירה ב־0</SelectItem>
+                              <SelectItem value="continue">אפשר הזמנה מראש</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {!stock?.is_tracked && (
+                        <p className="text-xs text-muted-foreground">סף ומדיניות נפתחים לעריכה אחרי הספירה הראשונה.</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
             <Button type="button" variant="outline" size="sm" onClick={addVariant}>
@@ -954,6 +1043,14 @@ export const ProductForm = () => {
             ביטול
           </Button>
         </div>
+
+        <InventoryAdjustDialog
+          open={stockDialog !== null}
+          onOpenChange={(open) => { if (!open) setStockDialog(null); }}
+          target={stockDialog}
+          mode="count"
+          onDone={() => queryClient.invalidateQueries({ queryKey: [...INVENTORY_QUERY_KEY, 'product', id] })}
+        />
       </form>
     </div>
   );
