@@ -11,6 +11,8 @@ import { LazyImage } from "@/components/LazyImage";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
+import { cartItemMaxQuantity } from "@/lib/availability";
+import { useCartStockClamp } from "@/hooks/useCartStockClamp";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -53,6 +55,7 @@ export function CheckoutSummary({
   const termsError = formState.errors.terms_accepted?.message as string | undefined;
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  useCartStockClamp();
 
   const totalPrice = Math.max(0, subtotal - discount) + shippingCost;
 
@@ -157,7 +160,9 @@ export function CheckoutSummary({
       <div className={`space-y-3 ${isExpanded ? "block" : "hidden md:block"}`}>
         <h2 className="text-lg hidden md:block">סיכום הזמנה</h2>
 
-        {items.map((item) => (
+        {items.map((item) => {
+          const itemMax = cartItemMaxQuantity(item);
+          return (
           <div key={item.variantId} className="flex gap-3 border-b border-border/60 pb-3 last:border-b-0 last:pb-0">
             <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 relative">
               {item.product.node.images?.edges?.[0]?.node && (
@@ -208,12 +213,14 @@ export function CheckoutSummary({
                   <button
                     type="button"
                     onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                    disabled={item.quantity >= MAX_ITEM_QUANTITY}
-                    title={item.quantity >= MAX_ITEM_QUANTITY ? MAX_ITEM_QUANTITY_MESSAGE : undefined}
+                    disabled={item.quantity >= itemMax}
+                    title={item.quantity >= itemMax
+                      ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                      : undefined}
                     className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     aria-label={
-                      item.quantity >= MAX_ITEM_QUANTITY
-                        ? MAX_ITEM_QUANTITY_MESSAGE
+                      item.quantity >= itemMax
+                        ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                         : `הגדילי כמות עבור ${item.product.node.title}`
                     }
                   >
@@ -223,7 +230,8 @@ export function CheckoutSummary({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {/* Coupon code (desktop keeps it here, between the items and the totals) */}
         {couponSection && (

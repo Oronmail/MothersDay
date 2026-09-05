@@ -10,6 +10,7 @@ import { ROUTES } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
+import { cartItemMaxQuantity } from "@/lib/availability";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +56,9 @@ export const CartDrawer = () => {
             </div> : <>
               <div className="flex-1 overflow-y-auto pr-2 min-h-0">
                 <div className="space-y-4">
-                  {items.map(item => <div key={item.variantId} className="flex gap-4 p-2">
+                  {items.map(item => {
+                    const itemMax = cartItemMaxQuantity(item);
+                    return <div key={item.variantId} className="flex gap-4 p-2">
                       <div className="w-16 h-16 bg-secondary/20 overflow-hidden flex-shrink-0">
                         {item.product.node.images?.edges?.[0]?.node && (
                           <LazyImage 
@@ -92,11 +95,13 @@ export const CartDrawer = () => {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                            disabled={item.quantity >= MAX_ITEM_QUANTITY}
-                            title={item.quantity >= MAX_ITEM_QUANTITY ? MAX_ITEM_QUANTITY_MESSAGE : undefined}
+                            disabled={item.quantity >= itemMax}
+                            title={item.quantity >= itemMax
+                              ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                              : undefined}
                             aria-label={
-                              item.quantity >= MAX_ITEM_QUANTITY
-                                ? MAX_ITEM_QUANTITY_MESSAGE
+                              item.quantity >= itemMax
+                                ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                                 : `הגדילי כמות עבור ${item.product.node.title}`
                             }
                           >
@@ -114,7 +119,8 @@ export const CartDrawer = () => {
                           </Button>
                         </div>
                       </div>
-                    </div>)}
+                    </div>;
+                  })}
                 </div>
               </div>
               

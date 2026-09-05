@@ -52,7 +52,7 @@ const QuickViewModalContent = ({
   const price = parseFloat(selectedVariant?.price.amount || data.priceRange.minVariantPrice.amount);
 
   // Use the custom add-to-cart hook
-  const { quantity, incrementQuantity, decrementQuantity, handleAddToCart } = useAddToCart({
+  const { quantity, incrementQuantity, decrementQuantity, handleAddToCart, maxQuantity } = useAddToCart({
     product,
     variant: selectedVariant,
     onSuccess: () => onOpenChange(false), // Close modal on success
@@ -176,8 +176,10 @@ const QuickViewModalContent = ({
                 <span className="px-4 min-w-[3rem] text-center">{quantity}</span>
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  className="p-2 hover:bg-muted transition-colors"
+                  className="p-2 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="הוסף כמות"
+                  disabled={quantity >= maxQuantity}
+                  title={quantity >= maxQuantity ? `אפשר להזמין עד ${maxQuantity} יחידות` : undefined}
                 >
                   <Plus className="h-4 w-4" />
                 </button>

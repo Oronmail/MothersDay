@@ -6,6 +6,7 @@ import { ProductEdge } from "@/lib/types";
 import { startSpan } from "@/lib/sentry";
 import { ROUTES } from "@/lib/routes";
 import { cartItemToTracked, trackAddToCart } from "@/lib/tracking";
+import { variantMaxQuantity } from "@/lib/availability";
 
 interface VariantNode {
   id: string;
@@ -18,6 +19,7 @@ interface VariantNode {
     name: string;
     value: string;
   }>;
+  maxOrderable?: number | null;
 }
 
 interface UseAddToCartOptions {
@@ -34,6 +36,7 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const [quantity, setQuantity] = useState(1);
+  const maxQuantity = variantMaxQuantity(variant?.maxOrderable);
 
   const handleAddToCart = useCallback(
     (customQuantity?: number) => {
@@ -63,6 +66,14 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
           if (qtyToAdd < 1) {
             toast.error("כמות לא תקינה", {
               description: "הכמות חייבת להיות לפחות 1",
+              position: "top-center",
+            });
+            return false;
+          }
+
+          if (qtyToAdd > maxQuantity) {
+            toast.error("אין מספיק במלאי", {
+              description: maxQuantity === 0 ? "המוצר אזל מהמלאי" : `נשארו ${maxQuantity} יחידות בלבד`,
               position: "top-center",
             });
             return false;
@@ -106,13 +117,13 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
         }
       );
     },
-    [product, variant, quantity, addItem, onSuccess, navigate]
+    [product, variant, quantity, maxQuantity, addItem, onSuccess, navigate]
   );
 
   const incrementQuantity = useCallback(() => {
-    // Matches the per-line cap enforced by /api/create-order.
-    setQuantity((prev) => Math.min(prev + 1, 20));
-  }, []);
+    // Stock limit when known, else the per-line cap enforced by /api/create-order.
+    setQuantity((prev) => Math.min(prev + 1, Math.max(1, maxQuantity)));
+  }, [maxQuantity]);
 
   const decrementQuantity = useCallback(() => {
     setQuantity((prev) => Math.max(prev - 1, 1)); // Min 1
@@ -124,5 +135,6 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
     incrementQuantity,
     decrementQuantity,
     handleAddToCart,
+    maxQuantity,
   };
 };

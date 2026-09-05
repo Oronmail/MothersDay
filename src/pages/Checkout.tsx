@@ -108,6 +108,10 @@ function describeOrderError(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
   const haystack = `${code} ${message}`.toLowerCase();
 
+  if (code === "insufficient_stock") {
+    // The server message already names the item and what is left (Hebrew).
+    return `${message}. יש לעדכן את הכמות בסיכום ההזמנה ולנסות שוב.`;
+  }
   if (haystack.includes("quantity")) {
     return `${MAX_ITEM_QUANTITY_MESSAGE}. יש לעדכן את הכמות בסיכום ההזמנה ולנסות שוב.`;
   }

@@ -47,6 +47,7 @@ import {
   getProductStructuredData,
 } from "@/components/SEO";
 import { getAbsoluteSiteUrl } from "@/lib/siteConfig";
+import { variantMaxQuantity } from '@/lib/availability';
 
 /**
  * For bundle products, replace product names in description HTML with clickable links.
@@ -159,6 +160,14 @@ export default function ProductDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.id]);
 
+  // Declared before the loading/error early returns below so the hook order stays
+  // stable across renders; selectedVariant is undefined until data resolves.
+  const selectedVariant = data?.variants.edges[selectedVariantIndex]?.node;
+  const maxQuantity = Math.max(1, variantMaxQuantity(selectedVariant?.maxOrderable));
+  useEffect(() => {
+    setQuantity((q) => Math.min(q, maxQuantity));
+  }, [maxQuantity]);
+
   const handleAddToCart = () => {
     if (!data) return;
 
@@ -190,7 +199,7 @@ export default function ProductDetail() {
   };
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity(prev => Math.max(1, prev + delta));
+    setQuantity(prev => Math.min(maxQuantity, Math.max(1, prev + delta)));
   };
 
   if (isLoading) {
@@ -217,7 +226,6 @@ export default function ProductDetail() {
     );
   }
 
-  const selectedVariant = data.variants.edges[selectedVariantIndex]?.node;
   const productProps = getProductSpecs(data);
   // Reviews with content sit high on the page (before cross-sell); the empty
   // "כתבי לנו" state is moved to the very bottom so it doesn't interrupt shopping.
@@ -380,8 +388,10 @@ export default function ProductDetail() {
                   <span className="px-3 min-w-[2.5rem] text-center">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    className="p-2 hover:bg-muted transition-colors"
+                    className="p-2 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={`הגדילי כמות עבור ${data.title}`}
+                    disabled={quantity >= maxQuantity}
+                    title={quantity >= maxQuantity ? `אפשר להזמין עד ${maxQuantity} יחידות` : undefined}
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -622,8 +632,10 @@ export default function ProductDetail() {
             <span className="px-4 text-base font-medium min-w-[3rem] text-center">{quantity}</span>
             <button
               onClick={() => handleQuantityChange(1)}
-              className="p-2.5 hover:bg-muted transition-colors"
+              className="p-2.5 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="הוסף כמות"
+              disabled={quantity >= maxQuantity}
+              title={quantity >= maxQuantity ? `אפשר להזמין עד ${maxQuantity} יחידות` : undefined}
             >
               <Plus className="h-4 w-4" />
             </button>
