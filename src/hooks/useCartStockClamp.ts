@@ -33,7 +33,7 @@ export function useCartStockClamp() {
       const max = row.sellable ? variantMaxQuantity(row.max_orderable) : 0;
       if (item.quantity > max) {
         changed = true;
-        if (max <= 0) removeItem(item.variantId);
+        if (max <= 0) removeItem(item.variantId, { track: false });
         else updateQuantity(item.variantId, max);
       }
     }

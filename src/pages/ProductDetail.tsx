@@ -163,7 +163,8 @@ export default function ProductDetail() {
   // Declared before the loading/error early returns below so the hook order stays
   // stable across renders; selectedVariant is undefined until data resolves.
   const selectedVariant = data?.variants.edges[selectedVariantIndex]?.node;
-  const maxQuantity = Math.max(1, variantMaxQuantity(selectedVariant?.maxOrderable));
+  const stockMax = variantMaxQuantity(selectedVariant?.maxOrderable);
+  const maxQuantity = Math.max(1, stockMax);
   useEffect(() => {
     setQuantity((q) => Math.min(q, maxQuantity));
   }, [maxQuantity]);
@@ -391,7 +392,7 @@ export default function ProductDetail() {
                     className="p-2 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={`הגדילי כמות עבור ${data.title}`}
                     disabled={quantity >= maxQuantity}
-                    title={quantity >= maxQuantity ? `אפשר להזמין עד ${maxQuantity} יחידות` : undefined}
+                    title={quantity >= maxQuantity ? (stockMax === 0 ? 'אזל מהמלאי' : `אפשר להזמין עד ${maxQuantity} יחידות`) : undefined}
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -635,7 +636,7 @@ export default function ProductDetail() {
               className="p-2.5 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="הוסף כמות"
               disabled={quantity >= maxQuantity}
-              title={quantity >= maxQuantity ? `אפשר להזמין עד ${maxQuantity} יחידות` : undefined}
+              title={quantity >= maxQuantity ? (stockMax === 0 ? 'אזל מהמלאי' : `אפשר להזמין עד ${maxQuantity} יחידות`) : undefined}
             >
               <Plus className="h-4 w-4" />
             </button>

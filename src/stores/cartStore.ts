@@ -12,7 +12,7 @@ interface CartStore {
 
   addItem: (item: CartItem) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
-  removeItem: (variantId: string) => void;
+  removeItem: (variantId: string, options?: { track?: boolean }) => void;
   clearCart: () => void;
   setLoading: (loading: boolean) => void;
   createOrder: (
@@ -64,9 +64,11 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      removeItem: (variantId) => {
+      removeItem: (variantId, options) => {
         const removed = get().items.find(item => item.variantId === variantId);
-        if (removed) {
+        // `track: false` is for system-initiated removals (e.g. the stock clamp),
+        // which aren't a customer action and shouldn't fire remove_from_cart.
+        if (removed && options?.track !== false) {
           trackRemoveFromCart(cartItemToTracked(removed));
         }
         set({
