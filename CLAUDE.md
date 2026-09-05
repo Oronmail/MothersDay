@@ -41,6 +41,7 @@ Shopify/Lovable and are **stale** — trust this file and the code over them.
   - `npm run dev` — Vite dev server on **http://localhost:8080**
   - `npm run build` — `vite build` + `npm run prerender:seo`
   - `npm run lint` — ESLint
+  - `npm test` — Vitest (pure helpers in `api/_lib`, `src/lib`, `src/components/admin`)
   - `npm run import:products` — import products from CSV into Supabase (`scripts/import-products.ts`)
   - `npm run seed:admin` — create an admin user (`scripts/seed-admin.ts`)
 - Path alias: `@` → `src/`.
@@ -150,6 +151,29 @@ on the PayPlus invoice. Free-shipping threshold stays on the PRE-discount subtot
 "מעל 350" promise). first-order enforcement for guests is by email match — accepted risk.
 Codes are managed at `/admin` → הטבות (the `discounts` table).
 
+**Inventory (added 2026-09-06, spec `docs/superpowers/specs/2026-09-05-inventory-management-design.md`):**
+stock is tracked per variant in `inventory_levels` (no row = untracked = unlimited) with an append-only
+`inventory_movements` ledger; `inv_apply()` is the only writer (the `guard_on_hand` trigger blocks any
+other `on_hand` change). Order-side changes come from two triggers on `orders`: `orders_inventory`
+(→ `paid` writes `sale` movements with kits exploded to parts via `order_stock_lines()`;
+`paid` → `cancelled`/`refunded` while unfulfilled negates them as `return`) and `orders_supplies`
+(→ `shipped` consumes active `packaging_supplies`). `mark_order_paid()` no longer touches stock.
+Reservations are derived from pending, unexpired orders (`inventory_reserved`), never stored.
+Public: `storefront_availability(variant_id, sellable, max_orderable)` — the only stock signal the
+storefront/SEO see (`src/lib/availability.ts`). Staff: `variant_stock`, `supply_stock`, `kit_stock`,
+`inventory_movement_log` (rows filtered by `is_staff_or_service()`). `/api/create-order` refuses
+shortages with 409 `insufficient_stock` (`check_order_stock()`). Every paid order emails the owners
+(`ORDER_ALERT_EMAILS`) via `notifyOwnersOfPaidOrder()`, folding in items that just dipped under
+their threshold (`low_stock_alerted_at` stamps, cleared on restock). Admin: `/admin/inventory`
+(overview, per-row קליטה/ספירה/התאמה through the `record_inventory_movements` RPC) and
+`/admin/inventory/movements`; per-variant threshold/policy in the product form. Kits are never
+stocked. `products.inventory_quantity` is unused but still present — it is dropped by a follow-up
+migration once this admin build is in Production (the form stopped writing it). SQL scenarios:
+`supabase/tests/inventory_scenarios.sql` (rolled back; run with psql, using the full connection
+command — zsh does not word-split a `$PSQL` variable holding `host=... port=... user=...`, so pass
+the connection string directly, e.g.
+`PGPASSWORD=$(security find-generic-password -s mothersday-supabase-db -w) psql "host=... port=5432 user=... dbname=postgres sslmode=require" -v ON_ERROR_STOP=1 -f supabase/tests/inventory_scenarios.sql`).
+
 **Feature flags (currently OFF for production until payments are verified):**
 `VITE_CHECKOUT_ENABLED` (client) and `CHECKOUT_ENABLED` (server) — BOTH must be `true`; the server no
 longer falls back to the `VITE_` value. `VITE_PAYMENT_SIMULATION_ENABLED`/`PAYMENT_SIMULATION_ENABLED`
@@ -175,7 +199,9 @@ Full set the code reads (server vars are configured in the **Vercel dashboard** 
   `HFD_SENDER_NAME` (set in Vercel Development+Preview; Production waits for the launch token),
   PayPlus: `PAYPLUS_API_KEY`, `PAYPLUS_SECRET_KEY`, `PAYPLUS_PAYMENT_PAGE_UID`,
   `PAYPLUS_API_BASE` (default production `https://restapi.payplus.co.il/api/v1.0`; staging `restapidev`),
-  `CHECKOUT_ENABLED`, `PAYMENT_SIMULATION_ENABLED`.
+  `CHECKOUT_ENABLED`, `PAYMENT_SIMULATION_ENABLED`,
+  `ORDER_ALERT_EMAILS` (comma-separated owner inboxes for the "הזמנה חדשה" email sent on every
+  paid order via `api/_lib/newOrderAdminEmail.ts`; set in all Vercel envs).
 
 ## SEO build step
 

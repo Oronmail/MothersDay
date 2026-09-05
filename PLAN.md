@@ -30,6 +30,9 @@ This file tracks the remaining work we already identified during the pre-launch 
   Follow `docs/payplus-go-live.md`: apply the two pending Supabase migrations, add the
   PayPlus env vars, test on a preview deployment, then enable
   `VITE_CHECKOUT_ENABLED=true` + `CHECKOUT_ENABLED=true` in Production.
+- After the launch/payplus admin build is live in Production: run a migration
+  `ALTER TABLE products DROP COLUMN IF EXISTS inventory_quantity;` (the form stopped writing it
+  in commit 6dcbd40).
 
 ## Quality and UX follow-up
 
