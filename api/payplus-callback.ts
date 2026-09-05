@@ -9,7 +9,7 @@ import {
   verifyCallbackSignature,
   UUID_RE,
 } from "./_lib/payplus.js";
-import { createAndStoreInvoice, markOrderPaid, PermanentPaymentError, sendPaidOrderEmail } from "./_lib/orderPayment.js";
+import { createAndStoreInvoice, markOrderPaid, notifyOwnersOfPaidOrder, PermanentPaymentError, sendPaidOrderEmail } from "./_lib/orderPayment.js";
 
 /**
  * POST /api/payplus-callback — PayPlus server-to-server callback (refURL_callback).
@@ -204,6 +204,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Invoice+ "api" mode: issue the document now so the email can link it.
       await createAndStoreInvoice(supabase, orderId);
       await sendPaidOrderEmail(supabase, orderId, getPaymentBaseUrl(req));
+      await notifyOwnersOfPaidOrder(supabase, orderId, getPaymentBaseUrl(req));
     }
     return res.status(200).json({ ok: true, paid: true, firstTime: result.updated });
   } catch (error) {

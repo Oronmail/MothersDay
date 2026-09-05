@@ -4,6 +4,7 @@ import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess
 import { isPaymentSimulationEnabled } from "./_lib/checkout.js";
 import { getRequestSiteUrl } from "./_lib/siteUrl.js";
 import { sendOrderConfirmationEmail } from "./_lib/orderConfirmationEmail.js";
+import { notifyOwnersOfPaidOrder } from "./_lib/orderPayment.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -86,6 +87,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         simulated: true,
       })
     : { sent: false as const, reason: "missing_customer_email" };
+
+  await notifyOwnersOfPaidOrder(supabase, order.id, siteUrl, { simulated: true });
 
   return res.status(200).json({
     confirmationUrl,

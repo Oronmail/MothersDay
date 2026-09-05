@@ -3,6 +3,8 @@ import { createOrderAccessToken, getOrderAccessSecret } from "./orderAccess.js";
 import { recordDiscountUsage } from "./discounts.js";
 import { sendOrderConfirmationEmail } from "./orderConfirmationEmail.js";
 import { createInvoiceDocument, getInvoiceMode, getPayPlusConfig } from "./payplus.js";
+import { collectLowStockForOrder, parseAlertEmails, stampLowStockAlerted } from "./inventory.js";
+import { sendNewOrderAdminEmail, type AdminOrderEmailItem } from "./newOrderAdminEmail.js";
 
 /**
  * Shared "mark paid → side effects" path used by both the PayPlus server
@@ -238,5 +240,93 @@ export async function sendPaidOrderEmail(
     }
   } catch (error) {
     console.error("sendPaidOrderEmail failed:", orderId, error);
+  }
+}
+
+/**
+ * "הזמנה חדשה" to the owners (ORDER_ALERT_EMAILS), once per paid order
+ * (orders.admin_notified_at). Carries the low-stock items this order caused,
+ * then stamps them so they alert again only after a restock. Never throws.
+ */
+export async function notifyOwnersOfPaidOrder(
+  supabase: SupabaseClient,
+  orderId: string,
+  siteUrl: string,
+  options: { simulated?: boolean } = {},
+): Promise<void> {
+  try {
+    const recipients = parseAlertEmails(process.env.ORDER_ALERT_EMAILS);
+    if (recipients.length === 0) {
+      console.warn("notifyOwnersOfPaidOrder: ORDER_ALERT_EMAILS is not set — no owners' email sent");
+      return;
+    }
+
+    const { data: order } = await supabase.from("orders").select("*").eq("id", orderId).single();
+    if (!order || order.financial_status !== "paid" || order.admin_notified_at) return;
+
+    const lineItems = (Array.isArray(order.line_items) ? order.line_items : []) as Array<{
+      title?: string; quantity?: number; price?: string | number; product_id?: string;
+    }>;
+
+    // Kit recipes for the packer's eyes (one query for all kits in the order).
+    const productIds = [...new Set(lineItems.map((i) => i.product_id).filter((id): id is string => Boolean(id)))];
+    const { data: kitRows } = productIds.length
+      ? await supabase
+          .from("bundle_items")
+          .select("bundle_id, quantity, product:product_id(title)")
+          .in("bundle_id", productIds)
+      : { data: [] as unknown[] };
+    const partsByKit = new Map<string, Array<{ title: string; quantity: number }>>();
+    for (const row of (kitRows ?? []) as Array<{ bundle_id: string; quantity: number | null; product: { title: string } | { title: string }[] | null }>) {
+      const product = Array.isArray(row.product) ? row.product[0] : row.product;
+      if (!product) continue;
+      partsByKit.set(row.bundle_id, [
+        ...(partsByKit.get(row.bundle_id) ?? []),
+        { title: product.title, quantity: row.quantity ?? 1 },
+      ]);
+    }
+
+    const items: AdminOrderEmailItem[] = lineItems.map((i) => ({
+      title: i.title || "פריט",
+      quantity: Math.max(1, Math.trunc(i.quantity ?? 1)),
+      price: Number(i.price ?? 0),
+      parts: i.product_id ? partsByKit.get(i.product_id) : undefined,
+    }));
+
+    const lowStock = await collectLowStockForOrder(supabase, orderId);
+    const address = (order.shipping_address ?? {}) as { full_name?: string; phone?: string; city?: string };
+
+    const result = await sendNewOrderAdminEmail({
+      to: recipients,
+      orderNumber: order.order_number,
+      customerName: address.full_name?.trim() || null,
+      customerEmail: order.customer_email || order.guest_email || null,
+      customerPhone: address.phone || null,
+      city: address.city || null,
+      items,
+      subtotal: order.subtotal != null ? Number(order.subtotal) : null,
+      discountCode: order.discount_code ?? null,
+      discountAmount: Number(order.discount_amount ?? 0),
+      shippingCost: Number(order.shipping_cost ?? 0),
+      total: Number(order.paid_amount ?? order.total_price),
+      paymentMethod: order.payment_method ?? null,
+      cardLast4: order.card_last4 ?? null,
+      adminUrl: `${siteUrl}/admin/orders/${order.id}`,
+      lowStock,
+      simulated: Boolean(options.simulated),
+    });
+
+    if (result.sent) {
+      await supabase
+        .from("orders")
+        .update({ admin_notified_at: new Date().toISOString() })
+        .eq("id", orderId)
+        .is("admin_notified_at", null);
+      if (lowStock.length) await stampLowStockAlerted(supabase, lowStock);
+    } else {
+      console.error("Owners' new-order email not sent:", orderId, result.reason);
+    }
+  } catch (error) {
+    console.error("notifyOwnersOfPaidOrder failed:", orderId, error);
   }
 }
