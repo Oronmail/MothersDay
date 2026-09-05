@@ -8,8 +8,10 @@ DECLARE
   p_a UUID; p_b UUID; p_c UUID; p_k UUID;
   v_a UUID; v_b UUID; v_c UUID; v_k UUID;
   s_box UUID; s_card UUID; s_manual UUID;
-  o1 UUID; o2 UUID; o3 UUID;
+  o1 UUID; o2 UUID; o3 UUID; o4 UUID;
   n INTEGER;
+  v_a_before INTEGER; v_b_before INTEGER;
+  v_admin UUID; v_mov_id BIGINT;
 BEGIN
   -- ---- fixture: two tracked parts, one untracked part, one kit (2×A + 1×B) ----
   INSERT INTO products (handle, title, is_bundle, price) VALUES
@@ -113,8 +115,25 @@ BEGIN
   ASSERT NOT EXISTS (SELECT 1 FROM inventory_levels WHERE variant_id = v_c), 'untracked got a level row';
   ASSERT NOT EXISTS (SELECT 1 FROM inventory_movements WHERE order_id = o3), 'untracked got a movement';
 
+  -- ---- order 4: kit × quantity 2 → sale A −4, B −2 (recipe scales with the line qty) ----
+  INSERT INTO orders (line_items, shipping_address, total_price, currency_code, financial_status, fulfillment_status, expires_at, customer_email)
+  VALUES (jsonb_build_array(jsonb_build_object('product_id', p_k, 'variant_id', v_k, 'quantity', 2, 'title', 'מארז בדיקה', 'price', '30')),
+          '{}'::jsonb, 60, 'ILS', 'pending', 'unfulfilled', now() + interval '2 hours', 'test@example.com')
+  RETURNING id INTO o4;
+
+  ASSERT (SELECT qty FROM order_stock_lines(o4) WHERE variant_id = v_a) = 4, 'explode A qty2';
+  ASSERT (SELECT qty FROM order_stock_lines(o4) WHERE variant_id = v_b) = 2, 'explode B qty2';
+  ASSERT order_total_units(o4) = 6, 'total units qty2';
+
+  SELECT on_hand INTO v_a_before FROM inventory_levels WHERE variant_id = v_a;
+  SELECT on_hand INTO v_b_before FROM inventory_levels WHERE variant_id = v_b;
+  UPDATE orders SET financial_status = 'paid' WHERE id = o4;
+  ASSERT (SELECT on_hand FROM inventory_levels WHERE variant_id = v_a) = v_a_before - 4, 'sale A o4';
+  ASSERT (SELECT on_hand FROM inventory_levels WHERE variant_id = v_b) = v_b_before - 2, 'sale B o4';
+
   -- ---- alert stamp clears when stock rises above threshold ----
-  UPDATE inventory_levels SET low_stock_alerted_at = now(), low_stock_threshold = 9 WHERE variant_id = v_a; -- on_hand 8 ≤ 9
+  -- on_hand is 4 here (8 after o2, minus 4 from o4's kit×2 sale) — still ≤ the 9 threshold below.
+  UPDATE inventory_levels SET low_stock_alerted_at = now(), low_stock_threshold = 9 WHERE variant_id = v_a;
   PERFORM inv_apply(v_a, NULL, 100, NULL, 'receive', NULL, 'חשבונית 1', NULL, NULL);
   ASSERT (SELECT low_stock_alerted_at FROM inventory_levels WHERE variant_id = v_a) IS NULL, 'alert stamp not cleared';
 
@@ -126,12 +145,36 @@ BEGIN
     IF SQLERRM NOT LIKE 'on_hand changes only%' THEN RAISE; END IF;
   END;
 
-  -- ---- admin RPC refuses non-admins and system reasons ----
+  -- ---- admin RPC: a non-admin caller (auth.uid() is NULL under psql) is refused ----
   BEGIN
     PERFORM record_inventory_movements(jsonb_build_array(jsonb_build_object('variant_id', v_a, 'delta', 1, 'reason', 'receive')));
     RAISE EXCEPTION 'non-admin RPC succeeded';
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
+
+  -- ---- admin RPC, impersonating an admin: system-only reasons are refused, an
+  -- allowed reason writes a movement stamped with the caller's uid ----
+  SELECT id INTO v_admin FROM profiles WHERE role = 'admin' LIMIT 1;
+  IF v_admin IS NOT NULL THEN
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', v_admin, 'role', 'authenticated')::text, true);
+
+    BEGIN
+      PERFORM record_inventory_movements(jsonb_build_array(jsonb_build_object('variant_id', v_a, 'delta', 1, 'reason', 'sale')));
+      RAISE EXCEPTION 'admin RPC allowed a system-only reason';
+    EXCEPTION WHEN OTHERS THEN
+      IF SQLERRM NOT LIKE '%is not allowed from the admin%' THEN RAISE; END IF;
+    END;
+
+    SELECT * INTO v_mov_id FROM record_inventory_movements(
+      jsonb_build_array(jsonb_build_object('variant_id', v_a, 'delta', 2, 'reason', 'receive', 'reference', 'rpc-test')));
+    ASSERT v_mov_id IS NOT NULL, 'admin RPC returned no id';
+    ASSERT (SELECT created_by FROM inventory_movements WHERE id = v_mov_id) = v_admin, 'movement created_by mismatch';
+    ASSERT (SELECT delta FROM inventory_movements WHERE id = v_mov_id) = 2, 'movement delta mismatch';
+
+    PERFORM set_config('request.jwt.claims', '', true);
+  ELSE
+    RAISE NOTICE 'no admin profile — RPC admin path not exercised';
+  END IF;
 
   RAISE NOTICE 'inventory_scenarios: all assertions passed';
 END $$;

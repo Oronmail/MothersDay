@@ -332,6 +332,4 @@ END $$;
 REVOKE ALL ON FUNCTION public.mark_order_paid(UUID,TEXT,TEXT,TEXT,NUMERIC,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,JSONB)
   FROM PUBLIC, anon, authenticated;
 
--- The product-level column was never used (NULL on every row) and its grain is wrong.
--- Dropped here, after mark_order_paid() no longer references it.
-ALTER TABLE products DROP COLUMN IF EXISTS inventory_quantity;
+-- products.inventory_quantity is intentionally kept until the admin build that stops writing it is deployed to production; a follow-up migration drops it then.
