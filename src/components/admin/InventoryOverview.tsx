@@ -226,7 +226,9 @@ export const InventoryOverview = () => {
       <Card>
         <CardHeader><CardTitle className="text-lg">מארזים — כמה אפשר להרכיב</CardTitle></CardHeader>
         <CardContent>
-          {kits.length === 0 ? (
+          {kitsQuery.isError ? (
+            <AdminErrorState error={kitsQuery.error} onRetry={() => kitsQuery.refetch()} title="לא הצלחנו לטעון את המארזים" compact />
+          ) : kits.length === 0 ? (
             <p className="text-center text-muted-foreground py-6">אין מארזים</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
