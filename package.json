@@ -8,6 +8,7 @@
     "build": "vite build && npm run prerender:seo",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "prerender:seo": "tsx scripts/prerender-seo.ts",
     "import:products": "tsx scripts/import-products.ts",
@@ -93,6 +94,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "vitest": "^3.2.7"
   }
 }
