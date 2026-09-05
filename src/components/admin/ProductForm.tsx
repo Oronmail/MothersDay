@@ -309,7 +309,28 @@ export const ProductForm = () => {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProduct, form, stockRows]);
+  }, [existingProduct, form]);
+
+  // Threshold/policy come from variant_stock, which may load after the product. Fill them in once;
+  // later refetches (after a count) must not touch the form — the count changes on_hand, not these fields.
+  const stockFilled = useRef(false);
+  useEffect(() => {
+    if (!stockRows || stockFilled.current) return;
+    setVariants((prev) => {
+      if (prev.length === 0) return prev;
+      stockFilled.current = true;
+      return prev.map((v) => {
+        const stock = stockByVariant.get(v.id);
+        if (!stock) return v;
+        return {
+          ...v,
+          low_stock_threshold: stock.own_threshold != null ? String(stock.own_threshold) : '',
+          policy: stock.policy ?? 'deny',
+        };
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stockByVariant is derived from stockRows
+  }, [stockRows, variants.length]);
 
   useEffect(() => {
     if (productCollectionIds) setCollectionIds(productCollectionIds);
@@ -384,7 +405,7 @@ export const ProductForm = () => {
           .update({ ...corePayload, ...newPayload })
           .eq('id', id!);
         if (isMissingColumnError(error)) {
-          toast.info('שדות חדשים (מלאי/משקל/מידות/וידאו/מק"ט) יישמרו לאחר עדכון מסד הנתונים');
+          toast.info('שדות חדשים (משקל/מידות/וידאו/מק"ט) יישמרו לאחר עדכון מסד הנתונים');
           ({ error } = await supabase.from('products').update(corePayload).eq('id', id!));
         }
         if (error) throw error;
@@ -395,7 +416,7 @@ export const ProductForm = () => {
           .select('id')
           .single();
         if (isMissingColumnError(res.error)) {
-          toast.info('שדות חדשים (מלאי/משקל/מידות/וידאו/מק"ט) יישמרו לאחר עדכון מסד הנתונים');
+          toast.info('שדות חדשים (משקל/מידות/וידאו/מק"ט) יישמרו לאחר עדכון מסד הנתונים');
           res = await supabase.from('products').insert(corePayload).select('id').single();
         }
         if (res.error) throw res.error;
