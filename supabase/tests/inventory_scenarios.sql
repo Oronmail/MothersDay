@@ -207,6 +207,13 @@ BEGIN
   ASSERT (SELECT limiting_variant_id FROM kit_availability WHERE bundle_id = p_k) = v_a, 'kit limited by A';
   ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_k) = 2, 'kit max_orderable';
   ASSERT (SELECT sellable FROM storefront_availability WHERE variant_id = v_k), 'kit sellable';
+
+  -- the storefront (anon) must see the reservation, not just the owner
+  EXECUTE 'SET LOCAL ROLE anon';
+  ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_a) = 4, 'anon does not see reservations';
+  ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_k) = 2, 'anon kit max ignores reservations';
+  EXECUTE 'RESET ROLE';
+
   ASSERT (SELECT max_orderable FROM storefront_availability WHERE variant_id = v_c) IS NULL, 'untracked unlimited';
 
   -- an expired pending order reserves nothing

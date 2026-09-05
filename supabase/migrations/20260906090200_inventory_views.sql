@@ -12,10 +12,12 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SET search_path = public AS $$
 $$;
 
 -- Derived reservations: pending, unexpired orders hold their exploded quantities.
+-- explode the row's own line_items: a function called from a view runs as the
+-- caller, and order_stock_lines() would hit RLS on orders for anon.
 CREATE OR REPLACE VIEW public.inventory_reserved AS
 SELECT l.variant_id, SUM(l.qty)::int AS reserved
 FROM orders o
-CROSS JOIN LATERAL order_stock_lines(o.id) l
+CROSS JOIN LATERAL explode_stock_lines(o.line_items) l
 WHERE o.financial_status = 'pending'
   AND o.expires_at IS NOT NULL AND o.expires_at > now()
   AND COALESCE((SELECT (value #>> '{}')::boolean FROM store_settings WHERE key = 'inventory_reserve_pending'), true)
@@ -171,14 +173,17 @@ $$;
 -- ---------------------------------------------------------------------------
 REVOKE ALL ON public.inventory_reserved FROM PUBLIC, anon, authenticated;     -- internal to the views above
 -- A view's "run as owner" privilege bypass covers table/view reads, not function
--- calls: inventory_reserved (queried by the public availability views below) calls
--- order_stock_lines()/explode_stock_lines() directly, so anon/authenticated need
--- EXECUTE too, or every anon SELECT on storefront_availability errors with
--- "permission denied for function order_stock_lines". Neither function is
--- SECURITY DEFINER, so calling them directly still runs under the caller's own
--- RLS on orders ("Users read own orders") — no privilege escalation.
+-- calls: a function called from a view runs as the caller. inventory_reserved
+-- (queried by the public availability views below) explodes each order row's own
+-- line_items via explode_stock_lines(), which only touches public-read catalog
+-- tables, so anon/authenticated need EXECUTE on it too, or every anon SELECT on
+-- storefront_availability errors with "permission denied for function
+-- explode_stock_lines". order_stock_lines() stays authenticated-only (not anon):
+-- it takes an order id and re-reads orders internally, which for a non-admin,
+-- non-owner caller is correctly filtered to nothing by RLS rather than erroring.
 GRANT EXECUTE ON FUNCTION public.explode_stock_lines(JSONB) TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.order_stock_lines(UUID) TO anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.order_stock_lines(UUID) FROM anon;         -- explicit: undo an earlier over-broad grant
+GRANT EXECUTE ON FUNCTION public.order_stock_lines(UUID) TO authenticated;
 GRANT SELECT ON public.storefront_availability, public.variant_availability, public.kit_availability TO anon, authenticated;
 REVOKE ALL ON public.variant_stock, public.supply_stock, public.kit_stock, public.inventory_movement_log FROM PUBLIC, anon;
 GRANT SELECT ON public.variant_stock, public.supply_stock, public.kit_stock, public.inventory_movement_log TO authenticated;
