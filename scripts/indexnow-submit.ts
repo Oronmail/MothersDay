@@ -7,7 +7,7 @@
 // domain ownership.
 
 const HOST = "www.mothersday.co.il";
-const KEY = "e15b1f9c17bc5efbb0be9f4c896bca82";
+const KEY = "f19e1d2ed79c4f8cbb981c8042a5c2b3";
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 async function main() {
