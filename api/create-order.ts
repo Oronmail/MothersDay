@@ -4,6 +4,7 @@ import { z } from "zod";
 import { canSubmitCheckout } from "./_lib/checkout.js";
 import { createOrderAccessToken, getOrderAccessSecret } from "./_lib/orderAccess.js";
 import { evaluateCoupon, normalizeCouponCode } from "./_lib/discounts.js";
+import { checkOrderStock, formatShortageMessage, type StockShortage } from "./_lib/inventory.js";
 
 /**
  * POST /api/create-order
@@ -132,6 +133,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: "One or more cart items are no longer available",
       });
     }
+  }
+
+  // Stock (spec §5): the database explodes kits to their parts and reports
+  // shortages against on_hand minus reservations held by other pending orders.
+  let shortages: StockShortage[] = [];
+  try {
+    shortages = await checkOrderStock(supabase, items);
+  } catch (error) {
+    console.error("create-order: stock check failed", error);
+    return res.status(500).json({ error: "Failed to validate stock" });
+  }
+  if (shortages.length > 0) {
+    return res.status(409).json({
+      error: "insufficient_stock",
+      message: formatShortageMessage(shortages),
+      shortages,
+    });
   }
 
   // First image per product, for the order-history thumbnails.
