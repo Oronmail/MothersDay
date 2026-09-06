@@ -42,7 +42,7 @@ export const InventoryReceive = () => {
     },
   });
   const suppliesQuery = useQuery({
-    queryKey: [...INVENTORY_QUERY_KEY, 'supplies'],
+    queryKey: [...INVENTORY_QUERY_KEY, 'supplies', 'active'],
     queryFn: async (): Promise<SupplyStockRow[]> => {
       const { data, error } = await supabase.from('supply_stock').select('*').eq('is_active', true).order('name');
       if (error) throw error;
