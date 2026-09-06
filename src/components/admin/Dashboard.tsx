@@ -172,6 +172,15 @@ export const Dashboard = () => {
         </div>
       )}
 
+      {lowStockQuery.isError && (
+        <AdminErrorState
+          error={lowStockQuery.error}
+          onRetry={() => lowStockQuery.refetch()}
+          title="לא הצלחנו לטעון את מצב המלאי"
+          compact
+        />
+      )}
+
       {lowStockQuery.data && (lowStockQuery.data.items.length > 0 || lowStockQuery.data.blockedKits.length > 0) && (
         <Card className="border-destructive/40">
           <CardHeader className="flex flex-row items-center justify-between pb-2">

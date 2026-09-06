@@ -17,7 +17,7 @@ const settingsSchema = z.object({
   shipping_cost: z.coerce.number().min(0, 'מחיר לא תקין'),
   free_shipping_threshold: z.coerce.number().min(0, 'סכום לא תקין'),
   shipping_enabled: z.boolean(),
-  low_stock_threshold_default: z.coerce.number().int().min(0, 'סף לא תקין'),
+  low_stock_threshold_default: z.coerce.number().int('סף חייב להיות מספר שלם').min(0, 'סף לא תקין'),
   inventory_reserve_pending: z.boolean(),
 });
 
@@ -155,6 +155,9 @@ export const StoreSettings = () => {
             <div className="space-y-2 max-w-xs">
               <Label htmlFor="low_stock_threshold_default">סף התראה (ברירת מחדל לכל פריט)</Label>
               <Input id="low_stock_threshold_default" type="number" step="1" min="0" dir="ltr" {...form.register('low_stock_threshold_default')} />
+              {form.formState.errors.low_stock_threshold_default && (
+                <p className="text-sm text-destructive">{form.formState.errors.low_stock_threshold_default.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">פריט עם סף משלו (בטופס המוצר) מתעלם מהערך הזה.</p>
             </div>
             <div className="flex items-center gap-4">
