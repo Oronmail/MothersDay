@@ -117,6 +117,7 @@ export const InventoryOverview = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">מלאי</h1>
         <div className="flex flex-wrap gap-2">
+          <Button asChild><Link to="/admin/inventory/receive">קליטת סחורה</Link></Button>
           <Button variant="outline" asChild>
             <Link to="/admin/inventory/movements"><History className="w-4 h-4 ml-2" />יומן תנועות</Link>
           </Button>
