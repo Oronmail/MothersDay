@@ -162,7 +162,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (txn.statusCode !== "000") {
     await supabase
       .from("orders")
-      .update({ payment_status_raw: txn.statusCode })
+      .update({
+        payment_status_raw: txn.statusCode,
+        // Release the stock reservation soon; the customer can still retry from the same page.
+        expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+      })
       .eq("id", orderId)
       .eq("financial_status", "pending");
     return res.status(200).json({ ok: true, declined: txn.statusCode });

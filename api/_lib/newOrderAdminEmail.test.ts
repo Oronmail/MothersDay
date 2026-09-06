@@ -58,4 +58,13 @@ describe("buildAdminOrderText", () => {
     expect(text).toContain("מלאי נמוך");
     expect(text).toContain("בלוק תכנון גדול (BLK-L): נשארו 0 (סף 5) — חוסם: מארז יין, מארז בלוקים");
   });
+  it("uses the singular phrasing when exactly one unit is left", () => {
+    const text = buildAdminOrderText({
+      ...base,
+      lowStock: [
+        { kind: "variant", id: "v", title: "מחברת שורות קטנה", sku: null, available: 1, threshold: 5, status: "low", blockedKits: [] },
+      ],
+    });
+    expect(text).toContain("מחברת שורות קטנה: נשארה יחידה אחת (סף 5)");
+  });
 });

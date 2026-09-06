@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendOrderShippedEmail } from "./_lib/orderShippedEmail.js";
+import { notifyLowStockSuppliesAfterShipping } from "./_lib/lowStockEmail.js";
 
 /**
  * Admin-only HFD shipping actions, one endpoint (keeps the Vercel function count low):
@@ -62,6 +63,7 @@ interface OrderRow {
   guest_email?: string | null;
   customer_email?: string | null;
   financial_status?: string | null;
+  fulfillment_status?: string | null;
   notes?: string | null;
   shipping_address?: {
     full_name?: string;
@@ -271,6 +273,7 @@ async function createShipment(
       hfd_shipment_created_at: new Date().toISOString(),
       hfd_shipment_cancelled_at: null,
       tracking_number: shipmentNumber,
+      fulfillment_status: "shipped",
     })
     .eq("id", order.id);
   if (updateError) {
@@ -281,6 +284,9 @@ async function createShipment(
       message: `המשלוח נוצר ב-HFD (מס' ${shipmentNumber}) אבל השמירה בהזמנה נכשלה. רעננו את העמוד.`,
     });
   }
+
+  // The orders_supplies trigger just consumed packaging; tell the owners if something dipped.
+  await notifyLowStockSuppliesAfterShipping(supabase, order.id, order.order_number ?? null);
 
   // "ההזמנה בדרך" email with the tracking link — for guests this is the only
   // way tracking reaches them. Never fails the shipment creation.
@@ -392,6 +398,8 @@ async function cancelShipment(
     .update({
       hfd_shipment_cancelled_at: new Date().toISOString(),
       tracking_number: null,
+      // Back to the packing queue; supplies already consumed stay consumed (the box was used).
+      ...(order.fulfillment_status === "shipped" ? { fulfillment_status: "unfulfilled" } : {}),
     })
     .eq("id", order.id);
   if (updateError) {

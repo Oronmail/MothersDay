@@ -46,7 +46,7 @@ export const buildAdminOrderSubject = (p: AdminOrderEmailPayload) =>
   `${p.simulated ? "[בדיקה] " : ""}הזמנה חדשה #${p.orderNumber} · ${p.customerName || p.customerEmail || "לקוחה"} · ${shekel(p.total)}`;
 
 const lowStockLine = (i: LowStockItem) =>
-  `${i.title}${i.sku ? ` (${i.sku})` : ""}: נשארו ${i.available} (סף ${i.threshold})` +
+  `${i.title}${i.sku ? ` (${i.sku})` : ""}: ${i.available === 1 ? "נשארה יחידה אחת" : `נשארו ${i.available}`} (סף ${i.threshold})` +
   (i.blockedKits.length ? ` — חוסם: ${i.blockedKits.join(", ")}` : "");
 
 export const buildAdminOrderText = (p: AdminOrderEmailPayload): string => {
