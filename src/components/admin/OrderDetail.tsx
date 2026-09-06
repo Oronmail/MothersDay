@@ -99,22 +99,32 @@ export const OrderDetail = () => {
   }, [order]);
 
   const updateMutation = useMutation({
-    mutationFn: async () => {
-      // Exactly these four columns. Everything payment-related (provider ids,
-      // approval number, paid_at, payment_raw…) is written by the server, and an
-      // update from here must never overwrite it.
+    mutationFn: async (): Promise<boolean> => {
+      // Only the fields the admin actually touched. These four columns are also
+      // written by the server (HFD create/cancel moves fulfillment_status and
+      // tracking_number, PayPlus moves financial_status), so a tab left open
+      // must never write back a stale value it was merely showing — that would
+      // flip a status behind the server's back and could make the inventory
+      // trigger record a phantom return. Everything payment-related (provider
+      // ids, approval number, paid_at, payment_raw…) is never written here.
+      const patch: Record<string, unknown> = {};
+      if (financialStatus !== (order?.financial_status ?? 'pending')) patch.financial_status = financialStatus;
+      if (fulfillmentStatus !== (order?.fulfillment_status ?? 'unfulfilled')) patch.fulfillment_status = fulfillmentStatus;
+      if ((trackingNumber || null) !== (order?.tracking_number ?? null)) patch.tracking_number = trackingNumber || null;
+      if ((notes || null) !== (order?.notes ?? null)) patch.notes = notes || null;
+      if (Object.keys(patch).length === 0) return false;
       const { error: updateError } = await supabase
         .from('orders')
-        .update({
-          financial_status: financialStatus,
-          fulfillment_status: fulfillmentStatus,
-          tracking_number: trackingNumber || null,
-          notes: notes || null,
-        })
+        .update(patch)
         .eq('id', id!);
       if (updateError) throw updateError;
+      return true;
     },
-    onSuccess: () => {
+    onSuccess: (changed) => {
+      if (!changed) {
+        toast.info('אין שינויים לשמירה');
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'order', id] });
       toast.success('ההזמנה עודכנה בהצלחה');

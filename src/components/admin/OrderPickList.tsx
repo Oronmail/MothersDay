@@ -119,7 +119,7 @@ export const OrderPickList = ({ order }: { order: AdminOrder }) => {
                   <span className={`flex-1 ${checked[r.key] ? 'line-through opacity-60' : ''}`}>{r.indent ? '└ ' : ''}{r.title}</span>
                   {badge && (
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.className}`}>
-                      {badge.label}{r.stock?.on_hand != null ? ` · במלאי ${r.stock.on_hand}` : ''}
+                      {badge.label} · זמין {r.stock?.available ?? 0} · במלאי {r.stock?.on_hand ?? 0}
                     </span>
                   )}
                   <span className="font-mono tabular-nums" dir="ltr">×{r.qty}</span>
