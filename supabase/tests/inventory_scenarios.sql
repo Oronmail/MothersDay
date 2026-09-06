@@ -182,6 +182,7 @@ END $$;
 DO $$
 DECLARE
   p_a UUID; p_c UUID; p_k UUID; v_a UUID; v_b UUID; v_c UUID; v_k UUID; o UUID; n INTEGER; r RECORD;
+  v_admin UUID;
 BEGIN
   EXECUTE 'RESET request.jwt.claims';
 
@@ -248,6 +249,15 @@ BEGIN
   ASSERT (SELECT max_orderable FROM variant_availability WHERE variant_id = v_a) IS NULL, 'continue policy capped';
   UPDATE inventory_levels SET policy = 'deny' WHERE variant_id = v_a;
 
+  -- ---- a kit line inside a PENDING order reserves its exploded parts ----
+  -- A sits at on_hand 0 with 6 reserved and B at 3 with none; one pending kit
+  -- (2×A + 1×B) must add to both, i.e. inventory_reserved explodes the line.
+  INSERT INTO orders (line_items, shipping_address, total_price, currency_code, financial_status, fulfillment_status, expires_at, customer_email)
+  VALUES (jsonb_build_array(jsonb_build_object('product_id', p_k, 'variant_id', v_k, 'quantity', 1, 'title', 'מארז בדיקה', 'price', '30')),
+          '{}'::jsonb, 30, 'ILS', 'pending', 'unfulfilled', now() + interval '2 hours', 'test@example.com');
+  ASSERT (SELECT reserved FROM inventory_reserved WHERE variant_id = v_a) = 8, 'pending kit did not reserve its A parts';
+  ASSERT (SELECT reserved FROM inventory_reserved WHERE variant_id = v_b) = 1, 'pending kit did not reserve its B part';
+
   -- staff views: empty for postgres/anon, populated for service_role
   ASSERT NOT EXISTS (SELECT 1 FROM variant_stock), 'variant_stock visible without staff role';
   EXECUTE 'SET LOCAL ROLE service_role';
@@ -257,12 +267,35 @@ BEGIN
   ASSERT (SELECT count(*) FROM inventory_movement_log WHERE variant_id = v_a) > 0, 'movement log';
   ASSERT (SELECT status FROM supply_stock WHERE sku = 'ZZ-BOX') = 'ok', 'supply_stock';
   EXECUTE 'RESET ROLE';
+
+  -- the real admin path: role authenticated + an admin JWT, exactly what the
+  -- browser sends. is_staff_or_service() → is_admin() must open the staff views.
+  SELECT id INTO v_admin FROM profiles WHERE role = 'admin' LIMIT 1;
+  IF v_admin IS NOT NULL THEN
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', v_admin, 'role', 'authenticated')::text, true);
+    EXECUTE 'SET LOCAL ROLE authenticated';
+    ASSERT (SELECT count(*) FROM variant_stock) > 0, 'admin sees no variant_stock rows';
+    ASSERT (SELECT status FROM variant_stock WHERE variant_id = v_a) = 'out', 'admin variant_stock status';
+    ASSERT (SELECT count(*) FROM inventory_movement_log) > 0, 'admin sees no inventory_movement_log rows';
+    EXECUTE 'RESET ROLE';
+    EXECUTE 'RESET request.jwt.claims';
+  ELSE
+    RAISE NOTICE 'no admin profile — staff views not exercised as an admin';
+  END IF;
+
   EXECUTE 'SET LOCAL ROLE anon';
   -- anon has no GRANT at all on the staff views (REVOKE ALL ... FROM PUBLIC, anon in
   -- the migration), so this is a hard ACL denial, not an empty result set.
   BEGIN
     PERFORM 1 FROM variant_stock LIMIT 1;
     RAISE EXCEPTION 'anon queried variant_stock without error';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  -- kit_availability exposes can_build uncapped, so the hardening migration
+  -- revoked it from anon as well: exact stock is never public.
+  BEGIN
+    PERFORM 1 FROM kit_availability LIMIT 1;
+    RAISE EXCEPTION 'anon queried kit_availability without error';
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
   ASSERT EXISTS (SELECT 1 FROM storefront_availability WHERE variant_id = v_a), 'anon cannot read storefront_availability';
