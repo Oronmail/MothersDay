@@ -1,14 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { startOfMonth, format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { AlertTriangle, DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { AdminErrorState } from './AdminErrorState';
 import {
   financialStatusBadge, fulfillmentStatusBadge, formatCurrency, getCustomerEmail, getCustomerName,
   type AdminOrder,
 } from './adminOrders';
+import {
+  INVENTORY_QUERY_KEY, sortByUrgency, stockStatusBadge, variantDisplayTitle,
+  type KitStockRow, type SupplyStockRow, type StockStatus, type VariantStockRow,
+} from './adminInventory';
 
 const StatusBadge = ({ label, className }: { label: string; className: string }) => (
   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
@@ -103,6 +108,27 @@ export const Dashboard = () => {
 
   const topProducts = topProductsQuery.data;
 
+  // Low stock (spec §7.8): products + supplies at/under threshold, kits that cannot be built.
+  const lowStockQuery = useQuery({
+    queryKey: [...INVENTORY_QUERY_KEY, 'dashboard'],
+    queryFn: async () => {
+      const [variants, supplies, kits] = await Promise.all([
+        supabase.from('variant_stock').select('*').in('status', ['short', 'out', 'low']),
+        supabase.from('supply_stock').select('*').in('status', ['short', 'out', 'low']),
+        supabase.from('kit_stock').select('*').eq('can_build', 0),
+      ]);
+      const missing = [variants.error, supplies.error, kits.error].find((e) => e?.code === '42P01');
+      if (missing) return null; // inventory migration not applied yet
+      const err = variants.error ?? supplies.error ?? kits.error;
+      if (err) throw err;
+      const items: { key: string; title: string; available: number; threshold: number; status: StockStatus }[] = [
+        ...((variants.data ?? []) as VariantStockRow[]).map((v) => ({ key: v.variant_id, title: variantDisplayTitle(v), available: v.available ?? 0, threshold: v.threshold, status: v.status })),
+        ...((supplies.data ?? []) as SupplyStockRow[]).map((s) => ({ key: s.supply_id, title: `אריזה: ${s.name}`, available: s.on_hand, threshold: s.threshold, status: s.status })),
+      ];
+      return { items: sortByUrgency(items, (i) => i.title), blockedKits: (kits.data ?? []) as KitStockRow[] };
+    },
+  });
+
   const revenue = monthOrders?.reduce((sum, o) => sum + (o.total_price ?? 0), 0) ?? 0;
   const orderCount = monthOrders?.length ?? 0;
   const avgOrder = orderCount > 0 ? revenue / orderCount : 0;
@@ -144,6 +170,33 @@ export const Dashboard = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {lowStockQuery.data && (lowStockQuery.data.items.length > 0 || lowStockQuery.data.blockedKits.length > 0) && (
+        <Card className="border-destructive/40">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-destructive" />מלאי נמוך</CardTitle>
+            <Link to="/admin/inventory" className="text-sm underline">למסך המלאי</Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {lowStockQuery.data.items.slice(0, 6).map((i) => (
+                <div key={i.key} className="flex items-center justify-between text-sm border border-border/60 px-3 py-2">
+                  <span className="truncate">{i.title}</span>
+                  <span className="flex items-center gap-2 flex-shrink-0">
+                    <span className="font-mono tabular-nums text-muted-foreground" dir="ltr">{i.available} / סף {i.threshold}</span>
+                    <StatusBadge {...stockStatusBadge(i.status)} />
+                  </span>
+                </div>
+              ))}
+            </div>
+            {lowStockQuery.data.blockedKits.length > 0 && (
+              <p className="text-sm text-destructive">
+                לא ניתן להרכיב: {lowStockQuery.data.blockedKits.map((k) => `${k.bundle_title} (חסר ${k.limiting_title ?? '—'})`).join(' · ')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
