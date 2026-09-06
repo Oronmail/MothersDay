@@ -10,6 +10,10 @@ describe("buildLowStockSubject", () => {
     expect(buildLowStockSubject([item("קופסה", 2)])).toBe("מלאי נמוך: קופסה");
     expect(buildLowStockSubject([item("קופסה", 2), item("כרטיס", 0), item("סרט", 1)])).toBe("מלאי נמוך: קופסה, כרטיס ועוד 1");
   });
+
+  it("does not add 'ועוד' for exactly two items", () => {
+    expect(buildLowStockSubject([item("קופסה", 2), item("כרטיס", 0)])).toBe("מלאי נמוך: קופסה, כרטיס");
+  });
 });
 
 describe("buildLowStockText", () => {

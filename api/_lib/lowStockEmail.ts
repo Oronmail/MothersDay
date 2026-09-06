@@ -1,14 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { collectLowStockSupplies, parseAlertEmails, stampLowStockAlerted, type LowStockItem } from "./inventory.js";
+import { collectLowStockSupplies, formatLowStockLine, parseAlertEmails, stampLowStockAlerted, type LowStockItem } from "./inventory.js";
+import { escapeHtml } from "./newOrderAdminEmail.js";
 
 /** Standalone low-stock email (spec §5): used when a dip happens outside the paid path — supplies consumed at shipping. */
 
 const DEFAULT_FROM = "יום האם <orders@noreply.mothersday.co.il>";
 const ADMIN_INVENTORY_URL = "https://www.mothersday.co.il/admin/inventory";
-
-const line = (i: LowStockItem) =>
-  `${i.title}${i.sku ? ` (${i.sku})` : ""}: ${i.available === 1 ? "נשארה יחידה אחת" : `נשארו ${i.available}`} (סף ${i.threshold})` +
-  (i.blockedKits.length ? ` — חוסם: ${i.blockedKits.join(", ")}` : "");
 
 export const buildLowStockSubject = (items: LowStockItem[]) => {
   const names = items.slice(0, 2).map((i) => i.title).join(", ");
@@ -16,12 +13,12 @@ export const buildLowStockSubject = (items: LowStockItem[]) => {
 };
 
 export const buildLowStockText = (items: LowStockItem[], context: string) =>
-  ["מלאי נמוך", context, "", ...items.map((i) => `- ${line(i)}`), "", `למסך המלאי: ${ADMIN_INVENTORY_URL}`].join("\n");
+  ["מלאי נמוך", context, "", ...items.map((i) => `- ${formatLowStockLine(i)}`), "", `למסך המלאי: ${ADMIN_INVENTORY_URL}`].join("\n");
 
 export const buildLowStockHtml = (items: LowStockItem[], context: string) =>
   `<!DOCTYPE html><html dir="rtl" lang="he"><body style="font-family:Assistant,Arial,sans-serif;color:#4d3c40;padding:24px">
-  <h1 style="font-size:18px">⚠ מלאי נמוך</h1><p>${context}</p>
-  <ul>${items.map((i) => `<li>${line(i).replace(/&/g, "&amp;").replace(/</g, "&lt;")}</li>`).join("")}</ul>
+  <h1 style="font-size:18px">⚠ מלאי נמוך</h1><p>${escapeHtml(context)}</p>
+  <ul>${items.map((i) => `<li>${escapeHtml(formatLowStockLine(i))}</li>`).join("")}</ul>
   <p><a href="${ADMIN_INVENTORY_URL}">למסך המלאי</a></p></body></html>`;
 
 export const sendLowStockEmail = async (to: string[], items: LowStockItem[], context: string) => {

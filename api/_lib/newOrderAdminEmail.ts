@@ -1,4 +1,4 @@
-import type { LowStockItem } from "./inventory.js";
+import { formatLowStockLine, type LowStockItem } from "./inventory.js";
 
 /**
  * "הזמנה חדשה" email to the store owners (decision 7): one per paid order, to
@@ -39,15 +39,11 @@ const DEFAULT_FROM = "יום האם <orders@noreply.mothersday.co.il>";
 
 const shekel = (n: number) => `₪${Number.isInteger(n) ? n : n.toFixed(2)}`;
 
-const escapeHtml = (value: string) =>
+export const escapeHtml = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export const buildAdminOrderSubject = (p: AdminOrderEmailPayload) =>
   `${p.simulated ? "[בדיקה] " : ""}הזמנה חדשה #${p.orderNumber} · ${p.customerName || p.customerEmail || "לקוחה"} · ${shekel(p.total)}`;
-
-const lowStockLine = (i: LowStockItem) =>
-  `${i.title}${i.sku ? ` (${i.sku})` : ""}: ${i.available === 1 ? "נשארה יחידה אחת" : `נשארו ${i.available}`} (סף ${i.threshold})` +
-  (i.blockedKits.length ? ` — חוסם: ${i.blockedKits.join(", ")}` : "");
 
 export const buildAdminOrderText = (p: AdminOrderEmailPayload): string => {
   const lines: string[] = [];
@@ -74,7 +70,7 @@ export const buildAdminOrderText = (p: AdminOrderEmailPayload): string => {
   if (p.lowStock.length) {
     lines.push("");
     lines.push("⚠ מלאי נמוך אחרי ההזמנה הזו:");
-    for (const i of p.lowStock) lines.push(`- ${lowStockLine(i)}`);
+    for (const i of p.lowStock) lines.push(`- ${formatLowStockLine(i)}`);
   }
   lines.push("");
   lines.push(`לכרטיס ההזמנה: ${p.adminUrl}`);
@@ -95,7 +91,7 @@ export const buildAdminOrderHtml = (p: AdminOrderEmailPayload): string => {
   const lowStockHtml = p.lowStock.length
     ? `<div style="margin:18px 0;padding:12px 14px;background:#f4dddb;border:1px solid #b23a3a;color:#4d3c40">
          <strong>⚠ מלאי נמוך אחרי ההזמנה הזו</strong>
-         <ul style="margin:8px 0 0;padding-right:18px">${p.lowStock.map((i) => `<li>${escapeHtml(lowStockLine(i))}</li>`).join("")}</ul>
+         <ul style="margin:8px 0 0;padding-right:18px">${p.lowStock.map((i) => `<li>${escapeHtml(formatLowStockLine(i))}</li>`).join("")}</ul>
        </div>`
     : "";
   return `<!DOCTYPE html><html dir="rtl" lang="he"><body style="margin:0;padding:24px;background:#ece7e1;font-family:Assistant,Arial,sans-serif;color:#4d3c40">

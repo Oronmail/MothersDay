@@ -285,9 +285,6 @@ async function createShipment(
     });
   }
 
-  // The orders_supplies trigger just consumed packaging; tell the owners if something dipped.
-  await notifyLowStockSuppliesAfterShipping(supabase, order.id, order.order_number ?? null);
-
   // "ההזמנה בדרך" email with the tracking link — for guests this is the only
   // way tracking reaches them. Never fails the shipment creation.
   const trackingUrl = randNumber ? `https://run.hfd.co.il/info/${randNumber}` : null;
@@ -312,6 +309,10 @@ async function createShipment(
         .eq("id", order.id);
     }
   }
+
+  // The orders_supplies trigger just consumed packaging; tell the owners if something
+  // dipped. Runs after the customer's tracking email so an internal alert never delays it.
+  await notifyLowStockSuppliesAfterShipping(supabase, order.id, order.order_number ?? null);
 
   return res.status(200).json({
     shipmentNumber,

@@ -80,6 +80,11 @@ export interface LowStockItem {
   blockedKits: string[];
 }
 
+/** "בלוק תכנון גדול (BLK-L): נשארו 3 (סף 5) — חוסם: מארז יין" — shared by the owners' emails. */
+export const formatLowStockLine = (i: LowStockItem): string =>
+  `${i.title}${i.sku ? ` (${i.sku})` : ""}: ${i.available === 1 ? "נשארה יחידה אחת" : `נשארו ${i.available}`} (סף ${i.threshold})` +
+  (i.blockedKits.length ? ` — חוסם: ${i.blockedKits.join(", ")}` : "");
+
 interface VariantStockRow {
   variant_id: string;
   product_title: string;
