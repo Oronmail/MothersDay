@@ -125,7 +125,9 @@ export const Dashboard = () => {
         ...((variants.data ?? []) as VariantStockRow[]).map((v) => ({ key: v.variant_id, title: variantDisplayTitle(v), available: v.available ?? 0, threshold: v.threshold, status: v.status })),
         ...((supplies.data ?? []) as SupplyStockRow[]).map((s) => ({ key: s.supply_id, title: `אריזה: ${s.name}`, available: s.on_hand, threshold: s.threshold, status: s.status })),
       ];
-      return { items: sortByUrgency(items, (i) => i.title), blockedKits: (kits.data ?? []) as KitStockRow[] };
+      // A draft kit (unpublished) can't be ordered, so "cannot build" is not news.
+      const blockedKits = ((kits.data ?? []) as KitStockRow[]).filter((k) => k.product_status === 'active');
+      return { items: sortByUrgency(items, (i) => i.title), blockedKits };
     },
   });
 
@@ -189,7 +191,7 @@ export const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {lowStockQuery.data.items.slice(0, 6).map((i) => (
+              {lowStockQuery.data.items.slice(0, 5).map((i) => (
                 <div key={i.key} className="flex items-center justify-between text-sm border border-border/60 px-3 py-2">
                   <span className="truncate">{i.title}</span>
                   <span className="flex items-center gap-2 flex-shrink-0">

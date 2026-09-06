@@ -200,7 +200,9 @@ so a retried manual-return request can't double-count; asserted in
 `fulfillment_status='shipped'` (the `orders_supplies` trigger consumes packaging supplies), then
 sends the customer's "בדרך אלייך" tracking email, then `notifyLowStockSuppliesAfterShipping()`
 (`api/_lib/lowStockEmail.ts`) alerts the owners if a supply dipped under its threshold; cancelling a
-shipment reverts `fulfillment_status` back to `unfulfilled`. Both owner-facing low-stock emails
+shipment reverts `fulfillment_status` back to `unfulfilled`. Re-creating a shipment after a cancel
+does not consume supplies again (one `consume` set per order — the second box is uncounted; a
+periodic count corrects it). Both owner-facing low-stock emails
 (new-paid-order and post-shipment) share `formatLowStockLine()` in `api/_lib/inventory.ts`, so the
 Hebrew singular-unit wording is consistent everywhere. Note: an earlier change that set a declined
 PayPlus charge's `expires_at` to now+15m was reverted — it undercut the 25-minute payment-link reuse
