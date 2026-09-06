@@ -11,7 +11,8 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PackageCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AdminErrorState } from './AdminErrorState';
 import {
   FINANCIAL_STATUS_OPTIONS, FULFILLMENT_STATUS_OPTIONS,
@@ -31,6 +32,12 @@ export const OrderList = () => {
   const [financialFilter, setFinancialFilter] = useState<string>('all');
   const [fulfillmentFilter, setFulfillmentFilter] = useState<string>('all');
 
+  const isPackingQueue = financialFilter === 'paid' && fulfillmentFilter === 'unfulfilled';
+  const togglePackingQueue = () => {
+    if (isPackingQueue) { setFinancialFilter('all'); setFulfillmentFilter('all'); }
+    else { setFinancialFilter('paid'); setFulfillmentFilter('unfulfilled'); }
+  };
+
   const { data: orders, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin', 'orders'],
     queryFn: async (): Promise<AdminOrder[]> => {
@@ -42,6 +49,8 @@ export const OrderList = () => {
       return (data ?? []) as AdminOrder[];
     },
   });
+
+  const packingCount = orders?.filter((o) => o.financial_status === 'paid' && o.fulfillment_status === 'unfulfilled').length ?? 0;
 
   const filtered = orders?.filter((order) => {
     if (financialFilter !== 'all' && order.financial_status !== financialFilter) return false;
@@ -92,6 +101,9 @@ export const OrderList = () => {
                 </SelectContent>
               </Select>
             </div>
+            <Button variant={isPackingQueue ? 'default' : 'outline'} size="sm" onClick={togglePackingQueue}>
+              <PackageCheck className="w-4 h-4 ml-2" />לאריזה ({packingCount})
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
