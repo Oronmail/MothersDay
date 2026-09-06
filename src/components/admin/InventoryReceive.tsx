@@ -12,6 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { ArrowRight, Loader2, Plus, Trash2 } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 import {
   INVENTORY_QUERY_KEY, recordMovements, variantDisplayTitle, type MovementInput, type SupplyStockRow, type VariantStockRow,
 } from './adminInventory';
@@ -82,7 +83,9 @@ export const InventoryReceive = () => {
     setSaving(true);
     try {
       const ids = await recordMovements(movements);
-      toast.success(`נקלטו ${ids.length} פריטים (${reference.trim()})`);
+      toast.success(
+        ids.length === 1 ? `נקלט פריט אחד (${reference.trim()})` : `נקלטו ${ids.length} פריטים (${reference.trim()})`,
+      );
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       navigate('/admin/inventory');
     } catch (error) {
@@ -94,6 +97,16 @@ export const InventoryReceive = () => {
 
   if (variantsQuery.isLoading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+  if (variantsQuery.isError) {
+    const code = (variantsQuery.error as { code?: string })?.code;
+    return (
+      <AdminErrorState
+        error={variantsQuery.error}
+        onRetry={() => variantsQuery.refetch()}
+        title={code === '42P01' ? 'מסך המלאי דורש את מיגרציית המלאי (20260906090000…)' : 'לא הצלחנו לטעון את המלאי'}
+      />
+    );
   }
 
   return (
@@ -110,6 +123,15 @@ export const InventoryReceive = () => {
             <Label htmlFor="rcv-ref">אסמכתא (חשבונית / תעודת משלוח / ספק)</Label>
             <Input id="rcv-ref" value={reference} onChange={(e) => setReference(e.target.value)} />
           </div>
+
+          {suppliesQuery.isError && (
+            <AdminErrorState
+              error={suppliesQuery.error}
+              onRetry={() => suppliesQuery.refetch()}
+              title="לא הצלחנו לטעון חומרי אריזה"
+              compact
+            />
+          )}
 
           <div className="space-y-3">
             {rows.map((row) => {

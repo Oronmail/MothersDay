@@ -37,7 +37,7 @@ export const OrderPickList = ({ order }: { order: AdminOrder }) => {
     },
   });
   const stockQuery = useQuery({
-    queryKey: [...INVENTORY_QUERY_KEY, 'order-stock', order.id],
+    queryKey: [...INVENTORY_QUERY_KEY, 'variants'],
     queryFn: async (): Promise<VariantStockRow[]> => {
       const { data, error } = await supabase.from('variant_stock').select('*');
       if (error) { if ((error as { code?: string }).code === '42P01') return []; throw error; }

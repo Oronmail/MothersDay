@@ -43,7 +43,7 @@ export const InventorySupplies = () => {
   const [stockDialog, setStockDialog] = useState<{ target: AdjustTarget; mode: AdjustMode } | null>(null);
 
   const query = useQuery({
-    queryKey: [...INVENTORY_QUERY_KEY, 'supplies-all'],
+    queryKey: [...INVENTORY_QUERY_KEY, 'supplies'],
     queryFn: async (): Promise<SupplyStockRow[]> => {
       const { data, error } = await supabase.from('supply_stock').select('*').order('name');
       if (error) throw error;
@@ -66,12 +66,18 @@ export const InventorySupplies = () => {
     const qpu = Number(form.quantity_per_use);
     if (!form.name.trim()) { toast.error('חסר שם'); return; }
     if (!Number.isInteger(qpu) || qpu < 1) { toast.error('כמות לשימוש חייבת להיות מספר שלם חיובי'); return; }
+    const rawThreshold = form.low_stock_threshold.trim();
+    const threshold = rawThreshold === '' ? null : Number(rawThreshold);
+    if (threshold !== null && !(Number.isInteger(threshold) && threshold >= 0)) {
+      toast.error('סף ההתראה חייב להיות מספר שלם (או ריק)');
+      return;
+    }
     const row = {
       name: form.name.trim(),
       sku: form.sku.trim() || null,
       consumption_mode: form.consumption_mode,
       quantity_per_use: qpu,
-      low_stock_threshold: form.low_stock_threshold.trim() === '' ? null : Number(form.low_stock_threshold),
+      low_stock_threshold: threshold,
       is_active: form.is_active,
     };
     setSaving(true);
@@ -84,7 +90,11 @@ export const InventorySupplies = () => {
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       setDialogOpen(false);
     } catch (error) {
-      toast.error(`השמירה נכשלה: ${error instanceof Error ? error.message : ''}`);
+      // sku is UNIQUE in packaging_supplies — say which field collided, not "23505".
+      const code = (error as { code?: string } | null)?.code;
+      toast.error(code === '23505'
+        ? 'המק"ט כבר קיים בחומר אריזה אחר'
+        : `השמירה נכשלה: ${error instanceof Error ? error.message : ''}`);
     } finally {
       setSaving(false);
     }
@@ -141,6 +151,7 @@ export const InventorySupplies = () => {
                         <div className="flex gap-1 justify-end">
                           <Button size="sm" variant="outline" onClick={() => setStockDialog({ target, mode: 'receive' })}>קליטה</Button>
                           <Button size="sm" variant="outline" onClick={() => setStockDialog({ target, mode: 'count' })}>ספירה</Button>
+                          <Button size="sm" variant="ghost" onClick={() => setStockDialog({ target, mode: 'adjust' })}>התאמה</Button>
                           <Button size="sm" variant="ghost" onClick={() => openEdit(s)} aria-label="עריכה"><Pencil className="w-4 h-4" /></Button>
                         </div>
                       </TableCell>

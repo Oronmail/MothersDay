@@ -17,6 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ArrowRight, Loader2 } from 'lucide-react';
+import { AdminErrorState } from './AdminErrorState';
 import {
   INVENTORY_QUERY_KEY, formatDelta, recordMovements, variantDisplayTitle,
   type MovementInput, type SupplyStockRow, type VariantStockRow,
@@ -27,6 +28,7 @@ interface CountLine {
   title: string;
   sku: string | null;
   onHand: number | null;  // null = untracked
+  draft: boolean;         // product_status = 'draft' (family board etc.)
 }
 
 /**
@@ -61,12 +63,16 @@ export const InventoryCount = () => {
   });
 
   const lines: CountLine[] = useMemo(() => {
+    // With the switch ON this is the "start tracking everything" list, so drafts
+    // (the family board and anything not published yet) belong on it too.
     const variants = (variantsQuery.data ?? [])
-      .filter((v) => v.product_status === 'active' || v.is_tracked)
-      .filter((v) => includeUntracked || v.is_tracked)
-      .map((v) => ({ key: `variant:${v.variant_id}`, title: variantDisplayTitle(v), sku: v.sku, onHand: v.on_hand }))
+      .filter((v) => (includeUntracked ? true : v.is_tracked))
+      .map((v) => ({
+        key: `variant:${v.variant_id}`, title: variantDisplayTitle(v), sku: v.sku, onHand: v.on_hand,
+        draft: v.product_status === 'draft',
+      }))
       .sort((a, b) => a.title.localeCompare(b.title, 'he'));
-    const supplies = (suppliesQuery.data ?? []).map((s) => ({ key: `supply:${s.supply_id}`, title: `אריזה: ${s.name}`, sku: s.sku, onHand: s.on_hand }));
+    const supplies = (suppliesQuery.data ?? []).map((s) => ({ key: `supply:${s.supply_id}`, title: `אריזה: ${s.name}`, sku: s.sku, onHand: s.on_hand, draft: false }));
     return [...variants, ...supplies];
   }, [variantsQuery.data, suppliesQuery.data, includeUntracked]);
 
@@ -92,8 +98,8 @@ export const InventoryCount = () => {
     try {
       const ids = await recordMovements(movements);
       const startedAtZero = changes.filter((c) => c.starts && c.value === 0).length;
-      const parts = [`${ids.length} פריטים עודכנו`];
-      if (startedAtZero > 0) parts.push(`${startedAtZero} התחילו מעקב ב־0`);
+      const parts = [ids.length === 1 ? 'פריט אחד עודכן' : `${ids.length} פריטים עודכנו`];
+      if (startedAtZero > 0) parts.push(startedAtZero === 1 ? 'פריט אחד התחיל מעקב ב־0' : `${startedAtZero} התחילו מעקב ב־0`);
       toast.success(`הספירה נשמרה: ${parts.join(', ')}`);
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       navigate('/admin/inventory');
@@ -107,6 +113,16 @@ export const InventoryCount = () => {
 
   if (variantsQuery.isLoading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+  if (variantsQuery.isError) {
+    const code = (variantsQuery.error as { code?: string })?.code;
+    return (
+      <AdminErrorState
+        error={variantsQuery.error}
+        onRetry={() => variantsQuery.refetch()}
+        title={code === '42P01' ? 'מסך המלאי דורש את מיגרציית המלאי (20260906090000…)' : 'לא הצלחנו לטעון את המלאי'}
+      />
+    );
   }
 
   return (
@@ -129,6 +145,14 @@ export const InventoryCount = () => {
             <Label htmlFor="cnt-ref">שם הספירה</Label>
             <Input id="cnt-ref" value={reference} onChange={(e) => setReference(e.target.value)} />
           </div>
+          {suppliesQuery.isError && (
+            <AdminErrorState
+              error={suppliesQuery.error}
+              onRetry={() => suppliesQuery.refetch()}
+              title="לא הצלחנו לטעון חומרי אריזה"
+              compact
+            />
+          )}
           <Table>
             <TableHeader>
               <TableRow>
@@ -146,7 +170,11 @@ export const InventoryCount = () => {
                 const delta = value === null || !Number.isInteger(value) ? null : value - (line.onHand ?? 0);
                 return (
                   <TableRow key={line.key} className={line.onHand === null ? 'text-muted-foreground' : ''}>
-                    <TableCell className="font-medium">{line.title}{line.onHand === null && <span className="text-xs mr-2">· לא במעקב</span>}</TableCell>
+                    <TableCell className="font-medium">
+                      {line.title}
+                      {line.draft && <span className="text-xs text-muted-foreground mr-2">· טיוטה</span>}
+                      {line.onHand === null && <span className="text-xs mr-2">· לא במעקב</span>}
+                    </TableCell>
                     <TableCell className="font-mono text-xs" dir="ltr">{line.sku ?? '—'}</TableCell>
                     <TableCell className="font-mono tabular-nums" dir="ltr">{line.onHand ?? '—'}</TableCell>
                     <TableCell className="w-32">
