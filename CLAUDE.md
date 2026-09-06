@@ -160,8 +160,15 @@ other `on_hand` change). Order-side changes come from two triggers on `orders`: 
 (→ `shipped` consumes active `packaging_supplies`). `mark_order_paid()` no longer touches stock.
 Reservations are derived from pending, unexpired orders (`inventory_reserved`), never stored.
 Public: `storefront_availability(variant_id, sellable, max_orderable)` — the only stock signal the
-storefront/SEO see (`src/lib/availability.ts`). Staff: `variant_stock`, `supply_stock`, `kit_stock`,
-`inventory_movement_log` (rows filtered by `is_staff_or_service()`). `/api/create-order` refuses
+storefront/SEO see (`src/lib/availability.ts`). `variant_availability` and `kit_availability` are
+internal: exact stock is never public (spec §12, decision 4), so the hardening migration
+`20260906120000_inventory_hardening.sql` revoked them from `anon`/`authenticated`; they are reachable
+only through `storefront_availability` and `kit_stock`, which read them with the view owner's rights.
+That migration also added `security_barrier` to the staff views, NULL-safe `is_bundle`/
+`available_for_sale` handling, a deterministic lock order in `apply_order_inventory()` and
+`SET search_path = public, pg_temp` on every SECURITY DEFINER function. Staff: `variant_stock`,
+`supply_stock`, `kit_stock`, `inventory_movement_log` (rows filtered by `is_staff_or_service()`).
+`/api/create-order` refuses
 shortages with 409 `insufficient_stock` (`check_order_stock()`). Every paid order emails the owners
 (`ORDER_ALERT_EMAILS`) via `notifyOwnersOfPaidOrder()`, folding in items that just dipped under
 their threshold (`low_stock_alerted_at` stamps, cleared on restock). Admin: `/admin/inventory`

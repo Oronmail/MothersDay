@@ -33,6 +33,10 @@ This file tracks the remaining work we already identified during the pre-launch 
 - After the launch/payplus admin build is live in Production: run a migration
   `ALTER TABLE products DROP COLUMN IF EXISTS inventory_quantity;` (the form stopped writing it
   in commit 6dcbd40).
+- Inventory end-to-end on Preview before `CHECKOUT_ENABLED=true`: set
+  `PAYMENT_SIMULATION_ENABLED=true` + `VITE_PAYMENT_SIMULATION_ENABLED=true` on the Preview
+  environment only (simulate-payment refuses in Production), reach the protected preview with
+  the vercel access skill, place a kit order, confirm sale rows / owners' email / cancel → return.
 
 ## Quality and UX follow-up
 
