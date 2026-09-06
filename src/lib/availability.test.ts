@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./supabase", () => ({ supabase: {} }));
 
-import { applyAvailability, cartItemMaxQuantity, variantMaxQuantity, type AvailabilityRow } from "./availability";
+import { applyAvailability, cartItemMaxQuantity, unitsLeftText, variantMaxQuantity, type AvailabilityRow } from "./availability";
 import type { CartItem, ProductEdge } from "./types";
 
 const variant = (id: string, availableForSale = true) => ({
@@ -53,5 +53,13 @@ describe("max quantities", () => {
     const item = { product: e, variantId: "v1", quantity: 1 } as unknown as CartItem;
     expect(cartItemMaxQuantity(item)).toBe(2);
     expect(cartItemMaxQuantity({ ...item, variantId: "missing" } as CartItem)).toBe(20);
+  });
+});
+
+describe("unitsLeftText", () => {
+  it("uses the Hebrew singular for one unit and the plural for the rest", () => {
+    expect(unitsLeftText(1)).toBe("נשארה יחידה אחת");
+    expect(unitsLeftText(2)).toBe("נשארו 2 יחידות");
+    expect(unitsLeftText(0)).toBe("נשארו 0 יחידות");
   });
 });

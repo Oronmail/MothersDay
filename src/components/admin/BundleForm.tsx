@@ -102,7 +102,9 @@ export const BundleForm = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, price, status')
+        // product_variants(id) only counts them: the picker below hides
+        // multi-variant products until a component variant picker exists.
+        .select('id, title, price, status, product_variants(id)')
         .eq('is_bundle', false)
         .order('title');
       if (error) throw error;
@@ -447,7 +449,14 @@ export const BundleForm = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {availableProducts
-                    ?.filter((p: any) => !bundleItems.some((bi) => bi.productId === p.id))
+                    // bundle_items pins one component variant at most, and nothing
+                    // here chooses it yet, so a multi-variant product would silently
+                    // reserve stock from its first variant. Hidden until it can be picked.
+                    ?.filter(
+                      (p: any) =>
+                        (p.product_variants?.length ?? 0) <= 1 &&
+                        !bundleItems.some((bi) => bi.productId === p.id),
+                    )
                     .map((p: any) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.title} - {formatCurrency(p.price ?? 0)}
@@ -466,6 +475,10 @@ export const BundleForm = () => {
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
+
+            <p className="text-xs text-muted-foreground">
+              מוצרים עם כמה וריאנטים (למשל הלוח המשפחתי) עדיין לא נתמכים כרכיב במארז.
+            </p>
 
             {bundleItems.length > 0 ? (
               <div className="space-y-2">

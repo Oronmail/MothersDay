@@ -76,7 +76,11 @@ export const InventoryAdjustDialog = ({ open, onOpenChange, target, mode, onDone
     setSaving(true);
     try {
       const ids = await recordMovements([movement]);
-      if (ids.length === 0) toast.info('אין שינוי — המלאי כבר עומד על הכמות הזו');
+      // Counting an untracked item to 0 returns no id (inv_apply skips the zero
+      // delta) but it did create the level row — tracking just started.
+      if (ids.length === 0 && mode === 'count' && target.onHand === null) {
+        toast.success('המעקב התחיל — 0 במלאי');
+      } else if (ids.length === 0) toast.info('אין שינוי — המלאי כבר עומד על הכמות הזו');
       else toast.success(`${TITLES[mode]} נרשמה: ${target.title}`);
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       onDone?.();

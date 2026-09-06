@@ -138,8 +138,14 @@ export const ProductList = () => {
       toast.success('המוצר נמחק בהצלחה');
       setDeleteId(null);
     },
-    onError: () => {
-      toast.error('שגיאה במחיקת המוצר');
+    onError: (err: unknown) => {
+      // The append-only ledger keeps a variant_id reference, so a product whose
+      // variants ever moved stock cannot be deleted.
+      if ((err as { code?: string } | null)?.code === '23503') {
+        toast.error('לא ניתן למחוק מוצר עם היסטוריית מלאי — העבירי אותו לסטטוס טיוטה במקום');
+      } else {
+        toast.error('שגיאה במחיקת המוצר');
+      }
     },
   });
 

@@ -63,6 +63,9 @@ export function variantMaxQuantity(maxOrderable: number | null | undefined): num
   return Math.max(0, Math.min(MAX_ITEM_QUANTITY, maxOrderable));
 }
 
+/** Hebrew counts one differently: "נשארה יחידה אחת", not "נשארו 1 יחידות". */
+export const unitsLeftText = (n: number) => (n === 1 ? 'נשארה יחידה אחת' : `נשארו ${n} יחידות`);
+
 export function cartItemMaxQuantity(item: CartItem): number {
   const node = item.product.node.variants.edges.find((e) => e.node.id === item.variantId)?.node;
   return variantMaxQuantity(node?.maxOrderable);

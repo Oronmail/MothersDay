@@ -10,7 +10,7 @@ import { ROUTES } from "@/lib/routes";
 import { LazyImage } from "./LazyImage";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
-import { cartItemMaxQuantity } from "@/lib/availability";
+import { cartItemMaxQuantity, unitsLeftText } from "@/lib/availability";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,11 +97,11 @@ export const CartDrawer = () => {
                             onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
                             disabled={item.quantity >= itemMax}
                             title={item.quantity >= itemMax
-                              ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                              ? (itemMax < MAX_ITEM_QUANTITY ? `${unitsLeftText(itemMax)} במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                               : undefined}
                             aria-label={
                               item.quantity >= itemMax
-                                ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                                ? (itemMax < MAX_ITEM_QUANTITY ? `${unitsLeftText(itemMax)} במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                                 : `הגדילי כמות עבור ${item.product.node.title}`
                             }
                           >

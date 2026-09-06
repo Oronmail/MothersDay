@@ -244,9 +244,10 @@ export const ProductCard = ({
             className={`font-normal h-9 px-4 text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${largeCarouselMobile ? "flex-1" : "w-full md:w-auto md:flex-1"}`}
             variant="default"
             size="sm"
+            disabled={!variant?.availableForSale}
             aria-label={`הוסיפי את ${node.title} לעגלה`}
           >
-            הוספה לעגלה
+            {variant?.availableForSale ? 'הוספה לעגלה' : 'אזל מהמלאי'}
           </Button>
 
           {/* Quantity Selector — hidden on mobile everywhere (adds to cart as 1;

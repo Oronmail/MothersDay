@@ -65,6 +65,11 @@ describe("formatShortageMessage", () => {
       ]),
     ).toBe("מחברת שורות קטנה: נשארו 2 יח׳ (ביקשת 3); בלוק תכנון גדול: אזל מהמלאי");
   });
+  it("uses the Hebrew singular for a single remaining unit", () => {
+    expect(formatShortageMessage([{ variant_id: "v1", title: "לוח שבועי", requested: 2, available: 1 }])).toBe(
+      "לוח שבועי: נשארה יחידה אחת (ביקשת 2)",
+    );
+  });
 });
 
 describe("itemTitle", () => {

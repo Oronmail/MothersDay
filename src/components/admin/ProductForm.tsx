@@ -463,6 +463,11 @@ export const ProductForm = () => {
       const toDelete = origVariantIds.filter((vid: string) => !keptIds.includes(vid));
       if (toDelete.length) {
         const { error } = await supabase.from('product_variants').delete().in('id', toDelete);
+        // inventory_movements keeps a variant_id reference on purpose (the ledger is
+        // append-only), so a variant with stock history cannot be deleted.
+        if (error?.code === '23503') {
+          throw new Error('לא ניתן למחוק וריאנט עם היסטוריית מלאי — אפשר לסמן אותו "לא זמין למכירה" במקום');
+        }
         if (error) throw error;
       }
       for (let i = 0; i < variants.length; i++) {

@@ -179,7 +179,7 @@ const QuickViewModalContent = ({
                   className="p-2 hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="הוסף כמות"
                   disabled={quantity >= maxQuantity}
-                  title={quantity >= maxQuantity ? (maxQuantity === 0 ? 'אזל מהמלאי' : `אפשר להזמין עד ${maxQuantity} יחידות`) : undefined}
+                  title={quantity >= maxQuantity ? (maxQuantity === 0 ? 'אזל מהמלאי' : maxQuantity === 1 ? 'אפשר להזמין יחידה אחת' : `אפשר להזמין עד ${maxQuantity} יחידות`) : undefined}
                 >
                   <Plus className="h-4 w-4" />
                 </button>

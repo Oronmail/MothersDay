@@ -42,7 +42,9 @@ export async function checkOrderStock(
 export function formatShortageMessage(shortages: StockShortage[]): string {
   return shortages
     .map((s) =>
-      s.available <= 0 ? `${s.title}: אזל מהמלאי` : `${s.title}: נשארו ${s.available} יח׳ (ביקשת ${s.requested})`,
+      s.available <= 0
+        ? `${s.title}: אזל מהמלאי`
+        : `${s.title}: ${s.available === 1 ? "נשארה יחידה אחת" : `נשארו ${s.available} יח׳`} (ביקשת ${s.requested})`,
     )
     .join("; ");
 }

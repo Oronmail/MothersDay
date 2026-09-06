@@ -6,7 +6,7 @@ import { ProductEdge } from "@/lib/types";
 import { startSpan } from "@/lib/sentry";
 import { ROUTES } from "@/lib/routes";
 import { cartItemToTracked, trackAddToCart } from "@/lib/tracking";
-import { variantMaxQuantity } from "@/lib/availability";
+import { unitsLeftText, variantMaxQuantity } from "@/lib/availability";
 
 interface VariantNode {
   id: string;
@@ -73,7 +73,7 @@ export const useAddToCart = ({ product, variant, onSuccess }: UseAddToCartOption
 
           if (qtyToAdd > maxQuantity) {
             toast.error("אין מספיק במלאי", {
-              description: maxQuantity === 0 ? "המוצר אזל מהמלאי" : `נשארו ${maxQuantity} יחידות בלבד`,
+              description: maxQuantity === 0 ? "המוצר אזל מהמלאי" : `${unitsLeftText(maxQuantity)} בלבד`,
               position: "top-center",
             });
             return false;

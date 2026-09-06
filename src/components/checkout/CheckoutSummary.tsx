@@ -11,7 +11,7 @@ import { LazyImage } from "@/components/LazyImage";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductThumbnailImageUrl } from "@/lib/imageTransforms";
 import { MAX_ITEM_QUANTITY, MAX_ITEM_QUANTITY_MESSAGE } from "@/lib/checkoutConfig";
-import { cartItemMaxQuantity } from "@/lib/availability";
+import { cartItemMaxQuantity, unitsLeftText } from "@/lib/availability";
 import { useCartStockClamp } from "@/hooks/useCartStockClamp";
 
 interface CheckoutSummaryProps {
@@ -215,12 +215,12 @@ export function CheckoutSummary({
                     onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
                     disabled={item.quantity >= itemMax}
                     title={item.quantity >= itemMax
-                      ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                      ? (itemMax < MAX_ITEM_QUANTITY ? `${unitsLeftText(itemMax)} במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                       : undefined}
                     className="w-8 h-full flex items-center justify-center text-foreground hover:bg-secondary/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     aria-label={
                       item.quantity >= itemMax
-                        ? (itemMax < MAX_ITEM_QUANTITY ? `נשארו ${itemMax} יחידות במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
+                        ? (itemMax < MAX_ITEM_QUANTITY ? `${unitsLeftText(itemMax)} במלאי` : MAX_ITEM_QUANTITY_MESSAGE)
                         : `הגדילי כמות עבור ${item.product.node.title}`
                     }
                   >
