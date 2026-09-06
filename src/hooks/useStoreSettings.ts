@@ -5,12 +5,16 @@ export interface StoreSettings {
   shipping_cost: number;
   free_shipping_threshold: number;
   shipping_enabled: boolean;
+  low_stock_threshold_default: number;
+  inventory_reserve_pending: boolean;
 }
 
 const DEFAULTS: StoreSettings = {
   shipping_cost: 35,
   free_shipping_threshold: 350,
   shipping_enabled: true,
+  low_stock_threshold_default: 5,
+  inventory_reserve_pending: true,
 };
 
 export function useStoreSettings() {
@@ -24,12 +28,17 @@ export function useStoreSettings() {
 
       const map = new Map((data ?? []).map((row: { key: string; value: unknown }) => [row.key, row.value]));
       const enabledRaw = map.get('shipping_enabled');
+      const reserveRaw = map.get('inventory_reserve_pending');
       return {
         shipping_cost: Number(map.get('shipping_cost') ?? DEFAULTS.shipping_cost),
         free_shipping_threshold: Number(map.get('free_shipping_threshold') ?? DEFAULTS.free_shipping_threshold),
         shipping_enabled: enabledRaw === undefined || enabledRaw === null
           ? DEFAULTS.shipping_enabled
           : Boolean(enabledRaw),
+        low_stock_threshold_default: Number(map.get('low_stock_threshold_default') ?? DEFAULTS.low_stock_threshold_default),
+        inventory_reserve_pending: reserveRaw === undefined || reserveRaw === null
+          ? DEFAULTS.inventory_reserve_pending
+          : Boolean(reserveRaw),
       };
     },
     staleTime: 5 * 60 * 1000,
