@@ -181,6 +181,32 @@ command — zsh does not word-split a `$PSQL` variable holding `host=... port=..
 the connection string directly, e.g.
 `PGPASSWORD=$(security find-generic-password -s mothersday-supabase-db -w) psql "host=... port=5432 user=... dbname=postgres sslmode=require" -v ON_ERROR_STOP=1 -f supabase/tests/inventory_scenarios.sql`).
 
+**Inventory phase 2 (2026-09-06, workflow screens):** admin gained `/admin/inventory/receive`
+(`InventoryReceive.tsx`), `/admin/inventory/count` (`InventoryCount.tsx` — diff-confirm; counting an
+untracked item at 0 starts tracking it with no ledger row written, since `set_to − 0 = 0` is a no-op
+delta in `inv_apply()`, and the toast says so) and `/admin/inventory/supplies`
+(`InventorySupplies.tsx` — supplies are deactivated, never deleted; the `per_item` consumption label
+reads "לכל יחידה", counted per exploded kit component). The order card gained `OrderPickList.tsx`
+(kits exploded to parts, per-line stock chips, three notes: paid-again-after-a-return warning,
+partial-return note, full-return hint) and `OrderRestockDialog.tsx` (manual return for an order
+already shipped; a damaged item writes `return` (+qty) then `damage` (−qty), so stock is unchanged
+but the ledger explains why). Migration `20260906130000_inventory_damage_idempotency.sql` extends
+`inv_apply()`'s existing sale/return idempotency guard (and its unique index) to also cover `damage`,
+so a retried manual-return request can't double-count; asserted in
+`supabase/tests/inventory_scenarios.sql`. The admin orders list gained a "לאריזה" filter
+(`OrderList.tsx`); the dashboard gained a "מלאי נמוך" card with its own error state
+(`Dashboard.tsx`); settings gained `low_stock_threshold_default` and `inventory_reserve_pending`
+(`useStoreSettings`, `StoreSettings.tsx`). `api/hfd-shipment.ts`: creating a shipment sets
+`fulfillment_status='shipped'` (the `orders_supplies` trigger consumes packaging supplies), then
+sends the customer's "בדרך אלייך" tracking email, then `notifyLowStockSuppliesAfterShipping()`
+(`api/_lib/lowStockEmail.ts`) alerts the owners if a supply dipped under its threshold; cancelling a
+shipment reverts `fulfillment_status` back to `unfulfilled`. Both owner-facing low-stock emails
+(new-paid-order and post-shipment) share `formatLowStockLine()` in `api/_lib/inventory.ts`, so the
+Hebrew singular-unit wording is consistent everywhere. Note: an earlier change that set a declined
+PayPlus charge's `expires_at` to now+15m was reverted — it undercut the 25-minute payment-link reuse
+window — so reservations keep the full 2-hour horizon after a decline; see the `PLAN.md` follow-up
+about re-running `check_order_stock` when a retried decline outlives its original reservation.
+
 **Feature flags (currently OFF for production until payments are verified):**
 `VITE_CHECKOUT_ENABLED` (client) and `CHECKOUT_ENABLED` (server) — BOTH must be `true`; the server no
 longer falls back to the `VITE_` value. `VITE_PAYMENT_SIMULATION_ENABLED`/`PAYMENT_SIMULATION_ENABLED`

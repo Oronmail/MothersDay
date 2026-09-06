@@ -37,6 +37,8 @@ This file tracks the remaining work we already identified during the pre-launch 
   `PAYMENT_SIMULATION_ENABLED=true` + `VITE_PAYMENT_SIMULATION_ENABLED=true` on the Preview
   environment only (simulate-payment refuses in Production), reach the protected preview with
   the vercel access skill, place a kit order, confirm sale rows / owners' email / cancel → return.
+- Follow-up: re-run `check_order_stock` in `create-payment` when an order's `expires_at` has
+  passed (a declined card retried after the reservation lapsed can otherwise pay for sold stock).
 
 ## Quality and UX follow-up
 
