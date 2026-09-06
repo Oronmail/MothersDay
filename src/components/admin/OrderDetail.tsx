@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2, ArrowRight, Printer, Truck, ExternalLink } from 'lucide-react';
 import { AdminErrorState } from './AdminErrorState';
+import { OrderPickList } from './OrderPickList';
 import {
   FINANCIAL_STATUS_OPTIONS, FULFILLMENT_STATUS_OPTIONS,
   financialStatusLabel, formatCurrency, getCustomerEmail, getCustomerName, getCustomerPhone,
@@ -440,6 +441,8 @@ export const OrderDetail = () => {
               </div>
             </CardContent>
           </Card>
+
+          <OrderPickList order={order} />
 
           {/* Shipping Address */}
           <Card>
