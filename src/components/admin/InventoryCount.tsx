@@ -91,7 +91,10 @@ export const InventoryCount = () => {
     setSaving(true);
     try {
       const ids = await recordMovements(movements);
-      toast.success(`הספירה נשמרה: ${ids.length} פריטים עודכנו`);
+      const startedAtZero = changes.filter((c) => c.starts && c.value === 0).length;
+      const parts = [`${ids.length} פריטים עודכנו`];
+      if (startedAtZero > 0) parts.push(`${startedAtZero} התחילו מעקב ב־0`);
+      toast.success(`הספירה נשמרה: ${parts.join(', ')}`);
       await queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
       navigate('/admin/inventory');
     } catch (error) {
@@ -172,7 +175,7 @@ export const InventoryCount = () => {
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
             <AlertDialogTitle>לאשר את הספירה?</AlertDialogTitle>
-            <AlertDialogDescription>רק השורות שהשתנו ייכתבו ליומן, תחת "{reference.trim()}".</AlertDialogDescription>
+            <AlertDialogDescription>רק השורות שהשתנו ייכתבו ליומן, תחת "{reference.trim()}". פריט שמתחיל מעקב ב־0 נרשם ברמת המלאי בלי שורת יומן.</AlertDialogDescription>
           </AlertDialogHeader>
           <ul className="max-h-72 overflow-auto text-sm space-y-1">
             {changes.map((c) => (
