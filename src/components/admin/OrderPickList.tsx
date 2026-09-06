@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,12 +76,22 @@ export const OrderPickList = ({ order }: { order: AdminOrder }) => {
     }
   });
 
-  const saleRows = (movementsQuery.data ?? []).filter((m) => m.reason === 'sale');
-  const hasReturn = (movementsQuery.data ?? []).some((m) => m.reason === 'return');
+  // Stable reference: OrderRestockDialog resets its editable form off this array
+  // ([open, saleRows] effect deps) — a fresh array on every render would wipe
+  // in-progress edits mid-typing.
+  const saleRows = useMemo(
+    () => (movementsQuery.data ?? []).filter((m) => m.reason === 'sale'),
+    [movementsQuery.data],
+  );
+  const returnRows = (movementsQuery.data ?? []).filter((m) => m.reason === 'return');
+  const hasReturn = returnRows.length > 0;
+  const soldTotal = saleRows.reduce((sum, m) => sum + Math.abs(m.delta), 0);
+  const returnedTotal = returnRows.reduce((sum, m) => sum + m.delta, 0);
   const shippedAndUndone =
     ['cancelled', 'refunded'].includes(order.financial_status ?? '') &&
     ['shipped', 'delivered'].includes(order.fulfillment_status ?? '');
   const paidAfterReturn = hasReturn && order.financial_status === 'paid';
+  const partialReturn = hasReturn && !paidAfterReturn && returnedTotal < soldTotal;
 
   return (
     <Card>
@@ -118,7 +128,14 @@ export const OrderPickList = ({ order }: { order: AdminOrder }) => {
             })}
           </ul>
         )}
-        {hasReturn && !paidAfterReturn && <p className="text-xs text-muted-foreground mt-3">נרשמה החזרה למלאי עבור ההזמנה הזו (ראי יומן תנועות).</p>}
+        {partialReturn && (
+          <p className="text-xs text-muted-foreground mt-3">
+            נרשמה החזרה חלקית ({returnedTotal} מתוך {soldTotal}) — יתרת הפריטים מתוקנת דרך &quot;התאמה&quot; במסך המלאי.
+          </p>
+        )}
+        {hasReturn && !paidAfterReturn && !partialReturn && (
+          <p className="text-xs text-muted-foreground mt-3">נרשמה החזרה למלאי עבור ההזמנה הזו (ראי יומן תנועות).</p>
+        )}
         {shippedAndUndone && saleRows.length === 0 && (
           <p className="text-xs text-muted-foreground mt-3">להזמנה הזו אין תנועות מכירה (הפריטים לא היו במעקב) — אין מה להחזיר.</p>
         )}
