@@ -98,7 +98,7 @@ export const MOVEMENT_REASON_LABELS: Record<MovementReason, string> = {
 
 export const CONSUMPTION_MODE_LABELS: Record<SupplyStockRow['consumption_mode'], string> = {
   per_order: 'לכל הזמנה',
-  per_item: 'לכל פריט',
+  per_item: 'לכל יחידה',
   manual: 'ידני',
 };
 

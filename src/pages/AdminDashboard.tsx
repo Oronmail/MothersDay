@@ -10,6 +10,7 @@ import { InventoryOverview } from '@/components/admin/InventoryOverview';
 import { InventoryReceive } from '@/components/admin/InventoryReceive';
 import { InventoryMovements } from '@/components/admin/InventoryMovements';
 import { InventoryCount } from '@/components/admin/InventoryCount';
+import { InventorySupplies } from '@/components/admin/InventorySupplies';
 import { CollectionList } from '@/components/admin/CollectionList';
 import { CollectionForm } from '@/components/admin/CollectionForm';
 import { OrderList } from '@/components/admin/OrderList';
@@ -36,6 +37,7 @@ const AdminDashboardPage = () => (
         <Route path="inventory/receive" element={<InventoryReceive />} />
         <Route path="inventory/count" element={<InventoryCount />} />
         <Route path="inventory/movements" element={<InventoryMovements />} />
+        <Route path="inventory/supplies" element={<InventorySupplies />} />
         <Route path="collections" element={<CollectionList />} />
         <Route path="collections/new" element={<CollectionForm />} />
         <Route path="collections/:id" element={<CollectionForm />} />

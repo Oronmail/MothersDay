@@ -122,6 +122,7 @@ export const InventoryOverview = () => {
           <Button variant="outline" asChild>
             <Link to="/admin/inventory/movements"><History className="w-4 h-4 ml-2" />יומן תנועות</Link>
           </Button>
+          <Button variant="outline" asChild><Link to="/admin/inventory/supplies">חומרי אריזה</Link></Button>
         </div>
       </div>
 
@@ -188,7 +189,8 @@ export const InventoryOverview = () => {
             <AdminErrorState error={suppliesQuery.error} onRetry={() => suppliesQuery.refetch()} title="לא הצלחנו לטעון חומרי אריזה" compact />
           ) : supplies.length === 0 ? (
             <p className="text-center text-muted-foreground py-6">
-              עדיין לא הוגדרו חומרי אריזה (קופסאות, נייר, כרטיסים). מוסיפים אותם במסך "חומרי אריזה".
+              עדיין לא הוגדרו חומרי אריזה (קופסאות, נייר, כרטיסים). מוסיפים אותם במסך
+              {' '}"<Link to="/admin/inventory/supplies" className="underline">חומרי אריזה</Link>".
             </p>
           ) : (
             <Table>
