@@ -137,6 +137,13 @@ BEGIN
   PERFORM inv_apply(v_a, NULL, 100, NULL, 'receive', NULL, 'חשבונית 1', NULL, NULL);
   ASSERT (SELECT low_stock_alerted_at FROM inventory_levels WHERE variant_id = v_a) IS NULL, 'alert stamp not cleared';
 
+  -- ---- damage is idempotent per order+variant (manual-return dialog retry) ----
+  PERFORM inv_apply(v_a, NULL, -1, NULL, 'damage', o2, NULL, 'test', NULL);
+  SELECT on_hand INTO v_a_before FROM inventory_levels WHERE variant_id = v_a;
+  SELECT inv_apply(v_a, NULL, -1, NULL, 'damage', o2, NULL, 'test', NULL) INTO v_mov_id;
+  ASSERT (SELECT on_hand FROM inventory_levels WHERE variant_id = v_a) = v_a_before, 'damage replay decremented twice';
+  ASSERT v_mov_id IS NULL, 'damage replay decremented twice';
+
   -- ---- direct on_hand edits are blocked ----
   BEGIN
     UPDATE inventory_levels SET on_hand = 0 WHERE variant_id = v_a;
